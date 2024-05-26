@@ -7,7 +7,7 @@ layout: homepage
 I am a Ph.D. student at School of Mathematics, Peking University. I am in the [probability group](https://pkuprobability.com) and my advisor is [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/index.htm).
 
 ## Research Interests
- I’m interested in probability models background in physics, biology and computer science,  particularly those that incorporate tree structures. I have been worked on 
+ I’m interested in probability models with background in physics, biology and computer science, particularly those that incorporate tree structures. I have been worked on 
 - **Erdős–Rényi graphs:** shotgun assembly problem. 
 - **Branching random walks:** maximum, martingales(partition functions), and level sets
 
