@@ -6,4 +6,5 @@ main:
     journal: IEEE Transactions on Information Theory, 2023
     pdf: https://arxiv.org/abs/2208.09876
     image: ./assets/img/shotgun.png
+    journalpage: https://ieeexplore.ieee.org/document/10192460
 

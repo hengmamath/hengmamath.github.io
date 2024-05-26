@@ -21,6 +21,9 @@
       {% if link.pdf %} 
       <a href="{{ link.pdf }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">arXiv</a>
       {% endif %}
+      {% if link.journalpage %} 
+      <a href="{{ link.journalpage }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">journal</a>
+      {% endif %}
     </div>
   </div>
 </div>
