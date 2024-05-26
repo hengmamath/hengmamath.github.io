@@ -3,7 +3,7 @@ layout: homepage
 ---
 
 ## About Me
-I am a Ph.D. student at School of Mathematics, Peking University. I am in the [probability group](https://pkuprobability.com) and my advisor is [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/index.htm). Shan dong
+I am a Ph.D. student at School of Mathematics, Peking University. I am in the [probability group](https://pkuprobability.com) and my advisor is [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/index.htm). 
 
 ## Research Interests
 
