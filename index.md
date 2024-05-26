@@ -20,9 +20,8 @@ I am trying to learn and work on more interesting models, e.g., universality cla
 
 - **[Jul. 2024]** I will be attending the 2024 CRM-PIMS Summer School in Probability in Montreal.
 
-## Research
 
-to be added...
-<!-- {% include_relative _includes/publications.md %}
 
-{% include_relative _includes/services.md %} -->
+ {% include_relative _includes/publications.md %}
+
+
