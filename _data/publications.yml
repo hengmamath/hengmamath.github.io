@@ -4,6 +4,6 @@ main:
   - title: Shotgun threshold for sparse Erdős–Rényi graphs
     authors: Jian Ding and Yiyang Jiang
     journal: IEEE Transactions on Information Theory, 2023
-    pdf: https://arxiv.org/pdf/2208.09876
+    pdf: https://arxiv.org/abs/2208.09876
     image: ./assets/img/shotgun.png
 
