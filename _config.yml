@@ -1,8 +1,8 @@
 # Basic Information 
-title: Your Name
+title: Heng Ma
 position: Ph.D. Student
-affiliation: Your Affiliation
-email: yourname (at) example.edu
+affiliation: Peking University
+email: hengmamath (at) gmail.com
 
 # Search Engine Optimization (SEO)
 # The following information is used to improve the website traffic from search engines, e.g., Google.
@@ -49,8 +49,6 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - README.md
-  - README_zh_Hans.md
-  - README_zh_Hant.md
   - README_de.md
   - LICENSE
   - minimal-light.gemspec
