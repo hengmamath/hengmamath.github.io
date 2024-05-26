@@ -20,6 +20,7 @@ I am trying to learn and work on more interesting models, e.g., Gaussian free fi
 ## Research
 
 To be added
-<!-- {% include_relative_includes/publications.md %} -->
 
-<!-- {% include_relative _includes/services.md %} -->
+{% include_relative_includes/publications.md %} 
+
+{% include_relative _includes/services.md %}  
