@@ -13,13 +13,13 @@
     {% endif %}
   </div>
   <div class="col-sm-9" style="position: relative;padding-right: 15px;padding-left: 20px;">
-      <div class="title" style="color: #0000FF;">{{ link.title }}</div>
+      <div class="title"><a href="{{ link.arXiv }}">{{ link.title }}</a></div>
       <div class="author">with {{ link.authors }}</div>
       <div class="periodical"><em>{{ link.journal }}</em>
       </div>
     <div class="links">
-      {% if link.pdf %} 
-      <a href="{{ link.pdf }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">arXiv</a>
+      {% if link.arXiv %} 
+      <a href="{{ link.arXiv }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">arXiv</a>
       {% endif %}
       {% if link.journalpage %} 
       <a href="{{ link.journalpage }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">journal</a>
