@@ -7,11 +7,11 @@ I am a Ph.D. student at School of Mathematics, Peking University. I am in the [p
 
 ## Research Interests
 
-I’m interested in probability models with background in physics, biology and computer science, particularly those that incorporate tree structures. I have been worked on
+I’m interested in probability models with background in physics, biology and computer science, particularly those that incorporate tree structures. I have been working on the following subjects
 
 - **Erdős–Rényi graphs:** shotgun assembly problem.
 
-- **Branching random walks:** maximum, martingales(partition functions), and level sets
+- **Branching random walks:** maximum, martingales(partition functions), and level sets.
 
 
 I am trying to learn and work on more interesting models, e.g., universality class of log-correlated fields, Gaussian multiplicative chaos, random graphs and random networks, etc.
