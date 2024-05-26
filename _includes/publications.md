@@ -19,7 +19,7 @@
       </div>
     <div class="links">
       {% if link.pdf %} 
-      <a href="{{ link.pdf }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">ArXiv</a>
+      <a href="{{ link.pdf }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">arXiv</a>
       {% endif %}
     </div>
   </div>
