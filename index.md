@@ -11,7 +11,7 @@ I am a Ph.D. student at School of Mathematics, Peking University. I am in the [p
 - **Erdős–Rényi graphs:** shotgun assembly problem. 
 - **Branching random walks:** maximum, martingales(partition functions), and level sets
 
-I am trying to learn and work on more interesting models, e.g., Gaussian free fields and log-correlated fields, Gaussian multiplicative chaos, random walks, etc.
+I am trying to learn and work on more interesting models, e.g., Gaussian free fields and log-correlated fields, Gaussian multiplicative chaos, random graphs and random networks, etc.
 
 ## News
 - **[Jul. 2024]** I will be attending the 2024 CRM-PIMS Summer School in Probability in Montreal.
