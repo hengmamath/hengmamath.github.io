@@ -14,7 +14,7 @@ I’m interested in probability models with background in physics, biology and c
 - **Branching random walks:** maximum, martingales(partition functions), and level sets
 
 
-I am trying to learn and work on more interesting models, e.g., Gaussian free fields and log-correlated fields, Gaussian multiplicative chaos, random graphs and random networks, etc.
+I am trying to learn and work on more interesting models, e.g., universality class of log-correlated fields, Gaussian multiplicative chaos, random graphs and random networks, etc.
 
 ## News
 
