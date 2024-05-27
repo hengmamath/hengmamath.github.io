@@ -8,9 +8,9 @@
 
 <li>
 <div class="pub-row">
-  <div class="col-sm-6 abbr" style="position: relative;padding-right: 15px;padding-left: 15px;">
+  <div class="col-sm-4 abbr" style="position: relative;padding-right: 15px;padding-left: 15px;">
     {% if link.image %} 
-  <img src="{{ link.image }}" class="teaser img-fluid z-depth-1" style="width:70%; height:70%;">
+  <img src="{{ link.image }}" class="teaser img-fluid z-depth-1" style="width:100%; height:200px; object-fit: cover;">
     {% endif %}
   </div>
   <div class="col-sm-6" style="position: relative;padding-right: 15px;padding-left: 20px;">
