@@ -19,7 +19,7 @@ I am trying to learn and work on more interesting models, e.g., universality cla
 ## News
 
 - **[Jul. 2024]** I will attend the 2024 CRM-PIMS Summer School in Probability at Montreal in July 1-26.
-- **[May. 2024]** I will give a talk at Southern University of Science and Technology, Shenzhen.
+- **[May. 2024]** I will give a talk at Southern University of Science and Technology in May 30, Shenzhen.
 
 
  {% include_relative _includes/publications.md %}
