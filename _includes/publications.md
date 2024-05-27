@@ -9,11 +9,12 @@
 <li>
 <div class="pub-row">
   
-  <div class="col-sm-3 abbr" style="position: relative;padding-right: 15px;padding-left: 15px;">
+  <div class="col-sm-3 abbr" style="position: relative; padding-right: 15px; padding-left: 15px; weight: 200px height: 200px;">
     {% if link.image %} 
     <img src="{{ link.image }}" class="teaser img-fluid z-depth-1" style="width: 100%; height: 100%; object-fit: cover;">
     {% endif %}
-  </div>
+</div>
+
   <div class="col-sm-9" style="position: relative;padding-right: 15px;padding-left: 20px;">
       <div class="title"><a href="{{ link.arXiv }}">{{ link.title }}</a></div>
       <div class="author">with {{ link.coauthors }}</div>
