@@ -5,7 +5,7 @@ affiliation: Peking University
 email: hengmamath (at) gmail.com ; maheng (at) stu.pku.edu.cn
 
 # Search Engine Optimization (SEO)
-keywords: heng ma, ma heng, maheng, hengma,
+keywords: heng ma, ma heng, maheng, hengma
 canonical: https://hengmamath.github.io
 description: Heng Ma is a ph.d. student at Peking University. His research lies in probability theory and its applications.
 
@@ -26,7 +26,7 @@ favicon_dark: ./assets/img/favicon-dark.png
 
 # Footnote
 # You may use the option to disable the footnote, "Powered by Jekyll and Minimal Light theme."
-enable_footnote: false
+enable_footnote: true
 
 # Auto Dark Mode
 # You may use the option to disable the automatic dark theme
