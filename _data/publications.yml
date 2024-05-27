@@ -1,6 +1,20 @@
 main:
 
+ - title: “From 0 to 3 :“ Intermediate phases between normal and anomalous spreading of two-type branching Brownian motion
+    coauthors: Yan-Xia Ren
+    journal: submitted, 2023
+    arXiv: https://arxiv.org/abs/2312.13595
+    image: ./assets/img/doublejump.png
+  
     
+  - title: Double jump in the maximum of two-type reducible branching Brownian motion
+    coauthors: Yan-Xia Ren
+    journal: submitted, 2023
+    arXiv: https://arxiv.org/abs/2305.09988
+    image: ./assets/img/doublejump.png
+  
+
+
   - title: Shotgun threshold for sparse Erdős–Rényi graphs
     coauthors: Jian Ding and Yiyang Jiang
     journal: IEEE Transactions on Information Theory, 2023
