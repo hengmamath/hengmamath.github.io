@@ -5,7 +5,7 @@
 
 {% for link in site.data.publications.main %}
 
-<div style="margin-bottom: 25px;">
+<div style="margin-bottom: 100px;">
 
 <li>
 <div class="pub-row">
