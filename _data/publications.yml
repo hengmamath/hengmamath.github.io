@@ -1,10 +1,10 @@
 main:
 
- - title: “From 0 to 3 :“ Intermediate phases between normal and anomalous spreading of two-type branching Brownian motion
+ - title: From 0 to 3  Intermediate phases between normal and anomalous spreading of two-type branching Brownian motion
     coauthors: Yan-Xia Ren
     journal: submitted, 2023
     arXiv: https://arxiv.org/abs/2312.13595
-    image: ./assets/img/doublejump.png
+    image: ./assets/img/023.png
   
     
   - title: Double jump in the maximum of two-type reducible branching Brownian motion
