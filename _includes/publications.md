@@ -10,7 +10,7 @@
 <div class="pub-row">
   <div class="col-sm-4 abbr" style="position: relative;padding-right: 15px;padding-left: 15px;">
     {% if link.image %} 
-     <img src="{{ link.image }}" class="teaser img-fluid z-depth-1" width="500">
+    <img src="{{ link.image }}" class="teaser img-fluid z-depth-1" style="width=100;height=40%">
     {% endif %}
   </div>
   <div class="col-sm-8" style="position: relative;padding-right: 15px;padding-left: 20px;">
