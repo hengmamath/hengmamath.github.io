@@ -555,9 +555,9 @@ footer {
   }
 
   .image.avatar img {
-      border-radius: 100%;
-      width: 95px;
-      padding:20px;
+      border-radius: 0;
+      width: auto;
+      padding:0;
   }
   #head1o2 {
     visibility: hidden;
