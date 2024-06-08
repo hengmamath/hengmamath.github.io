@@ -16,9 +16,9 @@ I'm interested in probability models particularly those that incorporate tree st
 I am trying to learn and work on more interesting subjects, e.g., universality class of log-correlated fields, Gaussian multiplicative chaos, random graphs and random networks, etc.
 
 ## News
-- **[Sep. 2024]** I will be a visiting phd student at UNC, chapel hill from Sep 2024 to Mar 2025, hosted by Prof. [Shankar Bhamidi](https://shankarbhamidi.web.unc.edu). 
-- **[Jul. 2024]** I will attend the 2024 CRM-PIMS Summer School in Probability at Montreal in July 1-26.
-- **[Jun. 2024]** I will give a talk at Beijing Institute of Technology in Jun 14.
+- I will be a visiting phd student at UNC, chapel hill from Sep 2024 to Mar 2025, hosted by Prof. [Shankar Bhamidi](https://shankarbhamidi.web.unc.edu). 
+- I will attend the 2024 CRM-PIMS Summer School in Probability at Montreal in July 1-26.
+- I will give a talk at Beijing Institute of Technology in Jun 14.
 
 
  {% include_relative _includes/publications.md %}
