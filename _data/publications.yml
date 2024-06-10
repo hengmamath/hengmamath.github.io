@@ -19,5 +19,6 @@ main:
     arXiv: "https://arxiv.org/abs/2208.09876"
     image: "./assets/img/shotgun.png"
     journalpage: "https://ieeexplore.ieee.org/document/10192460"
+    poster: "assets/files/shotgun_poster.pdf"
 
 
