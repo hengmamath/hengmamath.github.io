@@ -20,5 +20,6 @@ main:
     image: "./assets/img/shotgun.png"
     journalpage: "https://ieeexplore.ieee.org/document/10192460"
     poster: "assets/files/shotgun_poster.pdf"
+    talk: "assets/files/shotgun_talk.pdf"
 
 
