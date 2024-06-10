@@ -19,11 +19,11 @@
       <div class="author">with {{ link.coauthors }}</div>
       <div class="periodical"><em>{{ link.journal }}</em></div>
     <div class="links">
+    {% if link.journalpage %} 
+      <a href="{{ link.journalpage }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">journal</a>
+      {% endif %}
       {% if link.arXiv %} 
       <a href="{{ link.arXiv }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">arXiv</a>
-      {% endif %}
-      {% if link.journalpage %} 
-      <a href="{{ link.journalpage }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">journal</a>
       {% endif %}
       {% if link.talk %} 
       <a href="{{ link.talk }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">slides</a>
