@@ -25,12 +25,12 @@
       {% if link.arXiv %} 
       <a href="{{ link.arXiv }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">arXiv</a>
       {% endif %}
+      {% if link.poster %} 
+      <a href="{{ link.poster }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">poster</a>
+      {% endif %}
       {% if link.talk %} 
       <a href="{{ link.talk }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">slides</a>
       {% endif %}
-      {% if link.poster %} 
-      <a href="{{ link.poster }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">poster</a>
-      {% endif %} 
     </div>
   </div>
 </div>
