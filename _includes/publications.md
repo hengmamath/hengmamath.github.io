@@ -25,7 +25,7 @@
       {% if link.journalpage %} 
       <a href="{{ link.journalpage }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">journal</a>
       {% endif %}
-       {% if link.slides %} 
+      {% if link.slides %} 
       <a href="{{ link.slides }}" class="btn btn-sm z-depth-0" role="button" target="_blank" style="font-size:12px;">slides</a>
       {% endif %}
       {% if link.poster %} 

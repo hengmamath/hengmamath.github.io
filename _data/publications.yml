@@ -5,16 +5,13 @@ main:
     journal: "submitted, 2023"
     arXiv: "https://arxiv.org/abs/2312.13595"
     image: "./assets/img/from023.png"
-     slides: "assets/files/mbbm_talk.pdf"
-    poster: "assets/files/mbbm_poster.pdf"
+     
 
   - title: "Double jump in the maximum of two-type reducible branching Brownian motion"
     coauthors: "Yan-Xia Ren"
     journal: "submitted, 2023"
     arXiv: "https://arxiv.org/abs/2305.09988"
     image: "./assets/img/doublejump.png"
-  slides: "assets/files/mbbm_talk.pdf"
-    poster: "assets/files/mbbm_poster.pdf"
 
   - title: "Shotgun threshold for sparse Erdős–Rényi graphs"
     coauthors: "Jian Ding and Yiyang Jiang"
@@ -22,7 +19,5 @@ main:
     arXiv: "https://arxiv.org/abs/2208.09876"
     image: "./assets/img/shotgun.png"
     journalpage: "https://ieeexplore.ieee.org/document/10192460"
-    slides: "assets/files/shotgun_talk.pdf"
-    poster: "assets/files/shotgun_poster.pdf"
 
 
