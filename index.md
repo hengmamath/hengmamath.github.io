@@ -9,11 +9,11 @@ I am a Ph.D. student at School of Mathematics, Peking University. I am in the [p
 
 I'm interested in probability models particularly those that incorporate tree structures. I have been working on the following topics 
 
-- **Erdős–Rényi graphs:** shotgun assembly problem.
+- **Erdős–Rényi random graphs:** shotgun assembly problem.
 
 - **Branching random walks:** maximum, martingales(partition functions), and level sets.
 
-I am trying to learn and work on more interesting subjects, e.g., universality class of log-correlated fields, Gaussian multiplicative chaos, random graphs and random networks, etc.
+I am trying to learn and work on more interesting subjects, e.g., random trees and random networks, universality class of log-correlated fields, Gaussian multiplicative chaos, etc.
 
 ## News
 - I will be a visiting phd student at UNC, chapel hill from Sep 2024 to Mar 2025, hosted by Prof. [Shankar Bhamidi](https://shankarbhamidi.web.unc.edu). 
