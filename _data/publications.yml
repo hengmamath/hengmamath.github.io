@@ -4,8 +4,8 @@ main:
     coauthors: "Xinxin Chen and Loïc de Raphélis"
     journal: "submitted, 2024+"
     arXiv: "https://arxiv.org/abs/2408.05538"
-    image: "./assets/img/condbrw.png"
-    talk: "assets/files/condbrw_talk.pdf"
+    image: "./assets/img/cbrw.png"
+    talk: "assets/files/cbrw_talk.pdf"
 
   - title: "From 0 to 3: Intermediate phases between normal and anomalous spreading of two-type branching Brownian motion"
     coauthors: "Yan-Xia Ren"
