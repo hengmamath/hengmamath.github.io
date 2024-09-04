@@ -1,9 +1,10 @@
 main:
+
  - title: "Multifractal spectrum of branching random walks on free groups"
     coauthors: "Shuwen Lai and Longmin Wang"
     journal: "preprint, 2024+"
     arXiv: "https://arxiv.org/abs/2409.01346"
-    image: "./assets/img/GroupBRW.png"
+    image: "./assets/img/brwgroup.png"
 
   - title: "Branching random walk conditioned on large martingale limit"
     coauthors: "Xinxin Chen and Loïc de Raphélis"
