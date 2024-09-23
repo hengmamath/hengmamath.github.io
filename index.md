@@ -17,8 +17,6 @@ I am trying to learn and work on more interesting subjects, e.g., random trees a
 
 ## News
 - I will be a visiting phd student at UNC, chapel hill from Sep 2024 to Mar 2025, hosted by Prof. [Shankar Bhamidi](https://shankarbhamidi.web.unc.edu). 
-- I will attend the 2024 CRM-PIMS Summer School in Probability at Montreal in July 1-26.
-
 
  {% include_relative _includes/publications.md %}
 
