@@ -4,6 +4,7 @@ main:
     journal: "arxiv, 2024+"
     arXiv: "https://arxiv.org/abs/2408.05538"
     image: "./assets/img/bbmls.png"
+    talk: "assets/files/cbrw_talk.pdf"
 
   - title: "Multifractal spectrum of branching random walks on free groups"
     coauthors: "Shuwen Lai and Longmin Wang"
