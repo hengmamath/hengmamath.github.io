@@ -1,4 +1,10 @@
 main:
+  - title: "Branching Brownian motion conditioned on large level sets"
+    coauthors: "Xinxin Chen"
+    journal: "arxiv, 2024+"
+    arXiv: "https://arxiv.org/abs/2408.05538"
+    image: "./assets/img/bbmls.png"
+
   - title: "Multifractal spectrum of branching random walks on free groups"
     coauthors: "Shuwen Lai and Longmin Wang"
     journal: "submitted, 2024+"
