@@ -2,7 +2,7 @@ main:
   - title: "Branching Brownian motion conditioned on large level sets"
     coauthors: "Xinxin Chen"
     journal: "arxiv, 2024+"
-    arXiv: "https://arxiv.org/abs/2408.05538"
+    arXiv: "https://arxiv.org/abs/2409.16104"
     image: "./assets/img/bbmls.png"
     talk: "assets/files/cbrw_talk.pdf"
 
