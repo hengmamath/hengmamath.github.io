@@ -9,7 +9,7 @@ I am a Ph.D. student at School of Mathematics, Peking University. I am in the [p
 
 I'm interested in probabilistic models, particularly those that incorporate tree structures. I have been working on the following topics 
 
-- **Erdős–Rényi random graphs:** shotgun assembly problem.
+- **Erdős–Rényi random graphs:** recovery problem.
 
 - **Branching random walks:** maximum, martingales(partition functions), and level sets.
 
