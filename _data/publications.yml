@@ -40,7 +40,7 @@ main:
     journal: "IEEE Transactions on Information Theory, 2023"
     arXiv: "https://arxiv.org/abs/2208.09876"
     image: "./assets/img/shotgun.png"
-    journalpage: "https://ieeexplore.ieee.org/document/10192460"
+    journalpage: "https://doi.org/10.1109/TIT.2023.3298515"
     poster: "assets/files/shotgun_poster.pdf"
     talk: "assets/files/shotgun_talk.pdf"
 
