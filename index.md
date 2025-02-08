@@ -7,7 +7,7 @@ I am a Ph.D. student at School of Mathematics, Peking University. I am in the [p
 
 <u> <strong> I am on the postdoc job market during Fall 2024.  <strong><u>
 
-You can view my [CV](assets/files/CV_Heng_Ma.pdf) and [research statement](assets/files/ResearchStatement_HengMa.pdf), updated as of Oct 24. 
+You can view my [CV](assets/files/CV_Heng_Ma.pdf) and [research statement](assets/files/ResearchStatement_HengMa.pdf).
 
 ## Research Interests
 
