@@ -5,9 +5,7 @@ layout: homepage
 ## About Me
 I am a Ph.D. student at School of Mathematics, Peking University. I am in the [probability group](https://pkuprobability.com) and my advisor is Prof. [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/indexE.htm). I graduated from Shandong University in 2020. 
 
-<u> <strong> I am on the postdoc job market during Fall 2024.  <strong><u>
 
-You can view my [CV](assets/files/CV_Heng_Ma.pdf) and [research statement](assets/files/ResearchStatement_HengMa.pdf).
 
 ## Research Interests
 
