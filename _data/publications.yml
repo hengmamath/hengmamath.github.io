@@ -3,6 +3,7 @@ main:
     coauthors: "Pascal Maillard"
     journal: "arxiv, 2025+"
     arXiv: "https://arxiv.org/abs/2504.20963"
+    image: "./assets/img/expmoments.png"
 
   - title: "Branching Brownian motion conditioned on large level sets"
     coauthors: "Xinxin Chen"
