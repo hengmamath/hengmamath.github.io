@@ -18,7 +18,7 @@ I'm interested in probabilistic models, particularly those that incorporate tree
 I am trying to learn and work on more interesting subjects, e.g., random trees and random networks, universality class of log-correlated fields, Gaussian multiplicative chaos, etc.
 
 ## News
-- I will be a visiting phd student at UNC, chapel hill from Sep 2024 to Mar 2025, hosted by Prof. [Shankar Bhamidi](https://shankarbhamidi.web.unc.edu). 
+- I will be a postdoc at [Technion probability group](https://probability.technion.ac.il), hosted by Prof. [Oren Louidor](https://sites.google.com/view/louidor/). 
 
  {% include_relative _includes/publications.md %}
 

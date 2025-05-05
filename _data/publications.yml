@@ -1,4 +1,9 @@
 main:
+  - title: "Exponential moments of truncated branching random walk martingales"
+    coauthors: "Pascal Maillard"
+    journal: "arxiv, 2025+"
+    arXiv: "https://arxiv.org/abs/2504.20963"
+
   - title: "Branching Brownian motion conditioned on large level sets"
     coauthors: "Xinxin Chen"
     journal: "arxiv, 2024+"
@@ -8,20 +13,21 @@ main:
 
   - title: "Multifractal spectrum of branching random walks on free groups"
     coauthors: "Shuwen Lai and Longmin Wang"
-    journal: "submitted, 2024+"
+    journal: "arxiv, 2024+"
     arXiv: "https://arxiv.org/abs/2409.01346"
     image: "./assets/img/brwgroup.png"
+    talk: "assets/files/brwfreegroup_talk.pdf"
 
   - title: "Branching random walk conditioned on large martingale limit"
     coauthors: "Xinxin Chen and Loïc de Raphélis"
-    journal: "submitted, 2024+"
+    journal: "arxiv, 2024+"
     arXiv: "https://arxiv.org/abs/2408.05538"
     image: "./assets/img/cbrw.png"
     talk: "assets/files/cbrw_talk.pdf"
 
   - title: "From 0 to 3: Intermediate phases between normal and anomalous spreading of two-type branching Brownian motion"
     coauthors: "Yan-Xia Ren"
-    journal: "submitted, 2023+"
+    journal: "arxiv, 2023+"
     arXiv: "https://arxiv.org/abs/2312.13595"
     image: "./assets/img/from023.png"
     poster: "assets/files/mbbm_poster.pdf"
