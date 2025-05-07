@@ -11,7 +11,7 @@ I am a Ph.D. student at School of Mathematics, Peking University. I am in the [p
 
 
 
-## Research Interests
+## Research 
 
 I'm interested in probabilistic models, particularly those that incorporate tree and graph structures. I have been working on the following topics 
 
