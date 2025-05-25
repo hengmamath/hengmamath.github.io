@@ -13,13 +13,11 @@ I am a Ph.D. student at School of Mathematics, Peking University. I am in the [p
 
 ## Research 
 
-I'm interested in probabilistic models, particularly those that incorporate tree and graph structures. I have been working on the following topics 
-
-- **Erdős–Rényi random graphs:** recovery problem.
-
-- **Branching random walks:** maximum, martingales(partition functions), and level sets.
-
-I am trying to learn and work on more interesting subjects, e.g., random trees and random networks, universality class of log-correlated fields, Gaussian multiplicative chaos, etc.
+I'm interested in probabilistic models, particularly those that incorporate *tree  structures*.
+I am trying to learn and work on more interesting subjects, e.g., 
+- random trees and random networks, 
+- 2D (discrete) Gaussian free field and universality class of log-correlated fields, 
+- Gaussian multiplicative chaos.
 
  {% include_relative _includes/publications.md %}
 
