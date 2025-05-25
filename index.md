@@ -19,7 +19,7 @@ I am trying to learn and work on more interesting subjects, e.g.,
 - 2D (discrete) Gaussian free field and universality class of log-correlated fields, 
 - Gaussian multiplicative chaos.
 
-### Papers 
+## Papers 
 
  {% include_relative _includes/publications.md %}
 
