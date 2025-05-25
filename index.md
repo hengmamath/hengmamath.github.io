@@ -13,11 +13,13 @@ I am a Ph.D. student at School of Mathematics, Peking University. I am in the [p
 
 ## Research 
 
-I'm interested in probabilistic models, particularly those that incorporate *tree  structures*.
+I'm interested in probabilistic models, particularly those that incorporate tree  structures.
 I am trying to learn and work on more interesting subjects, e.g., 
 - random trees and random networks, 
 - 2D (discrete) Gaussian free field and universality class of log-correlated fields, 
 - Gaussian multiplicative chaos.
+
+### Papers 
 
  {% include_relative _includes/publications.md %}
 
