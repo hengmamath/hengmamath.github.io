@@ -23,8 +23,7 @@ I am trying to learn and work on more interesting subjects, e.g.,
 
 ## Papers 
 
-I have had the pleasure of working together with the following wonderful people:
-Xinxin Chen,  Loïc de Raphélis, Jian Ding, Yiyang Jiang,  Shuwen Lai, Pascal Maillard, Yan-Xia Ren, Longmin Wang
+
 
  {% include_relative _includes/publications.md %}
 
