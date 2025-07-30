@@ -20,7 +20,11 @@ I am trying to learn and work on more interesting subjects, e.g.,
 - 2D (discrete) Gaussian free field and universality class of log-correlated fields, 
 - Gaussian multiplicative chaos.
 
+
 ## Papers 
+
+I have had the pleasure of working together with the following wonderful people:
+Xinxin Chen,  Loïc de Raphélis, Jian Ding, Yiyang Jiang,  Shuwen Lai, Pascal Maillard, Yan-Xia Ren, Longmin Wang
 
  {% include_relative _includes/publications.md %}
 
