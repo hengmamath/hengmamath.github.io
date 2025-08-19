@@ -1,4 +1,10 @@
 main:
+  - title: "Left Tail of the Subcritical Derivative Martingale in a Branching Wiener Process"
+    coauthors: "Xinxin Chen and Yichao Huang"
+    journal: "arxiv, 2025+"
+    arXiv: "https://arxiv.org/abs/2508.11983"
+    image: "./assets/img/leftDtail.png"
+
   - title: "Exponential moments of truncated branching random walk martingales"
     coauthors: "Pascal Maillard"
     journal: "arxiv, 2025+"
