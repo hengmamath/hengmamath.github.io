@@ -14,10 +14,9 @@ I am currently a postdoc at [Technion probability group](https://probability.tec
 
 ## Research 
 
-I'm interested in probabilistic models, particularly those that incorporate tree structures.
+I'm interested in probabilistic models, particularly those that incorporate tree structures. I am trying to learn and work on more interesting subjects, e.g., 
 - 2D (discrete) Gaussian free field and universality class of log-correlated fields, 
 - Gaussian multiplicative chaos.
-I am trying to learn and work on more interesting subjects, e.g., 
 - random trees and random networks, 
 
 
