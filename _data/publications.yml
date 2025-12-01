@@ -13,7 +13,7 @@ main:
 
   - title: "Exponential moments of truncated branching random walk martingales"
     coauthors: "Pascal Maillard"
-    journal: Electron. J. Probab., 2025"
+    journal: "Electron. J. Probab., 2025"
     arXiv: "https://arxiv.org/abs/2504.20963"
     journalpage: "https://doi.org/10.1214/25-EJP1406"
     image: "./assets/img/expmoments.png"
