@@ -1,4 +1,10 @@
 main:
+  - title: "Minimum-Weight Path in a Sparse Erdős--Rényi Graph with Signed Weights"
+    coauthors: "Pascal Maillard"
+    journal: "arxiv, 2025+"
+    arXiv: "https://arxiv.org/abs/2511.22454"
+    image: "./assets/img/MinPath.png"
+  
   - title: "Left tail of the subcritical derivative martingale in a branching Wiener process"
     coauthors: "Xinxin Chen and Yichao Huang"
     journal: "arxiv, 2025+"
@@ -7,8 +13,9 @@ main:
 
   - title: "Exponential moments of truncated branching random walk martingales"
     coauthors: "Pascal Maillard"
-    journal: "arxiv, 2025+"
+    journal: Electron. J. Probab., 2025"
     arXiv: "https://arxiv.org/abs/2504.20963"
+    journalpage: "https://doi.org/10.1214/25-EJP1406"
     image: "./assets/img/expmoments.png"
 
   - title: "Branching Brownian motion conditioned on large level sets"

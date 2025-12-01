@@ -19,8 +19,6 @@ I'm interested in probabilistic models, particularly those that incorporate tree
 - Gaussian multiplicative chaos.
 - random trees and random networks, 
 
-
-
 ## Papers 
 
 
