@@ -34,7 +34,7 @@ main:
 
   - title: "Branching random walk conditioned on large martingale limit"
     coauthors: "Xinxin Chen and Loïc de Raphélis"
-    journal: "arxiv, 2024+"
+    journal: "Accepted in Ann. Inst. H. Poincaré Probab. Statist., 2024+"
     arXiv: "https://arxiv.org/abs/2408.05538"
     image: "./assets/img/cbrw.png"
     talk: "assets/files/cbrw_talk.pdf"
