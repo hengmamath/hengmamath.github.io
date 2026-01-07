@@ -4,7 +4,7 @@ layout: homepage
 
 ## About Me
 
-I am currently a postdoc at [Technion probability group](https://probability.technion.ac.il) hosted by Prof. [Oren Louidor](https://sites.google.com/view/louidor/). I obtained my Ph.D. at [probability group in Peking University](https://pkuprobability.com) under the supervision of Prof. [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/indexE.htm) in 2025.  
+I am currently a postdoc at [Technion probability group](https://probability.technion.ac.il), working with  [Oren Louidor](https://sites.google.com/view/louidor/) and [Eviatar Procaccia](https://sites.google.com/site/ebprocaccia/). I obtained my Ph.D. at [probability group in Peking University](https://pkuprobability.com) under the supervision of  [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/indexE.htm) in 2025.  
 
 
 <!-- ## News
