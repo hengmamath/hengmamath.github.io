@@ -1,4 +1,10 @@
 main:
+  - title: "Atypical Decay Rates for Atypical Heights in Random Recursive Trees"
+    coauthors: "Xinxin Chen"
+    journal: "arxiv, 2026+"
+    arXiv: "https://arxiv.org/abs/2604.20139"
+    image: "./assets/img/rrt.png"
+
   - title: "Minimum-Weight Path in a Sparse Erdős--Rényi Graph with Signed Weights"
     coauthors: "Pascal Maillard"
     journal: "arxiv, 2025+"
