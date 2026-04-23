@@ -4,6 +4,7 @@ main:
     journal: "arxiv, 2026+"
     arXiv: "https://arxiv.org/abs/2604.20139"
     image: "./assets/img/rrt.png"
+    talk: "assets/files/rrt_talk.pdf"
 
   - title: "Minimum-Weight Path in a Sparse Erdős--Rényi Graph with Signed Weights"
     coauthors: "Pascal Maillard"
