@@ -9,7 +9,7 @@ I am currently a postdoc at the [Technion probability group](https://probability
 I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking University](https://math-en.pku.edu.cn). 
 <!--[probability group in Peking University](https://pkuprobability.com) under the supervision of [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/indexE.htm). -->
 
-# Research Interests
+# Research interests
 
 My research interests lie in probability theory and stochastic processes, particularly probabilistic models with underlying tree and graph structures. Topics that I have worked on or am currently exploring include
 

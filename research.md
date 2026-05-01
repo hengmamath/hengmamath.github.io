@@ -12,7 +12,7 @@ I have had the pleasure of working with the following wonderful people:
 
 ---
 
-# Papers and Preprints
+# Papers and preprints
 (listed in reverse chronological order of their first posting date on arXiv.) 
 
 
