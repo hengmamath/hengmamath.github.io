@@ -1,0 +1,43 @@
+/*
+  深色模式覆盖样式。
+  当浏览器或系统设置为 dark mode 时，这里的颜色会覆盖 academic-site.scss 里的默认颜色。
+  如果只想改浅色模式，不需要改这个文件。
+*/
+
+@media (prefers-color-scheme: dark) {
+  /* 深色模式下的全站颜色变量。变量名和 academic-site.scss 中保持一致。 */
+  :root {
+    /* 页面背景色。 */
+    --page-bg: #171a1d;
+    /* 内容卡片背景色。 */
+    --panel-bg: #20252a;
+    /* 正文文字颜色。 */
+    --text: #e7e9eb;
+    /* 次要文字颜色，例如作者、期刊、邮箱。 */
+    --muted: #b7c0c8;
+    /* 边框和分隔线颜色。 */
+    --border: #35404a;
+    /* 深色模式下的标题/强调色。 */
+    --accent: #8dc7e8;
+    /* 深色模式下的浅色背景块。 */
+    --accent-soft: #263440;
+    /* 深色模式下的小标签暖色。 */
+    --accent-warm: #d7b26d;
+    /* 深色模式下的普通链接颜色。 */
+    --link: #4fc3ff;
+    /* 深色模式下的普通链接 hover 颜色。 */
+    --link-hover: #8dd9ff;
+    /* 深色模式下不使用卡片阴影。 */
+    --shadow: none;
+  }
+
+  /* 深色模式下顶部导航栏背景。 */
+  header.site-header {
+    background: rgba(23, 26, 29, 0.94);
+  }
+
+  /* 深色模式下加粗文字颜色。 */
+  strong {
+    color: var(--text);
+  }
+}

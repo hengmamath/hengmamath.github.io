@@ -1,7 +1,16 @@
+/*
+  旧 Minimal Light 主题样式：不启用自动深色模式的版本。
+  这个文件主要来自原模板，当前新版网站的大部分外观由 academic-site.scss 覆盖。
+  如果 _config.yml 里 auto_dark_mode: false，Jekyll 会使用这个文件对应的 CSS。
+  日常维护时，优先改 academic-site.scss；不熟悉旧模板时尽量不要改这里。
+*/
+
+/* 旧版论文行布局。新版 Research 列表主要由 academic-site.scss 控制。 */
 .pub-row {
   display: flex; 
   align-items: center;}
 
+/* 旧版社交图标样式。新版首页图标主要由 .profile-links 控制。 */
 .social-icons a{
   display:inline-block;
   height:2.4rem;
@@ -33,6 +42,7 @@
       }
      */
 
+/* 旧版圆形图标按钮。新版页面一般不直接使用这一套。 */
 .icon-button{
   background-color:white;
   border-radius:3.6rem;
@@ -86,6 +96,7 @@ email {
     font-family: "Ubuntu Mono";
 }
 
+/* 旧版图标按钮内部图标。 */
 .icon-button i{
   background:none;
   color:white;
@@ -119,6 +130,7 @@ autocolor{
   color:#595959;
 }
 
+/* 旧版 light/dark 辅助标签。无深色模式版本中 darkonly 默认隐藏。 */
 lightonly {
   visibility: visible;
 }
@@ -136,6 +148,7 @@ papertitle {
     font-size: 100%;
   }
 
+/* 原模板图片样式。新版首页头像样式主要由 .profile-avatar 控制。 */
   .image {
     border-radius: 0.35em;
     border: 0;
@@ -181,6 +194,7 @@ papertitle {
       width: 8.00em;
     }
 
+/* 原模板标题样式。新版标题颜色和字号大多由 academic-site.scss 覆盖。 */
 h3, h4, h5, h6 {
   font-weight: 600;
   color:#043361;
@@ -200,6 +214,7 @@ h2 {
   font-size: 157%;
 }
 
+/* 原模板链接和正文基础样式。 */
 p, ul, ol, table, pre, dl {
   margin:0 0 20px;
 }

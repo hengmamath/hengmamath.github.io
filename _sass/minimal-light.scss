@@ -1,7 +1,15 @@
+/*
+  旧 Minimal Light 主题样式：支持自动深色模式。
+  这个文件主要来自原模板，当前新版网站的大部分外观由 academic-site.scss 覆盖。
+  日常维护时，优先改 academic-site.scss；不熟悉旧模板时尽量不要改这里。
+*/
+
+/* 旧版论文行布局。新版 Research 列表主要由 academic-site.scss 控制。 */
 .pub-row {
   display: flex; 
   align-items: center;}
 
+/* 旧版社交图标样式。新版首页图标主要由 .profile-links 控制。 */
 .social-icons a{
   display:inline-block;
   height:2.4rem;
@@ -16,6 +24,7 @@
 
 @media (prefers-color-scheme: dark) { .social-icons a {color: #3eb7f0 !important; }}
 
+/* 旧版社交图标 hover 效果。 */
 .social-icons a:last-child{margin-right:0}.social-icons a:hover{background-color:white;
     color:black;
     transform: scale(1.2)}
@@ -55,6 +64,7 @@
     */
 }
 
+/* 旧版圆形图标按钮。新版页面一般不直接使用这一套。 */
 .icon-button{
   background-color:white;
   border-radius:3.6rem;
@@ -108,6 +118,7 @@ email {
     font-family: "Ubuntu Mono";
 }
 
+/* 旧版图标按钮内部图标。 */
 .icon-button i{
   background:none;
   color:white;
@@ -141,6 +152,7 @@ autocolor{
   color:#595959;
 }
 
+/* 旧版 light/dark 辅助标签。 */
 lightonly {
   visibility: visible;
 }
@@ -158,6 +170,7 @@ papertitle {
     font-size: 100%;
   }
 
+/* 原模板的深色模式基础覆盖。新版颜色主要看 academic-site-dark.scss。 */
 @media (prefers-color-scheme: dark) {
     body {
         background-color: #20212b;
@@ -182,7 +195,7 @@ papertitle {
 
 }
 
-
+/* 原模板图片样式。新版首页头像样式主要由 .profile-avatar 控制。 */
   .image {
     border-radius: 0.35em;
     border: 0;
@@ -228,6 +241,7 @@ papertitle {
       width: 8.00em;
     }
 
+/* 原模板标题样式。新版标题颜色和字号大多由 academic-site.scss 覆盖。 */
 h3, h4, h5, h6 {
   font-weight: 600;
   color:#043361;
@@ -257,6 +271,7 @@ h2 {
   }
 }
 
+/* 原模板链接和正文基础样式。 */
 p, ul, ol, table, pre, dl {
   margin:0 0 20px;
 }

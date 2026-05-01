@@ -1,74 +1,111 @@
 main:
   - title: "Atypical Decay Rates for Atypical Heights in Random Recursive Trees"
     coauthors: "Xinxin Chen"
+    authors:
+      - name: "Xinxin Chen"
+        url: https://math.bnu.edu.cn/jzg/szdw/ac/238632.htm
     journal: "arxiv, 2026+"
     arXiv: "https://arxiv.org/abs/2604.20139"
-    image: "./assets/img/rrt.png"
+    image: "assets/img/rrt.png"
     talk: "assets/files/rrt_talk.pdf"
 
   - title: "Minimum-Weight Path in a Sparse Erdős--Rényi Graph with Signed Weights"
     coauthors: "Pascal Maillard"
+    authors:
+      - name: "Pascal Maillard"
+        url: https://www.math.univ-toulouse.fr/~pmaillar/
     journal: "arxiv, 2025+"
     arXiv: "https://arxiv.org/abs/2511.22454"
-    image: "./assets/img/MinPath.png"
+    image: "assets/img/MinPath.png"
   
   - title: "Left tail of the subcritical derivative martingale in a branching Wiener process"
     coauthors: "Xinxin Chen and Yichao Huang"
+    authors:
+      - name: "Xinxin Chen"
+        url: https://math.bnu.edu.cn/jzg/szdw/ac/238632.htm
+      - name: "Yichao Huang"
+        url: http://yichao.github.io
     journal: "arxiv, 2025+"
     arXiv: "https://arxiv.org/abs/2508.11983"
-    image: "./assets/img/leftDtail.png"
+    image: "assets/img/leftDtail.png"
 
   - title: "Exponential moments of truncated branching random walk martingales"
     coauthors: "Pascal Maillard"
+    authors:
+      - name: "Pascal Maillard"
+        url: https://www.math.univ-toulouse.fr/~pmaillar/
     journal: "Electron. J. Probab., 2025"
     arXiv: "https://arxiv.org/abs/2504.20963"
     journalpage: "https://doi.org/10.1214/25-EJP1406"
-    image: "./assets/img/expmoments.png"
+    image: "assets/img/expmoments.png"
 
   - title: "Branching Brownian motion conditioned on large level sets"
     coauthors: "Xinxin Chen"
+    authors:
+      - name: "Xinxin Chen"
+        url: https://math.bnu.edu.cn/jzg/szdw/ac/238632.htm
     journal: "arxiv, 2024+"
     arXiv: "https://arxiv.org/abs/2409.16104"
-    image: "./assets/img/bbmls.png"
+    image: "assets/img/bbmls.png"
     talk: "assets/files/levelset_talk.pdf"
 
   - title: "Multifractal spectrum of branching random walks on free groups"
     coauthors: "Shuwen Lai and Longmin Wang"
+    authors:
+      - name: "Shuwen Lai"
+        url:
+      - name: "Longmin Wang"
+        url: http://en.stat.nankai.edu.cn/2019/0915/c13907a409200/page.htm
     journal: "arxiv, 2024+"
     arXiv: "https://arxiv.org/abs/2409.01346"
-    image: "./assets/img/brwgroup.png"
+    image: "assets/img/brwgroup.png"
     talk: "assets/files/brwfreegroup_talk.pdf"
 
   - title: "Branching random walk conditioned on large martingale limit"
     coauthors: "Xinxin Chen and Loïc de Raphélis"
+    authors:
+      - name: "Xinxin Chen"
+        url: https://math.bnu.edu.cn/jzg/szdw/ac/238632.htm
+      - name: "Loïc de Raphélis"
+        url: https://raphelis.perso.math.cnrs.fr
+        sort_as: "de Raphélis"
     journal: "Accepted in Ann. Inst. H. Poincaré Probab. Statist., 2024+"
     arXiv: "https://arxiv.org/abs/2408.05538"
-    image: "./assets/img/cbrw.png"
+    image: "assets/img/cbrw.png"
     talk: "assets/files/cbrw_talk.pdf"
 
   - title: "From 0 to 3: Intermediate phases between normal and anomalous spreading of two-type branching Brownian motion"
     coauthors: "Yan-Xia Ren"
+    authors:
+      - name: "Yan-Xia Ren"
+        url: https://math.pku.edu.cn/teachers/renyx/indexE.htm
     journal: "arxiv, 2023+"
     arXiv: "https://arxiv.org/abs/2312.13595"
-    image: "./assets/img/from023.png"
+    image: "assets/img/from023.png"
     poster: "assets/files/mbbm_poster.pdf"
     talk: "assets/files/mbbm_talk.pdf"
 
   - title: "Double jump in the maximum of two-type reducible branching Brownian motion"
     coauthors: "Yan-Xia Ren"
+    authors:
+      - name: "Yan-Xia Ren"
+        url: https://math.pku.edu.cn/teachers/renyx/indexE.htm
     journal: "Accepted in Ann. Inst. H. Poincaré Probab. Statist., 2023+"
     arXiv: "https://arxiv.org/abs/2305.09988"
-    image: "./assets/img/doublejump.png"
+    image: "assets/img/doublejump.png"
     poster: "assets/files/mbbm_poster.pdf"
     talk: "assets/files/mbbm_talk.pdf"
 
   - title: "Shotgun threshold for sparse Erdős–Rényi graphs"
     coauthors: "Jian Ding and Yiyang Jiang"
+    authors:
+      - name: "Jian Ding"
+        url: https://math.pku.edu.cn/teachers/dingjian/index.html
+      - name: "Yiyang Jiang"
+        url:
     journal: "IEEE Transactions on Information Theory, 2023"
     arXiv: "https://arxiv.org/abs/2208.09876"
-    image: "./assets/img/shotgun.png"
+    image: "assets/img/shotgun.png"
     journalpage: "https://doi.org/10.1109/TIT.2023.3298515"
     poster: "assets/files/shotgun_poster.pdf"
     talk: "assets/files/shotgun_talk.pdf"
-
-

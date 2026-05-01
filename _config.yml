@@ -2,7 +2,7 @@
 title: Heng Ma  
 title_cn: 马恒    
 position: Postdoc
-affiliation: Technion
+affiliation: Probability Group @ Technion
 affiliation_link: https://probability.technion.ac.il
 email: hengmamath (at) gmail.com ; heng.ma (at) campus.technion.ac.il
 
@@ -20,9 +20,9 @@ orcid: https://orcid.org/0000-0002-1401-7677
 
 # Images (e.g., your profile picture and your website's favicon) 
 # "favicon" and "favicon_dark" are used for the light and dark modes, respectively. 
-avatar: ./assets/img/avatar.png
-favicon: ./assets/img/favicon.png
-favicon_dark: ./assets/img/favicon-dark.png
+avatar: assets/img/avatar.png
+favicon: assets/img/favicon.png
+favicon_dark: assets/img/favicon-dark.png
 
 # Footnote
 # You may use the option to disable the footnote, "Powered by Jekyll and Minimal Light theme."

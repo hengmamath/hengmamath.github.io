@@ -1,28 +1,26 @@
 ---
 layout: homepage
+title: Home
 ---
 
-## About Me
+# About me
 
-I am currently a postdoc at [Technion probability group](https://probability.technion.ac.il), working with  [Oren Louidor](https://sites.google.com/view/louidor/) and [Eviatar Procaccia](https://sites.google.com/site/ebprocaccia/). I obtained my Ph.D. at [probability group in Peking University](https://pkuprobability.com) under the supervision of  [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/indexE.htm) in 2025.  
+I am currently a postdoc at the [Technion probability group](https://probability.technion.ac.il), working with [Oren Louidor](https://sites.google.com/view/louidor/) and [Eviatar Procaccia](https://sites.google.com/site/ebprocaccia/).
+I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking University](https://math-en.pku.edu.cn). 
+<!--[probability group in Peking University](https://pkuprobability.com) under the supervision of [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/indexE.htm). -->
 
+# Research Interests
 
-<!-- ## News
-- From Sep 2025, I will be a postdoc at [Technion probability group](https://probability.technion.ac.il) hosted by Prof. [Oren Louidor](https://sites.google.com/view/louidor/).  -->
+My research interests lie in probability theory and stochastic processes, particularly probabilistic models with underlying tree and graph structures. Topics that I have worked on or am currently exploring include
 
+- 2D discrete Gaussian free field and the universality class of log-correlated fields
+- Gaussian multiplicative chaos
+- Random trees and random networks
+- Branching random walks and branching Brownian motion
 
+# Contact information
 
-## Research 
-
-I'm interested in probabilistic models, particularly those that incorporate tree structures. I am trying to learn and work on more interesting subjects, e.g., 
-- 2D (discrete) Gaussian free field and universality class of log-correlated fields, 
-- Gaussian multiplicative chaos.
-- random trees and random networks, 
-
-## Papers 
-
-
-
- {% include_relative _includes/publications.md %}
-
-
+Faculty of Data and Decision Sciences.  
+Bloomfield Building, Office 506.  
+Technion - Israel Institute of Technology.  
+Haifa 3200003, Israel.  
