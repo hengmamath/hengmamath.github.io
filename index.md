@@ -12,8 +12,7 @@ I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking U
 # Research interests
 
 My research interests lie in probability theory and stochastic processes, particularly probabilistic models with underlying tree and graph structures. Topics that I have worked on or am currently exploring include
-
-- 2D discrete Gaussian free field and the universality class of log-correlated fields
+- Gaussian free field and the universality class of log-correlated fields
 - Gaussian multiplicative chaos
 - Random trees and random networks
 - Branching random walks and branching Brownian motion
