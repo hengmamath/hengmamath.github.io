@@ -95,6 +95,7 @@ main:
     image: "assets/img/doublejump.png"
     poster: "assets/files/mbbm_poster.pdf"
     talk: "assets/files/mbbm_talk.pdf"
+    journalpage: "https://doi.org/10.1214/24-AIHP1545"
 
   - title: "Shotgun threshold for sparse Erdős–Rényi graphs"
     coauthors: "Jian Ding and Yiyang Jiang"
