@@ -2,8 +2,12 @@ main:
   - title: "Aging in a spin glass with a logarithmic potential"
     coauthors: "Aser Cortines, Oren Louidor, Adela Svejda"
     authors:
+      - name: "Aser Cortines"
+        url: https://user.math.uzh.ch/cortines/
       - name: "Oren Louidor"
         url: https://sites.google.com/view/louidor
+      - name: "Adela Svejda"
+        url:
     journal: "arxiv, 2026+"
     arXiv: "https://arxiv.org/abs/2608.13361"
     image: "assets/img/aging.png"
