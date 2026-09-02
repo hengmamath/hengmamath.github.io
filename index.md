@@ -18,11 +18,10 @@ My research is in probability theory and stochastic processes. Two kinds of ques
 **Large deviations**. Decay rates for rare events, and the structure of the system conditioned on such an event, in the spirit of the Gibbs conditioning principle.
 
 I study these questions in models where hierarchical or logarithmic correlations put them outside the reach of the classical i.i.d. theory:
-
-the Gaussian free field and log-correlated fields;
-Gaussian multiplicative chaos;
-random trees and random networks;
-branching random walks and branching Brownian motion.
+- the Gaussian free field and log-correlated fields;
+- Gaussian multiplicative chaos;
+- random trees and random networks;
+- branching random walks and branching Brownian motion.
 
 
 # Contact information
