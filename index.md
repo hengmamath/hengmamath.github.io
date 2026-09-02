@@ -11,11 +11,11 @@ I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking U
 
 # Research interests
 
-I work in probability theory, on the asymptotic behaviour of strongly dependent random systems. Two kinds of questions organize most of my work.
+My research is in probability theory and stochastic processes. Two kinds of questions organize most of my work.
 
-***Extremal statistics***. Limit theorems for the maximum, finer description of the whole extremal landscape: Poisson (cluster) process.
+**Extremal statistics**.   Limit theorems for the maximum, and a finer description of the whole extremal landscape: convergence of the extremal process to a Poisson (cluster) point process.
 
-***Large deviations***. Decay rates for rare events, and the structure of the system conditioned on such an event, in the spirit of the Gibbs conditioning principle.
+**Large deviations**. Decay rates for rare events, and the structure of the system conditioned on such an event, in the spirit of the Gibbs conditioning principle.
 
 I study these questions in models where hierarchical or logarithmic correlations put them outside the reach of the classical i.i.d. theory:
 
