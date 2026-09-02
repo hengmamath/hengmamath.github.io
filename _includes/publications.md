@@ -19,14 +19,17 @@
       {% endif %}
 
       <div class="publication-content">
-        <!-- 论文标题。如果有 arXiv 字段，标题会自动链接到 arXiv。 -->
-        <h2 class="publication-title">
+        <!--
+          论文标题。如果有 arXiv 字段，标题会自动链接到 arXiv。
+          用 h3 而不是 h2：上面的 "Papers and preprints" 已经是 h2。
+        -->
+        <h3 class="publication-title">
           {% if link.arXiv %}
           <a href="{{ link.arXiv }}">{{ link.title }}</a>
           {% else %}
           {{ link.title }}
           {% endif %}
-        </h2>
+        </h3>
 
         <!--
           合作者列表。

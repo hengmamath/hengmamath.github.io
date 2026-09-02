@@ -4,7 +4,9 @@ title: Research Papers
 permalink: /research/
 ---
 
-# Coauthors
+# Research
+
+## Coauthors
 
 I have had the pleasure of working with the following wonderful people:
 
@@ -12,7 +14,7 @@ I have had the pleasure of working with the following wonderful people:
 
 ---
 
-# Papers and preprints
+## Papers and preprints
 (listed in reverse chronological order of their first posting date on arXiv.) 
 
 

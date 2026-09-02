@@ -3,13 +3,13 @@ layout: homepage
 title: Home
 ---
 
-# About me
+## About me
 
 I am currently a postdoc at the [Technion probability group](https://probability.technion.ac.il), working with [Oren Louidor](https://sites.google.com/view/louidor/) and [Eviatar Procaccia](https://sites.google.com/site/ebprocaccia/).
 I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking University](https://math-en.pku.edu.cn). 
 <!--[probability group in Peking University](https://pkuprobability.com) under the supervision of [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/indexE.htm). -->
 
-# Research interests
+## Research interests
 
 I work in probability theory. Two kinds of questions organize most of my work.
 
@@ -21,7 +21,7 @@ Poisson (cluster) point process.
 system conditioned on such an event, in the spirit of the Gibbs conditioning
 principle.
 
-#### Models I have worked on, or am exploring:
+### Models I have worked on, or am exploring:
 
 - the Gaussian free field and other log-correlated fields
 - Gaussian multiplicative chaos
@@ -29,7 +29,7 @@ principle.
 - branching random walks and branching Brownian motion
 
 
-# Contact information
+## Contact information
 
 Faculty of Data and Decision Sciences.  
 Bloomfield Building, Office 505.  

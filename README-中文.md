@@ -258,10 +258,18 @@ _sass/academic-site.scss
 
 常见位置：
 
-- 普通链接颜色：`--link`
+- 全站基础字号：`body { font-size }`
+- 普通链接颜色：`--link`（改浅之前先确认对比度不低于 4.5:1）
+- 正文文字颜色：`--text`；次要文字（作者、期刊、邮箱、导航）：`--muted`
+  —— `--muted` 必须比 `--text` 浅，否则"次要"信息反而更抢眼
 - 标题深蓝色：`--accent`
+- 正文每行宽度：`.content-panel > p` 等一组选择器里的 `max-width: 62ch`
+  （只影响正文段落，论文列表仍然用满整个面板）
 - Research 页面宽度：`.page-layout.no-sidebar .content-panel`
 - 论文图片大小：`.publications ol.bibliography li.publication-item`
+- 论文图片比例：`.teaser` 里的 `aspect-ratio: 16 / 10`
+  —— 配的是 `object-fit: contain`，整张图都会显示、不会被裁掉，
+  比例不同的图会留白。不要改回 `cover`，那样配图上的标注会被切掉。
 - 导航栏字体大小：`.site-nav a`
 
 深色模式颜色在：
@@ -269,6 +277,51 @@ _sass/academic-site.scss
 ```text
 _sass/academic-site-dark.scss
 ```
+
+### 改字体
+
+字体文件从 Google Fonts 加载，`<link>` 写在：
+
+```text
+_layouts/homepage.html
+```
+
+的 `<head>` 里（**不要**改成在 CSS 里 `@import`，那样会多一个网络来回，
+正文要晚几百毫秒才上字体）。需要新字重时，改那行 URL 里的 `wght` 列表，
+`0,` 开头是正体、`1,` 开头是斜体。字体族名字在 `assets/css/font.css`。
+
+### 改侧栏的小图标
+
+Google Scholar / CV / ORCID 这几个图标是**内联 SVG**，放在：
+
+```text
+_includes/icon.html
+```
+
+要显示哪些图标由 `_config.yml` 控制：填了 `google_scholar` / `cv_link` /
+`orcid` / `github_link` 哪一项，对应图标才会出现。
+
+要加一个新图标：去 [Simple Icons](https://simpleicons.org) 或
+[Academicons](https://jpswalsh.github.io/academicons/) 下载 SVG，
+在 `icon.html` 里照着已有的格式加一个 `{% when "名字" %}` 分支
+（只保留 `viewBox` 和 `<path d="...">`，`fill` 写 `currentColor`），
+再在 `_layouts/homepage.html` 里加 `{% include icon.html name="名字" %}`。
+
+图标大小和颜色在 `academic-site.scss` 的 `.profile-links svg`。
+
+### 标题层级约定
+
+每个页面只放一个 `#`（h1），正文小节用 `##`：
+
+```text
+# Research            <- 页面标题，一页一个
+## Coauthors          <- 小节
+## Papers and preprints
+### 每篇论文的标题     <- 由 _includes/publications.md 自动生成
+```
+
+首页比较特殊：侧栏的姓名"Heng Ma"就是那一页的 `h1`，
+所以 `index.md` 里的小节从 `##` 开始。
 
 ## Markdown 最基本写法
 
@@ -342,4 +395,6 @@ main:
 - 改 Teaching：改 `teaching.md`
 - 改姓名、邮箱、头像、CV 链接：改 `_config.yml`
 - 改颜色和页面宽度：改 `_sass/academic-site.scss`
+- 改侧栏小图标：改 `_includes/icon.html`
+- `_site/` 是构建产物，已在 `.gitignore` 里，不用管
 - 不确定时，不要先改 `_layouts/homepage.html`

@@ -20,22 +20,33 @@
     <link rel="icon" media="(prefers-color-scheme:light)" href="{{ site.favicon | relative_url }}" type="image/png" />
     <script src="{{ '/assets/js/favicon-switcher.js' | relative_url }}" type="application/javascript"></script>
 
-    <!-- 图标字体：用于 Google Scholar、CV、ORCID 等小图标。 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha256-+N4/V/SbAFiW1MPBCXnfnP9QSN3+Keu+NlB+0ev/YKQ=" crossorigin="anonymous">
+    <!--
+      Google Scholar / CV / ORCID 等小图标改成了内联 SVG，见 _includes/icon.html。
+      原来这里引的是 Font Awesome 和 Academicons 两套图标字体，
+      为 4 个图标下载 100KB 以上的 CSS 和字体文件。
+    -->
 
-    <!-- 字体和主样式表。真正的自定义样式主要在 _sass/academic-site.scss。 -->
+    <!--
+      字体。这里直接 <link> 到 Google Fonts，而不是在 font.css 里用 @import。
+      原因：@import 会让浏览器先下载 font.css、解析后才发现字体地址，
+      多绕一个来回，正文会晚几百毫秒才拿到字体。
+      preconnect 则提前把到 Google 字体服务器的连接握好手。
+      需要新的字重时，改下面 URL 里的 wght 列表（0,=正体 1,=斜体）。
+    -->
     {% if site.font == "Sans Serif" %}
     <link rel="stylesheet" href="{{ '/assets/css/font_sans_serif.css' | relative_url }}">
     {% else %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Ubuntu+Mono&display=swap">
     <link rel="stylesheet" href="{{ '/assets/css/font.css' | relative_url }}">
     {% endif %}
+
+    <!-- 主样式表。真正的自定义样式主要在 _sass/academic-site.scss。 -->
     {% if site.auto_dark_mode %}
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
-    <link rel="stylesheet" href="{{ '/assets/css/publications.css' | relative_url }}">
     {% else %}
     <link rel="stylesheet" href="{{ '/assets/css/style-no-dark-mode.css' | relative_url }}">
-    <link rel="stylesheet" href="{{ '/assets/css/publications-no-dark-mode.css' | relative_url }}">
     {% endif %}
   </head>
   <body>
@@ -79,22 +90,22 @@
           <div class="profile-links" aria-label="Profile links">
             {% if site.google_scholar %}
             <a href="{{ site.google_scholar }}" aria-label="Google Scholar">
-              <i class="ai ai-google-scholar"></i>
+              {% include icon.html name="google-scholar" %}
             </a>
             {% endif %}
             {% if site.cv_link %}
             <a href="{{ site.cv_link | relative_url }}" aria-label="Curriculum vitae">
-              <i class="ai ai-cv"></i>
+              {% include icon.html name="cv" %}
             </a>
             {% endif %}
             {% if site.github_link %}
             <a href="{{ site.github_link }}" aria-label="GitHub">
-              <i class="fab fa-github"></i>
+              {% include icon.html name="github" %}
             </a>
             {% endif %}
             {% if site.orcid %}
             <a href="{{ site.orcid }}" aria-label="ORCID">
-              <i class="fab fa-orcid"></i>
+              {% include icon.html name="orcid" %}
             </a>
             {% endif %}
           </div>
@@ -117,14 +128,18 @@
     </div>
     <script src="{{ '/assets/js/scale.fix.js' | relative_url }}"></script>
     {% if site.google_analytics %}
-    <!-- Google Analytics；ID 来自 _config.yml。 -->
+    <!--
+      Google Analytics 4；ID（G- 开头）来自 _config.yml。
+      原来这里是 Universal Analytics 的 analytics.js + UA-xxxx ID，
+      而 UA 已于 2023 年 7 月停止收集数据，只是靠 Google 自动挂接的 GA4
+      在兜底。现在直接用 GA4 标签，少一层跳转。
+    -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
     <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-      ga('create', '{{ site.google_analytics }}', 'auto');
-      ga('send', 'pageview');
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ site.google_analytics }}');
     </script>
     {% endif %}
   </body>
