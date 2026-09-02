@@ -263,8 +263,9 @@ _sass/academic-site.scss
 - 正文文字颜色：`--text`；次要文字（作者、期刊、邮箱、导航）：`--muted`
   —— `--muted` 必须比 `--text` 浅，否则"次要"信息反而更抢眼
 - 标题深蓝色：`--accent`
-- 正文每行宽度：`.content-panel > p` 等一组选择器里的 `max-width: 62ch`
-  （只影响正文段落，论文列表仍然用满整个面板）
+- 正文每行宽度：没有单独限制，段落铺满内容卡片。想改就改 `.content-panel`
+  的 `padding`，或 `.page-layout` / `.page-layout.no-sidebar .content-panel`
+  的宽度
 - Research 页面宽度：`.page-layout.no-sidebar .content-panel`
 - 论文图片大小：`.publications ol.bibliography li.publication-item`
 - 论文图片比例：`.teaser` 里的 `aspect-ratio: 16 / 10`

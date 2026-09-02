@@ -283,29 +283,10 @@ header.site-header {
 }
 
 /*
-  正文行长上限。
-  面板本身有 760-860px 宽，正文若铺满约 97 个字符一行，
-  回行时容易串行（舒适区是 65-75 字符）。
-  这里只限制直接放在面板里的段落和标题；
-  论文列表 (.publications) 不受影响，仍然用满整个面板宽度。
-
-  注意 ch 是数字 "0" 的宽度，在 Crimson Pro 里约 9.6px，
-  比字母平均宽度（约 7.9px）宽不少，所以 62ch 实际约等于 75 个字符。
-  觉得太窄就调大，例如 70ch。
+  正文行长：不设上限，段落铺满整个内容卡片（约 97 个字符一行）。
+  行长由卡片宽度决定 —— 想改的话改下面 .content-panel 的 padding，
+  或 .page-layout / .page-layout.no-sidebar .content-panel 的宽度。
 */
-.content-panel > p,
-.content-panel > ul,
-.content-panel > ol,
-.content-panel > dl,
-.content-panel > blockquote,
-.content-panel > h1,
-.content-panel > h2,
-.content-panel > h3,
-.content-panel > h4,
-.content-panel > h5,
-.content-panel > h6 {
-  max-width: 62ch;
-}
 
 /* 主内容卡片。Home 右侧、Research、Teaching 都使用这个样式。 */
 .content-panel {
