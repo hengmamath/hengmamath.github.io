@@ -66,7 +66,7 @@ research.md
 不要删掉这一行：
 
 ```liquid
-{% include_relative _includes/publications.md %}
+{% raw %}{% include_relative _includes/publications.md %}{% endraw %}
 ```
 
 这一行负责把论文列表显示出来。
@@ -303,9 +303,9 @@ _includes/icon.html
 
 要加一个新图标：去 [Simple Icons](https://simpleicons.org) 或
 [Academicons](https://jpswalsh.github.io/academicons/) 下载 SVG，
-在 `icon.html` 里照着已有的格式加一个 `{% when "名字" %}` 分支
+在 `icon.html` 里照着已有的格式加一个 {% raw %}`{% when "名字" %}`{% endraw %} 分支
 （只保留 `viewBox` 和 `<path d="...">`，`fill` 写 `currentColor`），
-再在 `_layouts/homepage.html` 里加 `{% include icon.html name="名字" %}`。
+再在 `_layouts/homepage.html` 里加 {% raw %}`{% include icon.html name="名字" %}`{% endraw %}。
 
 图标大小和颜色在 `academic-site.scss` 的 `.profile-links svg`。
 
