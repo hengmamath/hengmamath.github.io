@@ -1,0 +1,8 @@
+# Jekyll 构建产物。GitHub Pages 是从源码自己构建的，仓库里这份从来不会被用到。
+_site/
+.jekyll-cache/
+.jekyll-metadata
+.sass-cache/
+
+# macOS 目录元数据
+.DS_Store
