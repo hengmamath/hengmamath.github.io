@@ -11,15 +11,23 @@ I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking U
 
 # Research interests
 
-My research interests lie in probability theory and stochastic processes, particularly probabilistic models with underlying tree and graph structures. Topics that I have worked on or am currently exploring include
-- Gaussian free field and the universality class of log-correlated fields
-- Gaussian multiplicative chaos
-- Random trees and random networks
-- Branching random walks and branching Brownian motion
+I work in probability theory, on the asymptotic behaviour of strongly dependent random systems. Two kinds of questions organize most of my work.
+
+***Extremal statistics***. Limit theorems for the maximum, finer description of the whole extremal landscape: Poisson (cluster) process.
+
+***Large deviations***. Decay rates for rare events, and the structure of the system conditioned on such an event, in the spirit of the Gibbs conditioning principle.
+
+I study these questions in models where hierarchical or logarithmic correlations put them outside the reach of the classical i.i.d. theory:
+
+the Gaussian free field and log-correlated fields;
+Gaussian multiplicative chaos;
+random trees and random networks;
+branching random walks and branching Brownian motion.
+
 
 # Contact information
 
 Faculty of Data and Decision Sciences.  
-Bloomfield Building, Office 506.  
+Bloomfield Building, Office 505.  
 Technion - Israel Institute of Technology.  
 Haifa 3200003, Israel.  
