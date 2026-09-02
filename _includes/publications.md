@@ -1,7 +1,9 @@
 <!--
   Research 页面论文列表模板。
-  真正的论文数据不在这里，而是在 _data/publications.yml。
-  通常添加、删除、修改论文时，只需要改 _data/publications.yml。
+  数据来源：
+    _data/publications.yml —— 论文本身（标题、期刊、链接、图片、合作者名字）
+    _data/coauthors.yml    —— 合作者主页（每人只登记一次，这里自动查表）
+  日常添加/修改论文只需要改这两个 yml，本文件一般不用动。
 -->
 <div class="publications">
   <ol class="bibliography">
@@ -28,24 +30,18 @@
 
         <!--
           合作者列表。
-          优先使用 publications.yml 里的 authors 列表：
-            authors:
-              - name: "Author Name"
-                url: "https://author-homepage.example"
-          如果 author.url 为空，就只显示姓名；如果有 url，就显示为超链接。
-          如果某篇论文还没有 authors 字段，则 fallback 到旧的 coauthors 纯文本字段。
+          publications.yml 里只写名字（逗号分隔）：
+            coauthors: "Xinxin Chen, Yichao Huang"
+          下面把这行按逗号拆开，逐个去 _data/coauthors.yml 查主页：
+            查到 url -> 显示成超链接；查不到或没有 url -> 只显示姓名。
+          最后一位合作者前面自动用 "and" 连接。
+          没有 coauthors 字段的（独作论文）整段不显示。
         -->
+        {% if link.coauthors and link.coauthors != "" %}
         <p class="publication-authors">
-          with
-          {% if link.authors %}
-            {% for author in link.authors %}
-              {% if author.url %}
-              <a href="{{ author.url }}" target="_blank" rel="noopener">{{ author.name }}</a>{% else %}{{ author.name }}{% endif %}{% unless forloop.last %}{% if forloop.rindex == 2 %} and {% else %}, {% endif %}{% endunless %}
-            {% endfor %}
-          {% else %}
-            {{ link.coauthors }}
-          {% endif %}
+          with{% assign coauthor_names = link.coauthors | replace: " and ", ", " | replace: "  ", " " | split: "," %}{% for raw_name in coauthor_names %}{% assign name = raw_name | strip %}{% assign person = site.data.coauthors[name] %} {% if person.url and person.url != "" %}<a href="{{ person.url }}" target="_blank" rel="noopener">{{ name }}</a>{% else %}{{ name }}{% endif %}{% unless forloop.last %}{% if forloop.rindex == 2 %} and{% else %},{% endif %}{% endunless %}{% endfor %}
         </p>
+        {% endif %}
 
         <!-- 期刊、会议、arXiv 状态等信息，来自 publications.yml 的 journal 字段。 -->
         <p class="publication-venue"><em>{{ link.journal }}</em></p>

@@ -73,22 +73,18 @@ research.md
 
 ### 3. 添加、删除、修改论文
 
-文件：
+论文信息分成两个文件，各管一件事：
 
 ```text
-_data/publications.yml
+_data/publications.yml   论文本身（标题、期刊、链接、图片、合作者名字）
+_data/coauthors.yml      合作者通讯录（主页链接，每人只登记一次）
 ```
 
 每篇论文长这样：
 
 ```yaml
 - title: "Paper Title"
-  coauthors: "Name One and Name Two"
-  authors:
-    - name: "Name One"
-      url: "https://example.com"
-    - name: "Name Two"
-      url:
+  coauthors: "Name One, Name Two"
   journal: "arxiv, 2026+"
   arXiv: "https://arxiv.org/abs/xxxx.xxxxx"
   image: "assets/img/example.png"
@@ -99,9 +95,9 @@ _data/publications.yml
 说明：
 
 - `title`: 论文标题
-- `coauthors`: 旧版纯文字合作者信息，建议保留
-- `authors`: 新版合作者列表，可以加主页链接
-- `url`: 合作者主页；没有主页就留空
+- `coauthors`: 合作者姓名，**逗号分隔，按署名顺序**。主页链接不写在这里，
+  网页会自动去 `_data/coauthors.yml` 查。独作论文把这一行删掉即可
+  （不会显示 "with"）。
 - `journal`: 期刊、会议、arXiv 状态
 - `arXiv`: arXiv 链接
 - `journalpage`: 期刊正式页面链接，如果有就加
@@ -109,21 +105,46 @@ _data/publications.yml
 - `talk`: slides PDF
 - `poster`: poster PDF
 
-如果要给合作者加主页链接，改这里：
+#### 合作者主页链接
+
+主页链接统一放在 `_data/coauthors.yml`，**每个人只写一次**，
+所有论文共用：
 
 ```yaml
-authors:
-  - name: "Pascal Maillard"
-    url: "https://example.com"
+"Pascal Maillard":
+  url: https://www.math.univ-toulouse.fr/~pmaillar/
+
+"Adela Svejda":          # 没有主页：只留名字和冒号，不写 url
 ```
 
-如果没有主页链接，写成：
+所以加新论文时：
+
+- 合作者是老朋友 → **什么都不用做**，链接自动带上。
+- 合作者是新人 → 在 `coauthors.yml` 加一行；某人换了主页 → 只改这一处，
+  所有论文一起更新。
+
+Research 页面顶部的 Coauthors 名单也是自动生成的（按姓氏排序、自动去重），
+不需要手动维护。个别名字排序不对（比如 "Loïc de Raphélis" 默认会按
+"Raphélis" 排），可以加一行 `sort_as`：
 
 ```yaml
-authors:
-  - name: "Pascal Maillard"
-    url:
+"Loïc de Raphélis":
+  url: https://raphelis.perso.math.cnrs.fr
+  sort_as: "de Raphélis"
 ```
+
+#### 检查名字有没有写错
+
+`coauthors.yml` 里的名字必须和 `publications.yml` 里写的**完全一致**
+（空格、连字符、重音字母都算）。写错了网页不会报错，只是**静默地少一个
+主页链接**，很难发现。改完跑一下：
+
+```bash
+ruby scripts/check_coauthors.rb
+```
+
+它会列出对不上的名字（并猜测你想写的是谁）、还没登记的新人、以及暂时
+没有主页的人。
 
 ### 4. 改 Teaching 页面
 
@@ -292,15 +313,24 @@ jekyll serve
 2. 每个冒号 `:` 后面是否有空格。
 3. 文件路径是否真的存在。
 4. 引号是否成对出现。
+5. 合作者主页链接没出来 —— 跑 `ruby scripts/check_coauthors.rb` 查名字。
 
 YAML 文件最怕缩进错。比如下面这种是正确的：
 
 ```yaml
-authors:
-  - name: "Name One"
-    url: "https://example.com"
-  - name: "Name Two"
-    url:
+main:
+  - title: "Paper Title"
+    coauthors: "Name One, Name Two"
+    journal: "arxiv, 2026+"
+```
+
+`coauthors.yml` 则是名字顶格、`url` 缩进两格：
+
+```yaml
+"Name One":
+  url: https://example.com
+
+"Name Two":
 ```
 
 ## 最简单的维护原则
@@ -308,6 +338,7 @@ authors:
 - 改首页文字：改 `index.md`
 - 改 Research 说明：改 `research.md`
 - 改论文：改 `_data/publications.yml`
+- 改合作者主页链接：改 `_data/coauthors.yml`（每人只写一次）
 - 改 Teaching：改 `teaching.md`
 - 改姓名、邮箱、头像、CV 链接：改 `_config.yml`
 - 改颜色和页面宽度：改 `_sass/academic-site.scss`

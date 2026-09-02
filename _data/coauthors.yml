@@ -1,0 +1,54 @@
+# ============================================================
+#  合作者通讯录（Coauthor directory）
+# ------------------------------------------------------------
+#  每个人只在这里登记一次，_data/publications.yml 里的论文只写名字。
+#  加新论文时：老合作者什么都不用做；新合作者在这里加一行即可。
+#
+#  格式：
+#     "全名":
+#       url: https://homepage      # 没有主页就整行删掉（只留名字那行 + 冒号）
+#       sort_as: "de Raphélis"     # 可选，仅当"按姓氏排序"猜错时才需要
+#
+#  排序规则：Coauthors 名单默认按名字的最后一个单词排序
+#  （"Pascal Maillard" → Maillard）。像 "Loïc de Raphélis" 这种
+#  需要按 "de Raphélis" 排的，才用 sort_as 覆盖。
+#
+#  ⚠️ 这里的名字必须和 publications.yml 里写的完全一致（含空格、连字符、
+#     重音字母）。改完可以跑 `ruby scripts/check_coauthors.rb` 校验。
+#
+#  下面按姓氏字母序排列，方便查找（顺序不影响网页显示）。
+# ============================================================
+
+"Xinxin Chen":
+  url: https://math.bnu.edu.cn/jzg/szdw/ac/238632.htm
+
+"Aser Cortines":
+  url: https://user.math.uzh.ch/cortines/
+
+"Loïc de Raphélis":
+  url: https://raphelis.perso.math.cnrs.fr
+  sort_as: "de Raphélis"
+
+"Jian Ding":
+  url: https://math.pku.edu.cn/teachers/dingjian/index.html
+
+"Yichao Huang":
+  url: http://yichao.github.io
+
+"Yiyang Jiang":
+
+"Shuwen Lai":
+
+"Oren Louidor":
+  url: https://sites.google.com/view/louidor
+
+"Pascal Maillard":
+  url: https://www.math.univ-toulouse.fr/~pmaillar/
+
+"Yan-Xia Ren":
+  url: https://math.pku.edu.cn/teachers/renyx/indexE.htm
+
+"Adela Svejda":
+
+"Longmin Wang":
+  url: http://en.stat.nankai.edu.cn/2019/0915/c13907a409200/page.htm
