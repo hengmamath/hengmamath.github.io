@@ -21,8 +21,7 @@ Poisson (cluster) point process.
 system conditioned on such an event, in the spirit of the Gibbs conditioning
 principle.
 
-I study these questions in models where hierarchical or logarithmic correlations
-put them outside the reach of the classical i.i.d. theory:
+#### Models I have worked on, or am exploring:
 
 - the Gaussian free field and other log-correlated fields
 - Gaussian multiplicative chaos
