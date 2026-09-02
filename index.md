@@ -13,15 +13,21 @@ I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking U
 
 I work in probability theory. Two kinds of questions organize most of my work.
 
-**Extremal statistics**.   Limit theorems for the maximum, and a finer description of the whole extremal landscape: convergence of the extremal process to a Poisson (cluster) point process.
+**Extremal statistics.** Limit theorems for the maximum, and a finer description
+of the whole extremal landscape: convergence of the extremal process to a
+Poisson (cluster) point process.
 
-**Large deviations**. Decay rates for rare events, and the structure of the system conditioned on such an event, in the spirit of the Gibbs conditioning principle.
+**Large deviations.** Decay rates for rare events, and the structure of the
+system conditioned on such an event, in the spirit of the Gibbs conditioning
+principle.
 
-I study these questions in models where hierarchical or logarithmic correlations put them outside the reach of the classical i.i.d. theory:
-- the Gaussian free field and log-correlated fields;
-- Gaussian multiplicative chaos;
-- random trees and random networks;
-- branching random walks and branching Brownian motion.
+I study these questions in models where hierarchical or logarithmic correlations
+put them outside the reach of the classical i.i.d. theory:
+
+- the Gaussian free field and other log-correlated fields
+- Gaussian multiplicative chaos
+- random trees and random networks
+- branching random walks and branching Brownian motion
 
 
 # Contact information
