@@ -11,7 +11,7 @@ I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking U
 
 # Research interests
 
-My research is in probability theory and stochastic processes. Two kinds of questions organize most of my work.
+I work in probability theory. Two kinds of questions organize most of my work.
 
 **Extremal statistics**.   Limit theorems for the maximum, and a finer description of the whole extremal landscape: convergence of the extremal process to a Poisson (cluster) point process.
 
