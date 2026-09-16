@@ -21,7 +21,7 @@ main:
     coauthors: ""
     journal: "arxiv, 2026+"
     arXiv: "https://arxiv.org/abs/2609.14325"
-    ai_use: "L2" 
+    ai_use: "L1" 
     image: "assets/img/ctcs.svg"
 
   - title: "Aging in a spin glass with a logarithmic potential"
