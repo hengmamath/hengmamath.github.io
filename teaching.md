@@ -6,9 +6,15 @@ permalink: /teaching/
 
 # Teaching
 
-This page is reserved for teaching, course information, lecture notes, and related materials.
+## Mathematical Tools for Data Science
 
-<div class="placeholder-panel">
-  <h2>Course Information Coming Soon</h2>
-  <p>Future course pages can include course titles, terms, syllabi, lecture notes, office hours, assignments, and links to course resources.</p>
-</div>
+**Technion — Spring 2026 — 00960200**
+
+<p><span lang="he" dir="rtl">(כלים מתמטיים למדעי הנתונים - אביב - 00960200)</span></p>
+
+**Lecturer:** [Eviatar Procaccia](https://sites.google.com/site/ebprocaccia/)
+
+**My role:** I lead a one-hour tutorial each week to supplement the main lectures.
+The tutorials cover foundational material on topological spaces, metric spaces,
+Banach spaces, Hilbert spaces, convergence of probability measures, conditional
+expectation, and related topics.

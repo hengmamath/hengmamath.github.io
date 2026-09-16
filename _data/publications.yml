@@ -4,19 +4,38 @@
 #  coauthors: 只写名字，逗号分隔，按论文署名顺序。
 #             主页链接不在这里 —— 统一放在 _data/coauthors.yml。
 #             独作论文把这一行删掉即可（不会显示 "with"）。
+#  ai_use: 填 "No"、"L0"、"L1"、"L2"、"L3"；留空 "" 不显示按钮。
+#          No = 完全未使用 AI；L0 = 语言、语法、排版、表达或示意图，不参与数学内容。
+#  ai_use_note: 可选的一句话说明；不需要时不用添加。
 #  改完可以跑 `ruby scripts/check_coauthors.rb` 检查名字有没有写错。
 # ============================================================
 main:
+  - title: "The height of discrete-time critical beta-splitting trees"
+    coauthors: ""
+    journal: "arxiv, 2026+"
+    arXiv: "https://arxiv.org/abs/2609.14329"
+    ai_use: "L2" 
+    image: "assets/img/dtcs.svg"
+
+  - title: "Extremal separation times and clade-count dynamics in fragmentation trees: a freezing transition"
+    coauthors: ""
+    journal: "arxiv, 2026+"
+    arXiv: "https://arxiv.org/abs/2609.14325"
+    ai_use: "L2" 
+    image: "assets/img/ctcs.svg"
+
   - title: "Aging in a spin glass with a logarithmic potential"
     coauthors: "Aser Cortines, Oren Louidor, Adela Svejda"
     journal: "arxiv, 2026+"
     arXiv: "https://arxiv.org/abs/2608.13361"
+    ai_use: "L1" 
     image: "assets/img/aging.png"
 
   - title: "Atypical Decay Rates for Atypical Heights in Random Recursive Trees"
     coauthors: "Xinxin Chen"
     journal: "arxiv, 2026+"
     arXiv: "https://arxiv.org/abs/2604.20139"
+    ai_use: "L0"
     image: "assets/img/rrt.png"
     talk: "assets/files/rrt_talk.pdf"
 
@@ -24,18 +43,21 @@ main:
     coauthors: "Pascal Maillard"
     journal: "arxiv, 2025+"
     arXiv: "https://arxiv.org/abs/2511.22454"
+    ai_use: "L0"
     image: "assets/img/MinPath.png"
 
   - title: "Left tail of the subcritical derivative martingale in a branching Wiener process"
     coauthors: "Xinxin Chen, Yichao Huang"
     journal: "arxiv, 2025+"
     arXiv: "https://arxiv.org/abs/2508.11983"
+    ai_use: "L0"
     image: "assets/img/leftDtail.png"
 
   - title: "Exponential moments of truncated branching random walk martingales"
     coauthors: "Pascal Maillard"
     journal: "Electron. J. Probab., 2025"
     arXiv: "https://arxiv.org/abs/2504.20963"
+    ai_use: "L0"
     journalpage: "https://doi.org/10.1214/25-EJP1406"
     image: "assets/img/expmoments.png"
 
@@ -43,6 +65,7 @@ main:
     coauthors: "Xinxin Chen"
     journal: "arxiv, 2024+"
     arXiv: "https://arxiv.org/abs/2409.16104"
+    ai_use: "L0"
     image: "assets/img/bbmls.png"
     talk: "assets/files/levelset_talk.pdf"
 
@@ -50,6 +73,7 @@ main:
     coauthors: "Shuwen Lai, Longmin Wang"
     journal: "arxiv, 2024+"
     arXiv: "https://arxiv.org/abs/2409.01346"
+    ai_use: "L0"
     image: "assets/img/brwgroup.png"
     talk: "assets/files/brwfreegroup_talk.pdf"
 
@@ -57,6 +81,7 @@ main:
     coauthors: "Xinxin Chen, Loïc de Raphélis"
     journal: "Accepted in Ann. Inst. H. Poincaré Probab. Statist., 2024+"
     arXiv: "https://arxiv.org/abs/2408.05538"
+    ai_use: "L0"
     image: "assets/img/cbrw.png"
     talk: "assets/files/cbrw_talk.pdf"
 
@@ -64,6 +89,7 @@ main:
     coauthors: "Yan-Xia Ren"
     journal: "arxiv, 2023+"
     arXiv: "https://arxiv.org/abs/2312.13595"
+    ai_use: "L0"
     image: "assets/img/from023.png"
     poster: "assets/files/mbbm_poster.pdf"
     talk: "assets/files/mbbm_talk.pdf"
@@ -72,6 +98,7 @@ main:
     coauthors: "Yan-Xia Ren"
     journal: "Ann. Inst. H. Poincaré Probab. Statist., 2026"
     arXiv: "https://arxiv.org/abs/2305.09988"
+    ai_use: "L0"
     image: "assets/img/doublejump.png"
     poster: "assets/files/mbbm_poster.pdf"
     talk: "assets/files/mbbm_talk.pdf"
@@ -81,6 +108,7 @@ main:
     coauthors: "Jian Ding, Yiyang Jiang"
     journal: "IEEE Transactions on Information Theory, 2023"
     arXiv: "https://arxiv.org/abs/2208.09876"
+    ai_use: "No"
     image: "assets/img/shotgun.png"
     journalpage: "https://doi.org/10.1109/TIT.2023.3298515"
     poster: "assets/files/shotgun_poster.pdf"

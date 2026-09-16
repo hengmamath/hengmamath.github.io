@@ -99,11 +99,47 @@ _data/coauthors.yml      合作者通讯录（主页链接，每人只登记一�
   网页会自动去 `_data/coauthors.yml` 查。独作论文把这一行删掉即可
   （不会显示 "with"）。
 - `journal`: 期刊、会议、arXiv 状态
-- `arXiv`: arXiv 链接
+- `arXiv`: arXiv 链接，点击论文标题即可访问，不再另设 arXiv 按钮
 - `journalpage`: 期刊正式页面链接，如果有就加
 - `image`: Research 页面里的论文图片
 - `talk`: slides PDF
 - `poster`: poster PDF
+- `ai_use`: AI 使用分级，填 `"No"` / `"L0"` / `"L1"` / `"L2"` / `"L3"`；空白不显示按钮
+
+#### AI 使用披露按钮
+
+Research 页已提供统一的 AI 分级说明。每篇论文只有填写 `ai_use` 后才显示按钮；
+未填写表示尚未披露，不会自动显示“未使用 AI”。
+
+每篇论文已预留 `ai_use: ""`。找到对应论文，把空引号里的内容改成等级即可，
+与填写 `arXiv` 链接的方式一样。例如：
+
+```yaml
+  - title: "Paper Title"
+    arXiv: "https://arxiv.org/abs/xxxx.xxxxx"
+    ai_use: "L1"
+```
+
+`ai_use` 可填 `"No"`、`"L0"`、`"L1"`、`"L2"`、`"L3"`。
+`"No"` 显示 **No AI use**，其余显示 **AI use: L0** 等。
+留空 `""` 或删除整行，都不显示按钮。
+大小写不敏感，前后空格会忽略；也兼容不加引号的 `No`，建议沿用示例里的引号。
+以前的 `"none"` 写法继续有效。
+
+如需补充一句具体说明，再加一行（可省略）：
+
+```yaml
+    ai_use_note: "AI assisted with proof checking and routine calculations."
+```
+
+填写后，这句话会出现在点击按钮打开的说明中。
+这里的例子只演示格式，不代表任何现有论文的实际等级。
+标签反映你自己掌握的论文形成过程，不代表合作者作出声明。
+
+列表前的声明和分级定义都在 `_data/ai_use.yml`：`disclosure` 是声明，
+各等级的 `title` / `description` 是名称和定义。页面与弹窗使用同一份文案。
+正常浏览时，分级说明仅在点击 “About the scale” 或论文 AI 按钮后以弹窗显示，
+页面底部不再重复展示。仅在 JavaScript 不可用时保留页内说明作为备用。
 
 #### 合作者主页链接
 
@@ -244,7 +280,7 @@ _includes/publications.md
 - 论文标题
 - 合作者
 - journal / arXiv 信息
-- journal / arXiv / poster / slides 按钮
+- 按钮统一左对齐，顺序为 AI use / journal / slides / poster；新增论文也沿用此顺序
 
 如果只是添加论文，不要改这个文件；改 `_data/publications.yml` 就够了。
 

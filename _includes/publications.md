@@ -54,24 +54,22 @@
           只有 publications.yml 中存在对应字段时，按钮才会显示。
         -->
         <div class="publication-links">
+          <!-- AI 使用披露：只在填写有效 ai_use 值后显示，不推断未填写的论文。 -->
+          {% include ai-use-button.html level=link.ai_use note=link.ai_use_note %}
+
           <!-- 期刊正式页面链接。 -->
           {% if link.journalpage %}
           <a href="{{ link.journalpage }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">journal</a>
           {% endif %}
 
-          <!-- arXiv 链接。 -->
-          {% if link.arXiv %}
-          <a href="{{ link.arXiv }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">arXiv</a>
+          <!-- slides PDF，通常放在 assets/files/。 -->
+          {% if link.talk %}
+          <a href="{{ link.talk | relative_url }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">slides</a>
           {% endif %}
 
           <!-- poster PDF，通常放在 assets/files/。 -->
           {% if link.poster %}
           <a href="{{ link.poster | relative_url }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">poster</a>
-          {% endif %}
-
-          <!-- slides PDF，通常放在 assets/files/。 -->
-          {% if link.talk %}
-          <a href="{{ link.talk | relative_url }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">slides</a>
           {% endif %}
         </div>
       </div>

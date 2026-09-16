@@ -1,0 +1,23 @@
+# Personal disclosure scale. Paper-specific values go in publications.yml.
+disclosure: "Each paper is tagged with the extent of AI involvement in the work.  Tags reflect my own knowledge of how each paper was produced and are not a statement on behalf of my coauthors. For Level 1 and above, the authors have verified the mathematics independently and take full responsibility for it."
+levels:
+  - key: none
+    label: "No AI use"
+    title: "No AI use"
+    description: "No AI tools were used."
+  - key: L0
+    label: "AI use: L0"
+    title: "Editorial assistance"
+    description: "Language, grammar, formatting, exposition, or illustrative figures. No contribution to the mathematics."
+  - key: L1
+    label: "AI use: L1"
+    title: "Human-led"
+    description: "The proof strategy was set by the authors; AI was used at some points along the way, such as working out details or simplifying individual steps. The overall route is unchanged."
+  - key: L2
+    label: "AI use: L2"
+    title: "Collaborative"
+    description: "The strategy emerged from back-and-forth with AI; the contributions are not cleanly separable."
+  - key: L3
+    label: "AI use: L3"
+    title: "AI-originated"
+    description: "The initial approach came from AI."

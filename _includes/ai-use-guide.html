@@ -1,0 +1,15 @@
+<div class="ai-use-guide" id="ai-use-guide">
+  <div class="ai-use-guide-content">
+    <h2>AI use in research</h2>
+    <p>{{ site.data.ai_use.disclosure | escape }}</p>
+    <dl class="ai-use-levels">
+      {% for level in site.data.ai_use.levels %}
+      <div class="ai-use-level" id="ai-use-{{ level.key }}" data-ai-level="{{ level.key }}">
+        <dt>{% unless level.key == 'none' %}<span class="ai-use-level-code">{{ level.key }}</span>{% endunless %}{{ level.title }}</dt>
+        <dd>{{ level.description }}</dd>
+      </div>
+      {% endfor %}
+    </dl>
+    <p class="ai-use-footnote">An absent label means that AI use has not been disclosed here.</p>
+  </div>
+</div>

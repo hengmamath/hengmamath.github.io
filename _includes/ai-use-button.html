@@ -1,0 +1,9 @@
+{%- assign ai_key = include.level | append: "" | strip | upcase -%}
+{%- case ai_key -%}
+  {%- when "NO", "NONE", "FALSE" -%}
+    {%- assign ai_key = "none" -%}
+{%- endcase -%}
+{%- assign ai_level = site.data.ai_use.levels | where: "key", ai_key | first -%}
+{%- if ai_level -%}
+<a href="#ai-use-{{ ai_level.key }}" class="btn btn-sm z-depth-0 ai-use-button" data-ai-use="{{ ai_level.key }}"{% if include.note %} data-ai-note="{{ include.note | escape }}"{% endif %} aria-label="{{ ai_level.label }} — read the disclosure definition">{{ ai_level.label }}</a>
+{%- endif -%}

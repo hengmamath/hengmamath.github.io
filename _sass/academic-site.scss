@@ -20,6 +20,8 @@
   --border: #dfe3e6;
   /* 深蓝色：标题、导航 active 状态、图标等使用。 */
   --accent: #163d5c;
+  /* AI 标签文字使用深紫色。 */
+  --ai-use-color: #633b80;
   /* 浅蓝背景：导航 hover、按钮 hover、Teaching placeholder 等使用。 */
   --accent-soft: #eef4f7;
   /* 暖色强调色，预留给以后的小标签或提示信息。 */
@@ -422,7 +424,7 @@ header.site-header {
   line-height: 1.45;
 }
 
-/* journal / arXiv / poster / slides 按钮区域。 */
+/* 按钮从左到右依次为 AI use / journal / slides / poster。 */
 .publication-links {
   display: flex;
   flex-wrap: wrap;
@@ -438,10 +440,153 @@ header.site-header {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 0 0.65rem;
-  color: var(--link);
+  color: var(--accent);
   font-size: 0.88rem;
   font-weight: 600;
   text-decoration: none;
+}
+
+/* AI 披露按钮沿用论文链接的大小；所有等级统一使用紫色。 */
+.publication-links a.btn.ai-use-button {
+  flex-shrink: 0;
+  color: var(--ai-use-color);
+  white-space: nowrap;
+}
+
+.publication-links a.btn.ai-use-button:hover,
+.publication-links a.btn.ai-use-button:focus {
+  color: var(--ai-use-color);
+  border-color: var(--muted);
+  background: var(--page-bg);
+}
+
+.ai-use-intro {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-top: 0.65rem;
+}
+
+.ai-use-guide {
+  margin-top: 2.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: 6rem;
+}
+
+.ai-use-guide-content h2 {
+  margin-top: 1rem;
+}
+
+.ai-use-levels {
+  margin: 1.1rem 0;
+}
+
+.ai-use-level {
+  margin: 0.3rem 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  scroll-margin-top: 4rem;
+}
+
+.ai-use-level dt {
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ai-use-level dd {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.ai-use-level-code {
+  display: inline-block;
+  margin-right: 0.55rem;
+  font-family: "Ubuntu Mono", monospace;
+  font-size: 0.9em;
+}
+
+.ai-use-level.is-selected,
+.ai-use-level:target {
+  border-color: var(--muted);
+  background: var(--page-bg);
+}
+
+.ai-use-footnote {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.ai-use-paper-note {
+  padding: 0.65rem 0.85rem;
+  border-left: 2px solid var(--muted);
+  background: var(--page-bg);
+}
+
+.ai-use-modal-open {
+  overflow: hidden;
+}
+
+.ai-use-dialog {
+  width: min(660px, calc(100% - 28px));
+  max-width: none;
+  max-height: 88vh;
+  max-height: 88dvh;
+  padding: 0 1.5rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-bg);
+  color: var(--text);
+  font: inherit;
+  box-shadow: var(--shadow);
+  overscroll-behavior: contain;
+}
+
+.ai-use-dialog::backdrop {
+  background: rgba(20, 25, 30, 0.45);
+}
+
+.ai-use-dialog-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  background: var(--panel-bg);
+}
+
+.ai-use-dialog-toolbar h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.ai-use-close {
+  min-height: 2rem;
+  padding: 0.1rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--panel-bg);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.ai-use-close:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+a[data-ai-use]:focus-visible,
+.ai-use-close:focus-visible {
+  outline: 2px solid var(--muted);
+  outline-offset: 3px;
 }
 
 /* 论文按钮 hover 效果。 */
@@ -449,7 +594,7 @@ header.site-header {
 .publication-links a.btn:focus {
   border-color: var(--link);
   background: var(--accent-soft);
-  color: var(--link-hover);
+  color: var(--accent);
   text-decoration: none;
 }
 
