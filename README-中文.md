@@ -7,31 +7,34 @@
 进入这个文件夹：
 
 ```bash
-cd /Users/heng/Library/CloudStorage/OneDrive-Technion/Documents/Codes/Homepage/ai
+cd /Users/heng/Desktop/50-Ongoing/hengmamath.github.io
 ```
 
 启动本地预览：
 
 ```bash
-jekyll serve
+ruby scripts/preview.rb
 ```
 
 然后在浏览器打开：
 
 ```text
-http://localhost:4000
+http://127.0.0.1:4000
 ```
+
+预览运行期间保持终端开启；保存网页文件后会自动重新生成，刷新浏览器即可看到改动。
+按 `Ctrl+C` 停止预览。这个脚本直接调用已安装的 Jekyll，避免 `jekyll: command not found`。
 
 如果 4000 端口被占用，用：
 
 ```bash
-jekyll serve --port 4001
+ruby scripts/preview.rb --port 4002
 ```
 
 然后打开：
 
 ```text
-http://localhost:4001
+http://127.0.0.1:4002
 ```
 
 ## 最常改的文件
@@ -87,9 +90,10 @@ _data/coauthors.yml      合作者通讯录（主页链接，每人只登记一�
   coauthors: "Name One, Name Two"
   journal: "arxiv, 2026+"
   arXiv: "https://arxiv.org/abs/xxxx.xxxxx"
-  image: "assets/img/example.png"
-  talk: "assets/files/example_talk.pdf"
-  poster: "assets/files/example_poster.pdf"
+  image: "example.png"
+  talk: "example_talk.pdf"
+  poster: "example_poster.pdf"
+  simulation: "example.html"
 ```
 
 说明：
@@ -101,10 +105,17 @@ _data/coauthors.yml      合作者通讯录（主页链接，每人只登记一�
 - `journal`: 期刊、会议、arXiv 状态
 - `arXiv`: arXiv 链接，点击论文标题即可访问，不再另设 arXiv 按钮
 - `journalpage`: 期刊正式页面链接，如果有就加
-- `image`: Research 页面里的论文图片
-- `talk`: slides PDF
-- `poster`: poster PDF
+- `image`: 论文图片文件名，默认从 `assets/img/` 读取
+- `talk`: slides PDF 文件名，默认从 `assets/files/` 读取
+- `poster`: poster PDF 文件名，默认从 `assets/files/` 读取
+- `simulation`: 交互模拟网页文件名，默认从 `assets/simulations/` 读取
 - `ai_use`: AI 使用分级，填 `"No"` / `"L0"` / `"L1"` / `"L2"` / `"L3"`；空白不显示按钮
+
+`image`、`talk`、`poster`、`simulation` 只需填写文件名，也支持默认目录下的子路径，
+例如 `simulation: "my-model/index.html"`。
+原来的 `assets/...` 完整路径、以 `/` 开头的站内路径和外部网址仍然有效。
+留空 `""` 或省略字段，不显示对应图片或按钮。
+这些默认目录只适用于论文列表；`_config.yml` 中的 `avatar`、`cv_link` 仍填写完整路径。
 
 #### AI 使用披露按钮
 
@@ -140,6 +151,19 @@ Research 页已提供统一的 AI 分级说明。每篇论文只有填写 `ai_us
 各等级的 `title` / `description` 是名称和定义。页面与弹窗使用同一份文案。
 正常浏览时，分级说明仅在点击 “About the scale” 或论文 AI 按钮后以弹窗显示，
 页面底部不再重复展示。仅在 JavaScript 不可用时保留页内说明作为备用。
+
+#### Simulation 按钮
+
+把交互网页放到 `assets/simulations/`，然后在对应论文下面添加：
+
+```yaml
+    simulation: "beta-splitting_tree.html"
+```
+
+Research 页会在该论文的 journal 按钮后、slides 按钮前显示 **simulation**，点击后在新标签页打开。
+留空 `simulation: ""` 或删除整行，都不显示按钮。
+如果网页包含独立的 JavaScript、CSS、图片等文件，可以把它们一起放入子文件夹，
+保留相对路径，并填写入口页面，例如 `my-model/index.html`（对应 `assets/simulations/my-model/index.html`）。
 
 #### 合作者主页链接
 
@@ -227,7 +251,7 @@ assets/img/
 avatar: assets/img/your_new_photo.png
 ```
 
-### 6. 添加图片、PDF、slides
+### 6. 添加图片、PDF、slides、simulation
 
 图片放这里：
 
@@ -241,12 +265,19 @@ PDF、CV、slides、poster 放这里：
 assets/files/
 ```
 
-然后在 `_data/publications.yml` 里引用它们，例如：
+交互模拟网页及其配套文件放这里：
+
+```text
+assets/simulations/
+```
+
+然后在 `_data/publications.yml` 里只填写文件名（或默认目录下的子路径），例如：
 
 ```yaml
-image: "assets/img/my_picture.png"
-talk: "assets/files/my_slides.pdf"
-poster: "assets/files/my_poster.pdf"
+image: "my_picture.png"
+talk: "my_slides.pdf"
+poster: "my_poster.pdf"
+simulation: "my-model/index.html"
 ```
 
 ## 不太常改的文件
@@ -280,7 +311,7 @@ _includes/publications.md
 - 论文标题
 - 合作者
 - journal / arXiv 信息
-- 按钮统一左对齐，顺序为 AI use / journal / slides / poster；新增论文也沿用此顺序
+- 按钮统一左对齐，顺序为 AI use / journal / simulation / slides / poster；新增论文也沿用此顺序
 
 如果只是添加论文，不要改这个文件；改 `_data/publications.yml` 就够了。
 
@@ -392,7 +423,7 @@ _includes/icon.html
 改完后运行：
 
 ```bash
-jekyll serve
+ruby scripts/preview.rb
 ```
 
 然后刷新浏览器看效果。

@@ -14,7 +14,7 @@ permalink: /teaching/
 
 **Lecturer:** [Eviatar Procaccia](https://sites.google.com/site/ebprocaccia/)
 
-**My role:** I lead a one-hour tutorial each week to supplement the main lectures.
+**My role:** I teach a one-hour tutorial each week to supplement the main lectures.
 The tutorials cover foundational material on topological spaces, metric spaces,
 Banach spaces, Hilbert spaces, convergence of probability measures, conditional
 expectation, and related topics.

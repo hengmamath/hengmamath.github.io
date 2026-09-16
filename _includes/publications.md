@@ -9,12 +9,17 @@
   <ol class="bibliography">
     <!-- 遍历 _data/publications.yml 里 main: 下面的每一篇论文。 -->
     {% for link in site.data.publications.main %}
-    <!-- 如果某篇论文没有 image 字段，就加 no-image class，让 CSS 使用无图片布局。 -->
-    <li class="publication-item{% unless link.image %} no-image{% endunless %}">
-      <!-- 论文图片。图片路径来自 publications.yml 的 image 字段。 -->
-      {% if link.image %}
+    <!-- 文件名自动补上默认目录，同时兼容原来的完整路径。 -->
+    {% capture image_url %}{% include publication-asset-url.html path=link.image directory="assets/img/" %}{% endcapture %}
+    {% capture simulation_url %}{% include publication-asset-url.html path=link.simulation directory="assets/simulations/" %}{% endcapture %}
+    {% capture talk_url %}{% include publication-asset-url.html path=link.talk directory="assets/files/" %}{% endcapture %}
+    {% capture poster_url %}{% include publication-asset-url.html path=link.poster directory="assets/files/" %}{% endcapture %}
+    <!-- 如果没有填写 image，就加 no-image class，让 CSS 使用无图片布局。 -->
+    <li class="publication-item{% if image_url == "" %} no-image{% endif %}">
+      <!-- 论文图片，默认从 assets/img/ 读取。 -->
+      {% if image_url != "" %}
       <div class="publication-image">
-        <img src="{{ link.image | relative_url }}" class="teaser" alt="{{ link.title | escape }}">
+        <img src="{{ image_url | escape }}" class="teaser" alt="{{ link.title | escape }}">
       </div>
       {% endif %}
 
@@ -51,7 +56,7 @@
 
         <!--
           论文相关按钮。
-          只有 publications.yml 中存在对应字段时，按钮才会显示。
+          只有 publications.yml 中填写了对应字段时，按钮才会显示。
         -->
         <div class="publication-links">
           <!-- AI 使用披露：只在填写有效 ai_use 值后显示，不推断未填写的论文。 -->
@@ -62,14 +67,19 @@
           <a href="{{ link.journalpage }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">journal</a>
           {% endif %}
 
-          <!-- slides PDF，通常放在 assets/files/。 -->
-          {% if link.talk %}
-          <a href="{{ link.talk | relative_url }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">slides</a>
+          <!-- 交互模拟网页，默认从 assets/simulations/ 读取。 -->
+          {% if simulation_url != "" %}
+          <a href="{{ simulation_url | escape }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">simulation</a>
           {% endif %}
 
-          <!-- poster PDF，通常放在 assets/files/。 -->
-          {% if link.poster %}
-          <a href="{{ link.poster | relative_url }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">poster</a>
+          <!-- slides PDF，默认从 assets/files/ 读取。 -->
+          {% if talk_url != "" %}
+          <a href="{{ talk_url | escape }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">slides</a>
+          {% endif %}
+
+          <!-- poster PDF，默认从 assets/files/ 读取。 -->
+          {% if poster_url != "" %}
+          <a href="{{ poster_url | escape }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener">poster</a>
           {% endif %}
         </div>
       </div>

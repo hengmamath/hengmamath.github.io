@@ -1,0 +1,2600 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beta-Splitting Tree Explorer</title>
+<style>
+:root{
+  --bg:#f4f5f7; --panel:#ffffff; --canvas:#fdfdfc; --ink:#1b2027; --ink2:#4a5461;
+  --ink3:#7c8695; --line:#dfe3e9; --line2:#eceff3; --accent:#b4530a; --accent2:#0b6ea8;
+  --good:#1a7f5a; --bad:#b3261e; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 8px rgba(16,24,40,.05);
+  --edge:#93a0b1; --dim:.2;
+}
+.dark{
+  --bg:#0e1116; --panel:#161b22; --canvas:#11151b; --ink:#e6edf3; --ink2:#adb9c6;
+  --ink3:#788493; --line:#262d36; --line2:#1d232b; --accent:#f0a35e; --accent2:#5cb8ee;
+  --good:#4ac08c; --bad:#f0736a; --shadow:0 1px 2px rgba(0,0,0,.4); --edge:#5b6875; --dim:.18;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+i,em,.mv{font-family:"Latin Modern Math",Cambria,Georgia,"Times New Roman",serif;font-style:italic}
+.mv{font-style:italic}
+sub,sup{font-size:.72em}
+/* never let the small-caps section headers mangle mathematical symbols */
+.mv,sub,sup,i,em{text-transform:none}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+h1,h2,h3{margin:0;font-weight:600}
+a{color:var(--accent2)}
+
+/* ---------- shell ---------- */
+header{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:40;
+}
+header h1{font-size:15px;letter-spacing:.2px;font-family:Georgia,"Times New Roman",serif}
+header .sub{color:var(--ink3);font-size:11.5px}
+.spacer{flex:1}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--line);
+  border-radius:999px;background:var(--bg);font-size:11.5px;color:var(--ink2);white-space:nowrap
+}
+main{padding:12px;display:flex;flex-direction:column;gap:12px;max-width:2000px;margin:0 auto}
+.cols{display:grid;grid-template-columns:272px minmax(0,1fr) 330px;gap:12px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+.card>h2{
+  font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);
+  padding:9px 12px;border-bottom:1px solid var(--line2)
+}
+.pad{padding:11px 12px}
+.sticky{position:sticky;top:56px}
+
+/* ---------- controls ---------- */
+.grp{padding:10px 12px;border-bottom:1px solid var(--line2)}
+.grp:last-child{border-bottom:0}
+.grp>label,.lab{
+  display:block;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:6px
+}
+.row{display:flex;gap:6px;align-items:center}
+.row+.row{margin-top:6px}
+input[type=text],input[type=number],select{
+  background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;
+  padding:5px 7px;font:inherit;font-size:12.5px;width:100%;min-width:0
+}
+input[type=number]{-moz-appearance:textfield}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent2);outline-offset:1px}
+input[type=range]{width:100%;accent-color:var(--accent);height:18px}
+button{
+  background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;
+  padding:5px 9px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap
+}
+button:hover:not(:disabled){border-color:var(--ink3)}
+button:disabled{opacity:.42;cursor:not-allowed}
+button.pri{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button.pri:hover{filter:brightness(1.07)}
+button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{flex:1 1 auto;padding:4px 6px;font-size:11.5px}
+.chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);cursor:pointer;padding:1px 0}
+.chk input{accent-color:var(--accent2);margin:0}
+.chks{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px}
+.err{color:var(--bad);font-size:11.5px;margin-top:6px;display:none}
+.err.show{display:block}
+.note{color:var(--ink3);font-size:11px;margin-top:6px;line-height:1.45}
+
+/* ---------- viz ---------- */
+.vizwrap{position:relative;background:var(--canvas);border-radius:10px;overflow:hidden}
+#viz{display:block;width:100%;height:min(70vh,720px);min-height:380px;touch-action:none;cursor:grab}
+#viz.grabbing{cursor:grabbing}
+#viz.picking{cursor:crosshair}
+.dimmed{opacity:var(--dim)}
+#lyEdge,#lyNode,#lyLabel{transition:opacity .18s}
+.hud{position:absolute;display:flex;gap:6px;align-items:center;pointer-events:none}
+.hud.tl{top:8px;left:8px}
+.hud.tr{top:8px;right:8px;flex-direction:column;align-items:flex-end}
+.hud.bl{bottom:8px;left:8px}
+.badge{
+  background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);
+  border-radius:6px;padding:3px 7px;font-size:11.5px;color:var(--ink2);backdrop-filter:blur(3px)
+}
+.badge b{color:var(--ink);font-weight:600}
+.hud.tr .badge{pointer-events:auto}
+.legend{display:flex;align-items:center;gap:6px}
+.legend .ramp{width:104px;height:9px;border-radius:2px;border:1px solid var(--line)}
+.zoombtns{position:absolute;right:8px;bottom:8px;display:flex;flex-direction:column;gap:4px}
+.zoombtns button{width:28px;height:26px;padding:0;font-size:13px;line-height:1}
+#tip{
+  position:fixed;z-index:60;pointer-events:none;opacity:0;transition:opacity .1s;
+  background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:7px 9px;
+  box-shadow:0 4px 18px rgba(16,24,40,.16);font-size:11.5px;max-width:250px;line-height:1.5
+}
+#tip.on{opacity:1}
+#tip b{color:var(--ink)}
+.scrub{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--line2)}
+.scrub input[type=range]{flex:1}
+.scrub .val{font-size:11.5px;color:var(--ink2);min-width:104px;text-align:right}
+
+/* ---------- info panel ---------- */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px}
+.kv dt{color:var(--ink3)}
+.kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.empty{color:var(--ink3);font-size:12px;font-style:italic}
+.chain{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;
+  line-height:1.7;word-break:break-word;color:var(--ink2)
+}
+.chain b{color:var(--accent);font-weight:700}
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabular-nums}
+.tbl th{text-align:right;color:var(--ink3);font-weight:500;padding:2px 4px;border-bottom:1px solid var(--line2)}
+.tbl td{text-align:right;padding:2px 4px;border-bottom:1px solid var(--line2)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.scrollbox{max-height:210px;overflow:auto}
+
+/* ---------- stats cards ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:8px}
+.stat{
+  background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 10px;
+  box-shadow:var(--shadow);cursor:help
+}
+.stat .k{font-size:10.5px;color:var(--ink3);letter-spacing:.05em;text-transform:uppercase}
+.stat .v{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.stat .s{font-size:11px;color:var(--ink3)}
+
+/* ---------- collapsible sections ---------- */
+details.sec{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+details.sec>summary{
+  padding:10px 12px;cursor:pointer;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink3);list-style:none;display:flex;align-items:center;gap:8px;user-select:none
+}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:"▸";font-size:10px;transition:transform .15s}
+details.sec[open]>summary::before{transform:rotate(90deg)}
+details.sec[open]>summary{border-bottom:1px solid var(--line2)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px}
+.field .lab{margin:0}
+.field input,.field select{width:auto;min-width:88px}
+.progress{height:4px;background:var(--line2);border-radius:2px;overflow:hidden;margin-top:8px}
+.progress>i{display:block;height:100%;width:0;background:var(--accent);transition:width .1s}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.mini{background:var(--canvas);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.mini .cap{padding:5px 8px;font-size:11.5px;color:var(--ink2);border-bottom:1px solid var(--line2);
+  display:flex;justify-content:space-between;gap:6px}
+.mini svg{display:block;width:100%;height:230px}
+.help{font-size:12.5px;line-height:1.65;color:var(--ink2);max-width:74ch}
+.help p{margin:0 0 9px}
+.help h3{font-size:12.5px;color:var(--ink);margin:14px 0 6px}
+.help ul{margin:0 0 9px;padding-left:18px}
+.disp{
+  display:block;text-align:center;margin:10px 0;font-family:Cambria,Georgia,serif;font-size:14.5px;color:var(--ink)
+}
+pre.out{
+  background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:9px;font-size:11.5px;
+  overflow:auto;max-height:280px;margin:8px 0 0;white-space:pre-wrap
+}
+.pass{color:var(--good);font-weight:600}
+.fail{color:var(--bad);font-weight:600}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:1180px){
+  .cols{grid-template-columns:1fr}
+  .sticky{position:static}
+  #viz{height:min(60vh,560px)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header>
+  <h1 data-i18n="app.title">Beta-Splitting Tree Explorer</h1>
+  <span class="sub" data-i18n="app.sub"></span>
+  <span class="chip" id="chipModel"></span>
+  <span class="chip" id="chipParams"></span>
+  <span class="spacer"></span>
+  <button id="btnLang" aria-label="Switch language">&#127760; 中文</button>
+  <button id="btnTheme" data-i18n="ui.theme" data-i18n-aria="ui.theme">&#9681; Theme</button>
+  <button id="btnSvg" data-i18n="ui.svg" data-i18n-aria="ui.svgAria">&#8681; SVG</button>
+</header>
+
+<main>
+<div class="cols">
+
+  <!-- ============ LEFT: CONTROLS ============ -->
+  <section class="card sticky" aria-label="Controls">
+    <h2 data-i18n="h.controls"></h2>
+
+    <div class="grp">
+      <label for="inBeta" data-i18n="l.beta"></label>
+      <div class="row">
+        <input id="inBeta" type="number" step="0.05" value="-1" aria-label="beta value">
+      </div>
+      <div class="row"><input id="rgBeta" type="range" min="-1.99" max="10" step="0.01" value="-1" aria-label="beta slider"></div>
+      <div class="seg" style="margin-top:6px" role="group" aria-label="beta presets">
+        <button data-beta="-1.9" data-i18n-title="p.comb">&minus;1.9</button>
+        <button data-beta="-1.5" data-i18n-title="p.pda">&minus;1.5</button>
+        <button data-beta="-1" data-i18n-title="p.crit">&minus;1</button>
+        <button data-beta="0" data-i18n-title="p.yule">0</button>
+        <button data-beta="5" data-i18n-title="p.bal">5</button>
+      </div>
+      <div class="note" id="betaNote"></div>
+    </div>
+
+    <div class="grp">
+      <label for="inN" data-i18n="l.n"></label>
+      <div class="row">
+        <input id="inN" type="number" min="2" max="5000" step="1" value="100" aria-label="number of leaves">
+        <button id="btnResample" class="pri" data-i18n="b.resample" data-i18n-title="b.resampleT"></button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <input id="inSeed" type="text" value="aldous-1" aria-label="random seed" spellcheck="false">
+        <button id="btnReroll" data-i18n-title="b.rerollT">&#8635;</button>
+      </div>
+      <div class="err" id="errIn" role="alert"></div>
+    </div>
+
+    <div class="grp">
+      <label data-i18n="l.model"></label>
+      <div class="seg" role="group" aria-label="model">
+        <button data-model="discrete" class="on" data-i18n="m.discrete"></button>
+        <button data-model="ctcs" id="btnCtcs" data-i18n="m.ctcs"></button>
+      </div>
+      <div class="note" id="modelNote"></div>
+    </div>
+
+    <div class="grp">
+      <label for="selLayout" data-i18n="l.layout"></label>
+      <select id="selLayout" aria-label="layout">
+        <option value="tidy" data-i18n="ly.tidy"></option>
+        <option value="icicle" data-i18n="ly.icicle"></option>
+        <option value="radial" data-i18n="ly.radial"></option>
+        <option value="dendro" data-i18n="ly.dendro"></option>
+        <option value="force" data-i18n="ly.force"></option>
+      </select>
+      <label for="selScale" style="margin-top:8px" data-i18n="l.scale"></label>
+      <select id="selScale" aria-label="vertical scale">
+        <option value="gen" data-i18n="sc.gen"></option>
+        <option value="time" data-i18n="sc.time"></option>
+      </select>
+      <div class="note" id="layoutNote"></div>
+    </div>
+
+    <div class="grp">
+      <label data-i18n="l.anim"></label>
+      <div class="seg" role="group" aria-label="animation controls">
+        <button id="btnPlay" data-i18n="b.play"></button>
+        <button id="btnReset" data-i18n="b.reset"></button>
+      </div>
+      <div class="row" style="margin-top:7px">
+        <span class="lab" style="margin:0;min-width:42px" data-i18n="l.speed"></span>
+        <input id="rgSpeed" type="range" min="-2" max="3" step="0.25" value="0" aria-label="animation speed">
+        <span class="badge" id="lblSpeed" style="min-width:44px;text-align:center">1&times;</span>
+      </div>
+    </div>
+
+    <div class="grp">
+      <label data-i18n="l.display"></label>
+      <div class="chks">
+        <label class="chk"><input type="checkbox" id="ckSizes" checked> <span data-i18n="ck.sizes"></span></label>
+        <label class="chk"><input type="checkbox" id="ckLeaf"> <span data-i18n="ck.leaf"></span></label>
+        <label class="chk"><input type="checkbox" id="ckRatio"> <span data-i18n="ck.ratio"></span></label>
+        <label class="chk"><input type="checkbox" id="ckColor" checked> <span data-i18n="ck.color"></span></label>
+        <label class="chk"><input type="checkbox" id="ckTips" checked> <span data-i18n="ck.tips"></span></label>
+        <label class="chk"><input type="checkbox" id="ckGrid" checked> <span data-i18n="ck.grid"></span></label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="btnTag" style="flex:1" data-i18n="b.tag"></button>
+        <button id="btnUntag" data-i18n-title="b.untagT">&times;</button>
+      </div>
+      <div class="note" data-i18n="note.interact"></div>
+    </div>
+  </section>
+
+  <!-- ============ CENTER: VISUALIZATION ============ -->
+  <section class="card" aria-label="Visualization">
+    <div class="vizwrap">
+      <svg id="viz" tabindex="0" role="application" aria-label="Beta-splitting tree visualization">
+        <g id="lyAxis"></g><g id="lyEdge"></g><g id="lyNode"></g>
+        <g id="lyLabel"></g><g id="lyHi"></g><g id="lyMorph"></g>
+      </svg>
+      <div class="hud tl"><span class="badge" id="hudClock"></span><span class="badge" id="hudCount"></span></div>
+      <div class="hud tr">
+        <span class="badge legend" id="hudLegend">
+          <span data-i18n="lg.lo"></span><span class="ramp" id="ramp"></span><span data-i18n="lg.hi"></span>
+        </span>
+      </div>
+      <div class="hud bl"><span class="badge" id="hudNote"></span></div>
+      <div class="zoombtns">
+        <button id="btnZi" aria-label="Zoom in">+</button>
+        <button id="btnZo" aria-label="Zoom out">&minus;</button>
+        <button id="btnZf" aria-label="Fit to view" data-i18n-title="b.fit">&#9723;</button>
+      </div>
+    </div>
+    <div class="scrub">
+      <button id="btnPlay2" aria-label="Play or pause">&#9654;</button>
+      <input id="rgTime" type="range" min="0" max="1000" step="1" value="1000" aria-label="animation scrubber">
+      <span class="val" id="lblTime"></span>
+    </div>
+  </section>
+
+  <!-- ============ RIGHT: INFO ============ -->
+  <section class="card sticky" aria-label="Selected clade">
+    <h2 data-i18n="h.selected"></h2>
+    <div class="pad" id="infoClade"></div>
+    <h2 style="border-top:1px solid var(--line2)" data-i18n="h.splitlaw"></h2>
+    <div class="pad">
+      <svg id="qchart" viewBox="0 0 300 150" style="width:100%;height:auto;display:block"></svg>
+      <div class="row" style="margin-top:6px;justify-content:space-between">
+        <label class="chk"><input type="checkbox" id="ckQlog"> <span data-i18n="ck.qlog"></span></label>
+        <span class="note" style="margin:0" id="qnote"></span>
+      </div>
+    </div>
+    <h2 style="border-top:1px solid var(--line2)" data-i18n="h.tagged"></h2>
+    <div class="pad" id="infoTag"></div>
+  </section>
+</div>
+
+<!-- ============ STATS ============ -->
+<div class="stats" id="stats"></div>
+
+<!-- ============ ENSEMBLE ============ -->
+<details class="sec" id="secEns">
+  <summary data-i18n="sec.ens"></summary>
+  <div class="pad">
+    <div class="toolbar">
+      <div class="field"><span class="lab" data-i18n="l.M"></span><input id="inM" type="number" min="1" max="200000" step="50" value="500"></div>
+      <div class="field"><span class="lab" data-i18n="l.stat"></span>
+        <select id="selStat">
+          <option value="height" data-i18n="st.height"></option>
+          <option value="mean" data-i18n="st.mean"></option>
+          <option value="sackin" data-i18n="st.sackin"></option>
+          <option value="colless" data-i18n="st.colless"></option>
+          <option value="rootfrac" data-i18n="st.rootfrac"></option>
+          <option value="rooti" data-i18n="st.rooti"></option>
+          <option value="ctcsmax" data-i18n="st.ctcsmax"></option>
+          <option value="ctcsmean" data-i18n="st.ctcsmean"></option>
+        </select>
+      </div>
+      <button id="btnEns" class="pri" data-i18n="b.runEns"></button>
+      <button id="btnEnsStop" disabled data-i18n="b.stop"></button>
+      <span class="note" id="ensNote" style="margin:0"></span>
+    </div>
+    <div class="progress"><i id="ensBar"></i></div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="mini"><div class="cap"><span id="ensTitle">&mdash;</span><span id="ensSummary"></span></div>
+        <svg id="ensChart" viewBox="0 0 560 260" style="height:260px"></svg></div>
+      <div class="mini"><div class="cap"><span data-i18n="ens.summary"></span><span id="ensMeta"></span></div>
+        <div class="pad" id="ensTable" style="height:260px;overflow:auto"></div></div>
+    </div>
+  </div>
+</details>
+
+<!-- ============ COMPARE ============ -->
+<details class="sec" id="secCmp">
+  <summary data-i18n="sec.cmp"></summary>
+  <div class="pad">
+    <div class="toolbar">
+      <div class="field"><span class="lab" data-i18n="l.betalist"></span><input id="inCmp" type="text" value="-1.9, -1, 0, 5" style="min-width:200px"></div>
+      <div class="field"><span class="lab" data-i18n="l.view"></span>
+        <select id="selCmpView">
+          <option value="tidy" data-i18n="ly.tidy"></option>
+          <option value="icicle" data-i18n="ly.icicle"></option>
+          <option value="radial" data-i18n="ly.radial"></option>
+          <option value="dendro" data-i18n="ly.dendro"></option>
+        </select>
+      </div>
+      <button id="btnCmp" class="pri" data-i18n="b.draw"></button>
+      <span class="note" style="margin:0" data-i18n="note.cmp"></span>
+    </div>
+    <div class="grid4" id="cmpGrid" style="margin-top:12px"></div>
+  </div>
+</details>
+
+<!-- ============ HELP ============ -->
+<details class="sec" id="secHelp">
+  <summary data-i18n="sec.help"></summary>
+  <div class="pad help" id="helpBody"></div>
+</details>
+
+<p style="color:var(--ink3);font-size:11px;text-align:center;margin:4px 0 18px" data-i18n="foot"></p>
+</main>
+
+<div id="tip" role="tooltip"></div>
+
+<script id="bst-core">
+/* =====================================================================
+   BSTCore — model layer.  Pure math + simulation, no DOM.
+   The text of this <script> is also reused verbatim to build the ensemble
+   Web Worker, so it must not touch `document` or `window`.
+   ===================================================================== */
+var BSTCore = (function () {
+'use strict';
+
+/* ---------- seeded PRNG: cyrb128 string hash + sfc32 generator ---------- */
+function cyrb128(str) {
+  var h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762, i, k;
+  for (i = 0; i < str.length; i++) {
+    k = str.charCodeAt(i);
+    h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+    h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+    h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+    h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+  }
+  h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+  h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+  h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+  h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+  return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
+}
+function makeRNG(seed) {
+  var s = cyrb128(String(seed)), a = s[0], b = s[1], c = s[2], d = s[3];
+  return function () {                       // sfc32
+    a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+    var t = (a + b) | 0;
+    a = b ^ (b >>> 9); b = (c + (c << 3)) | 0; c = (c << 21) | (c >>> 11);
+    d = (d + 1) | 0; t = (t + d) | 0; c = (c + t) | 0;
+    return (t >>> 0) / 4294967296;
+  };
+}
+
+/* ---------- log-Gamma (Lanczos, g = 7, n = 9): ~1e-15 relative ---------- */
+var LANCZOS = [676.5203681218851, -1259.1392167224028, 771.32342877765313,
+  -176.61502916214059, 12.507343278686905, -0.13857109526572012,
+  9.9843695780195716e-6, 1.5056327351493116e-7];
+function lgamma(z) {
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z);
+  z -= 1;
+  var x = 0.99999999999980993, i;
+  for (i = 0; i < 8; i++) x += LANCZOS[i] / (z + i + 1);
+  var t = z + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+
+/* ---------- harmonic numbers H_k, memoised ---------- */
+var HARM = [0];
+function harmonic(k) {
+  for (var j = HARM.length; j <= k; j++) HARM[j] = HARM[j - 1] + 1 / j;
+  return HARM[k];
+}
+
+/* ---------------------------------------------------------------------
+   Split law.  For a clade of size m the (unnormalised) weight of the
+   ordered split m -> (i, m-i) is
+
+       w_beta(m,i) = G(b+i+1) G(b+m-i+1) / ( G(i+1) G(m-i+1) ),
+
+   evaluated in logs so that moderate/large m never overflows.  Two exact
+   shortcuts are used because they are both faster and numerically cleaner:
+     beta =  0 : w == 1                       (uniform  -> Yule–Harding)
+     beta = -1 : w == 1/(i(m-i))              (critical -> q = m/(2H_{m-1} i (m-i)))
+   --------------------------------------------------------------------- */
+function splitLogWeights(m, beta, out) {
+  var L = m - 1, i;
+  if (!out || out.length !== L) out = new Float64Array(L);
+  if (Math.abs(beta) < 1e-13) { for (i = 0; i < L; i++) out[i] = 0; return out; }
+  if (Math.abs(beta + 1) < 1e-13) {
+    for (i = 1; i <= L; i++) out[i - 1] = -Math.log(i) - Math.log(m - i);
+    return out;
+  }
+  for (i = 1; i <= L; i++) {
+    out[i - 1] = lgamma(beta + i + 1) + lgamma(beta + m - i + 1)
+               - lgamma(i + 1) - lgamma(m - i + 1);
+  }
+  return out;
+}
+/* Normalised probabilities via log-sum-exp. */
+function splitProbs(m, beta) {
+  var lw = splitLogWeights(m, beta), L = lw.length, p = new Float64Array(L),
+      mx = -Infinity, s = 0, i;
+  for (i = 0; i < L; i++) if (lw[i] > mx) mx = lw[i];
+  for (i = 0; i < L; i++) { p[i] = Math.exp(lw[i] - mx); s += p[i]; }
+  for (i = 0; i < L; i++) p[i] /= s;
+  return p;
+}
+/* Unnormalised cumulative weights, ready for inverse-cdf sampling. */
+function splitCumulative(m, beta) {
+  var lw = splitLogWeights(m, beta), L = lw.length, c = new Float64Array(L),
+      mx = -Infinity, s = 0, i;
+  for (i = 0; i < L; i++) if (lw[i] > mx) mx = lw[i];
+  for (i = 0; i < L; i++) { s += Math.exp(lw[i] - mx); c[i] = s; }
+  return c;
+}
+/* Inverse-cdf sample; u in [0,1). Returns i in {1,...,m-1}. */
+function sampleFromCum(cum, u) {
+  var lo = 0, hi = cum.length - 1, target = u * cum[cum.length - 1], mid;
+  while (lo < hi) { mid = (lo + hi) >> 1; if (cum[mid] > target) hi = mid; else lo = mid + 1; }
+  return lo + 1;
+}
+/* Bounded cache of cumulative tables, keyed by clade size (beta is fixed
+   for the lifetime of a cache).  Comb-like trees visit ~n distinct sizes,
+   so the total cell budget is capped to keep memory predictable. */
+function SplitCache(beta, budget) {
+  this.beta = beta; this.map = new Map(); this.cells = 0;
+  this.budget = budget === undefined ? 3e6 : budget;
+}
+SplitCache.prototype.get = function (m) {
+  var c = this.map.get(m);
+  if (c) return c;
+  c = splitCumulative(m, this.beta);
+  if (this.cells + m <= this.budget) { this.map.set(m, c); this.cells += m; }
+  return c;
+};
+
+/* ---------------------------------------------------------------------
+   Tree simulation.  Flat typed arrays; index 0 is the root, and children
+   always receive larger indices than their parent (used by the linear
+   pre/post-order passes below).
+
+   Three *independent* RNG streams are used so that the discrete topology
+   is not disturbed by the continuous-time clocks or the leaf labelling.
+   Consequence: switching between the discrete and the CTCS view of the
+   same (n, beta, seed) shows exactly the same tree shape.
+   --------------------------------------------------------------------- */
+function simulateTree(n, beta, seed) {
+  var N = 2 * n - 1,
+      size = new Int32Array(N), left = new Int32Array(N), right = new Int32Array(N),
+      parent = new Int32Array(N), depth = new Int32Array(N),
+      birth = new Float64Array(N), splitT = new Float64Array(N),
+      splitI = new Int32Array(N), label = new Int32Array(N),
+      leafPos = new Float64Array(N), x0 = new Float64Array(N),
+      leafOrder = new Int32Array(n), i, v, m, a, b;
+  for (i = 0; i < N; i++) { left[i] = right[i] = parent[i] = -1; splitT[i] = NaN; }
+
+  var rSplit = makeRNG(seed + '|split'), rTime = makeRNG(seed + '|time'),
+      rLab = makeRNG(seed + '|label'), cache = new SplitCache(beta);
+
+  size[0] = n; depth[0] = 0; birth[0] = 0;
+  var count = 1, stack = [0];
+  while (stack.length) {
+    v = stack.pop(); m = size[v];
+    if (m < 2) continue;
+    i = sampleFromCum(cache.get(m), rSplit());
+    splitI[v] = i;
+    // CTCS holding time of a clade of size m: Exp(H_{m-1}).  Always sampled
+    // (from its own stream) so the two time scales coexist on one topology;
+    // it is only *canonical* at beta = -1, which the UI enforces.
+    splitT[v] = birth[v] + (-Math.log(1 - rTime()) / harmonic(m - 1));
+    a = count++; b = count++;
+    left[v] = a; right[v] = b;
+    size[a] = i; size[b] = m - i;
+    parent[a] = parent[b] = v;
+    depth[a] = depth[b] = depth[v] + 1;
+    birth[a] = birth[b] = splitT[v];
+    stack.push(b); stack.push(a);            // pop order => left subtree first
+  }
+
+  // in-order leaf enumeration (defines the horizontal ordering of every layout)
+  var k = 0; stack = [0];
+  while (stack.length) {
+    v = stack.pop();
+    if (size[v] === 1) { leafPos[v] = k; leafOrder[k] = v; k++; }
+    else { stack.push(right[v]); stack.push(left[v]); }
+  }
+  // internal x = midpoint of children (children have larger indices)
+  for (v = N - 1; v >= 0; v--) if (size[v] > 1) leafPos[v] = 0.5 * (leafPos[left[v]] + leafPos[right[v]]);
+  // fragmentation intervals: [x0, x0+size) in leaf units (parents precede children)
+  x0[0] = 0;
+  for (v = 0; v < N; v++) if (size[v] > 1) { x0[left[v]] = x0[v]; x0[right[v]] = x0[v] + size[left[v]]; }
+
+  // exchangeable leaf labels: uniform permutation of [n] over the leaf order
+  var perm = new Int32Array(n);
+  for (i = 0; i < n; i++) perm[i] = i + 1;
+  for (i = n - 1; i > 0; i--) { var j = Math.floor(rLab() * (i + 1)); var t = perm[i]; perm[i] = perm[j]; perm[j] = t; }
+  for (i = 0; i < n; i++) label[leafOrder[i]] = perm[i];
+
+  var maxDepth = 0, maxTime = 0;
+  for (i = 0; i < n; i++) {
+    v = leafOrder[i];
+    if (depth[v] > maxDepth) maxDepth = depth[v];
+    if (birth[v] > maxTime) maxTime = birth[v];
+  }
+  return {
+    n: n, beta: beta, seed: seed, N: N, size: size, left: left, right: right,
+    parent: parent, depth: depth, birth: birth, splitT: splitT, splitI: splitI,
+    label: label, leafPos: leafPos, x0: x0, leafOrder: leafOrder,
+    maxDepth: maxDepth, maxTime: maxTime
+  };
+}
+
+/* ---------- summary statistics of one realization ---------- */
+function computeStats(t) {
+  var n = t.n, N = t.N, i, v, d, sackin = 0, colless = 0, minD = Infinity, maxD = 0,
+      sumT = 0, maxT = 0, tbl = 0;
+  for (i = 0; i < n; i++) {
+    v = t.leafOrder[i]; d = t.depth[v];
+    sackin += d; if (d < minD) minD = d; if (d > maxD) maxD = d;
+    sumT += t.birth[v]; if (t.birth[v] > maxT) maxT = t.birth[v];
+  }
+  for (v = 0; v < N; v++) if (t.size[v] > 1) {
+    colless += Math.abs(t.size[t.left[v]] - t.size[t.right[v]]);
+    tbl += 2 * (t.splitT[v] - t.birth[v]);   // each internal clade feeds two edges
+  }
+  var ri = t.splitI[0];
+  return {
+    n: n, height: maxD, minDepth: minD, meanDepth: sackin / n, sackin: sackin,
+    colless: colless, rootI: ri, rootJ: n - ri,
+    rootFrac: Math.min(ri, n - ri) / n,
+    ctcsMax: maxT, ctcsMean: sumT / n, ctcsTotalBranch: tbl
+  };
+}
+
+/* Cheap version for ensembles: no layout/label bookkeeping, no big object. */
+function simulateStats(n, beta, rSplit, rTime, cache) {
+  var size = new Int32Array(2 * n - 1), depth = new Int32Array(2 * n - 1),
+      birth = new Float64Array(2 * n - 1),
+      sackin = 0, colless = 0, maxD = 0, minD = Infinity, sumT = 0, maxT = 0,
+      rootI = 0, count = 1, stack = [0], v, m, i, a, b, st;
+  size[0] = n;
+  while (stack.length) {
+    v = stack.pop(); m = size[v];
+    if (m < 2) {
+      sackin += depth[v]; if (depth[v] > maxD) maxD = depth[v]; if (depth[v] < minD) minD = depth[v];
+      sumT += birth[v]; if (birth[v] > maxT) maxT = birth[v];
+      continue;
+    }
+    i = sampleFromCum(cache.get(m), rSplit());
+    if (v === 0) rootI = i;
+    colless += Math.abs(2 * i - m);
+    st = birth[v] + (-Math.log(1 - rTime()) / harmonic(m - 1));
+    a = count++; b = count++;
+    size[a] = i; size[b] = m - i;
+    depth[a] = depth[b] = depth[v] + 1;
+    birth[a] = birth[b] = st;
+    stack.push(b); stack.push(a);
+  }
+  return { height: maxD, minDepth: minD, meanDepth: sackin / n, sackin: sackin,
+           colless: colless, rootI: rootI, rootFrac: Math.min(rootI, n - rootI) / n,
+           ctcsMax: maxT, ctcsMean: sumT / n };
+}
+
+/* ---------- mathematical self-tests (section 14 of the spec) ---------- */
+function selfTest(extra) {
+  var out = [], i, m, b, s, ok, worst, p, q, t, v;
+
+  worst = 0;
+  for (b of [-1.9, -1.5, -1, -0.3, 0, 2, 5, 40]) for (m of [2, 3, 7, 25, 100, 1000]) {
+    p = splitProbs(m, b); s = 0; for (i = 0; i < p.length; i++) s += p[i];
+    worst = Math.max(worst, Math.abs(s - 1));
+  }
+  out.push({ name: 'Σ_i q_β(m,i) = 1', pass: worst < 1e-12, detail: 'max |Σq − 1| = ' + worst.toExponential(2) });
+
+  worst = 0;
+  for (b of [-1.9, -1.5, -1, 0, 3.7]) for (m of [2, 5, 40, 501, 2000]) {
+    p = splitProbs(m, b);
+    for (i = 0; i < p.length; i++) worst = Math.max(worst, Math.abs(p[i] - p[p.length - 1 - i]) / (p[i] + 1e-300));
+  }
+  out.push({ name: 'symmetry q_β(m,i) = q_β(m,m−i)', pass: worst < 1e-10, detail: 'max rel. asymmetry = ' + worst.toExponential(2) });
+
+  worst = 0;
+  for (m of [2, 3, 10, 97, 1000]) {
+    // gamma form at beta=-1 vs. explicit harmonic formula m/(2 H_{m-1} i (m-i))
+    var lw = new Float64Array(m - 1);
+    for (i = 1; i <= m - 1; i++)
+      lw[i - 1] = lgamma(i) + lgamma(m - i) - lgamma(i + 1) - lgamma(m - i + 1);
+    var mx = -Infinity, sum = 0;
+    for (i = 0; i < m - 1; i++) if (lw[i] > mx) mx = lw[i];
+    var pp = new Float64Array(m - 1);
+    for (i = 0; i < m - 1; i++) { pp[i] = Math.exp(lw[i] - mx); sum += pp[i]; }
+    for (i = 1; i <= m - 1; i++) {
+      q = m / (2 * harmonic(m - 1) * i * (m - i));
+      worst = Math.max(worst, Math.abs(pp[i - 1] / sum - q) / q);
+    }
+  }
+  out.push({ name: 'β = −1 gamma form ≡ m /(2H_{m−1} i (m−i))', pass: worst < 1e-10, detail: 'max rel. error = ' + worst.toExponential(2) });
+
+  ok = true; var det = [];
+  for (b of [-1.99, -1.5, -1, 0, 6]) for (var nn of [2, 3, 17, 400]) {
+    t = simulateTree(nn, b, 'test|' + b + '|' + nn);
+    var nl = 0, ni = 0;
+    for (v = 0; v < t.N; v++) (t.size[v] === 1 ? nl++ : ni++);
+    if (nl !== nn || ni !== nn - 1) { ok = false; det.push('n=' + nn + ' β=' + b + ' → ' + nl + '/' + ni); }
+    for (v = 0; v < t.N; v++) if (t.size[v] > 1 && t.size[t.left[v]] + t.size[t.right[v]] !== t.size[v]) ok = false;
+  }
+  out.push({ name: 'exactly n leaves and n−1 internal nodes; sizes add up', pass: ok, detail: ok ? 'checked n ∈ {2,3,17,400} × 5 values of β' : det.join('; ') });
+
+  ok = true; worst = 0;
+  for (var nn2 of [2, 50, 800]) {
+    t = simulateTree(nn2, -1, 'ctcs|' + nn2);
+    for (v = 0; v < t.N; v++) {
+      if (t.size[v] > 1) {
+        if (!(t.splitT[v] > t.birth[v])) ok = false;
+        worst = Math.max(worst, Math.abs(t.birth[t.left[v]] - t.splitT[v]),
+                                Math.abs(t.birth[t.right[v]] - t.splitT[v]));
+      }
+    }
+  }
+  out.push({ name: 'CTCS: child birth = parent split, split > birth', pass: ok && worst === 0, detail: 'max |birth(child) − split(parent)| = ' + worst });
+
+  if (extra) for (var e of extra()) out.push(e);
+  return out;
+}
+
+return {
+  makeRNG: makeRNG, lgamma: lgamma, harmonic: harmonic,
+  splitLogWeights: splitLogWeights, splitProbs: splitProbs,
+  splitCumulative: splitCumulative, sampleFromCum: sampleFromCum,
+  SplitCache: SplitCache, simulateTree: simulateTree,
+  computeStats: computeStats, simulateStats: simulateStats, selfTest: selfTest
+};
+})();
+if (typeof module !== 'undefined' && module.exports) module.exports = BSTCore;
+</script>
+<script id="bst-app">
+/* =====================================================================
+   BSTApp — view layer: i18n, layouts, renderer, interaction, panels.
+   ===================================================================== */
+(function () {
+'use strict';
+var C = BSTCore;
+
+/* ================= 1. internationalisation ================= */
+var LANG = {
+en: {
+ 'app.title':'Beta-Splitting Tree Explorer',
+ 'app.sub':'Aldous&rsquo; <span class="mv">&beta;</span>-splitting random binary trees',
+ 'ui.theme':'&#9681; Theme', 'ui.svg':'&#8681; SVG', 'ui.svgAria':'Download current view as SVG',
+ 'h.controls':'Controls',
+ 'l.beta':'Split parameter <span class="mv">&beta;</span> <span style="text-transform:none;letter-spacing:0">(&beta; &gt; &minus;2)</span>',
+ 'p.comb':'strongly comb-like / highly imbalanced',
+ 'p.pda':'PDA / uniform cladogram',
+ 'p.crit':'critical beta-splitting tree',
+ 'p.yule':'Yule–Harding',
+ 'p.bal':'strongly balanced',
+ 'l.n':'Number of leaves n', 'b.resample':'Resample',
+ 'b.resampleT':'New realization (new random seed)',
+ 'b.rerollT':'Re-run with the current seed',
+ 'l.model':'Model', 'm.discrete':'Discrete', 'm.ctcs':'Critical CTCS',
+ 'l.layout':'Layout',
+ 'ly.tidy':'Tidy tree', 'ly.icicle':'Fragmentation / icicle', 'ly.radial':'Radial tree',
+ 'ly.dendro':'Leaf-aligned dendrogram', 'ly.force':'Force-directed',
+ 'l.scale':'Vertical scale', 'sc.gen':'Generation (graph distance)', 'sc.time':'Continuous time (CTCS)',
+ 'l.anim':'Animation', 'b.play':'&#9654; Animate', 'b.pause':'&#10073;&#10073; Pause',
+ 'b.reset':'&#10226; Reset', 'l.speed':'Speed', 'l.display':'Display',
+ 'ck.sizes':'clade sizes','ck.leaf':'leaf IDs','ck.ratio':'split ratios',
+ 'ck.color':'balance color','ck.tips':'tooltips','ck.grid':'axis / grid',
+ 'b.tag':'&#9678; Tag random leaf','b.untagT':'Clear tagged leaf','b.fit':'Fit to view',
+ 'note.interact':'Click any node to inspect it; click a leaf to tag its ancestral line. Keyboard: &uarr; parent, &larr;/&rarr; children, <code>t</code> tag, <code>space</code> play.',
+ 'lg.lo':'imbal.','lg.hi':'bal.',
+ 'h.selected':'Selected clade','h.splitlaw':'Local split law <span class="mv">q</span><sub>&beta;</sub>(<span class="mv">m</span>,&thinsp;<span class="mv">i</span>)',
+ 'ck.qlog':'log scale','h.tagged':'Tagged leaf',
+ 'hint.hover':'Hover or click a node in the visualization.','empty.tag':'No leaf tagged.',
+ 'sec.ens':'Simulation statistics — ensemble of independent realizations',
+ 'l.M':'Replicates M','l.stat':'Statistic',
+ 'st.height':'Tree height (max leaf depth)','st.mean':'Mean leaf depth',
+ 'st.sackin':'Sackin index','st.colless':'Colless index',
+ 'st.rootfrac':'Root split fraction min(i,n−i)/n',
+ 'st.rooti':'Root split i — vs. exact q_β(n,i)',
+ 'st.ctcsmax':'CTCS max leaf time-height','st.ctcsmean':'CTCS mean leaf time-height',
+ 'b.runEns':'Run ensemble','b.stop':'Stop','ens.summary':'Summary of last run',
+ 'ens.empty':'Run an ensemble to see summary statistics.',
+ 'sec.cmp':'Compare &beta; — independent realizations side by side',
+ 'l.betalist':'&beta; values (comma separated)','l.view':'View','b.draw':'Draw',
+ 'note.cmp':'Realizations are independent — no coupling between them is claimed.',
+ 'sec.help':'The mathematics &amp; self-tests','foot':'References: Aldous &amp; Janson, <em>The Critical Beta-splitting Random Tree II: Overview and Open Problems</em>, arXiv:2303.02529; <em>… III: The exchangeable partition representation and the fringe tree</em>, arXiv:2412.09655. Everything runs locally in your browser; there is no backend.',
+ /* dynamic */
+ 'k.kind':'kind','k.internal':'internal clade','k.leaf':'leaf','k.root':'root',
+ 'k.m':'clade size m','k.children':'children i + (m−i)','k.ratio':'split ratio i/m',
+ 'k.balance':'balance B = 2min(i,m−i)/m','k.depth':'depth / generation','k.leafid':'leaf ID',
+ 'k.birth':'birth time','k.split':'split time','k.hold':'holding time','k.rate':'total split rate H<sub>m−1</sub>',
+ 'k.subtree':'subtree leaves','k.parent':'parent clade size',
+ 's.n':'leaves n','s.height':'height','s.mindepth':'min depth','s.meandepth':'mean depth',
+ 's.sackin':'Sackin S(T)','s.colless':'Colless C(T)','s.rootsplit':'root split','s.rootbal':'root balance',
+ 's.ctcsmax':'CTCS max height','s.ctcsmean':'CTCS mean height','s.tbl':'CTCS total branch length',
+ 's.n.t':'Number of leaves of the realization.',
+ 's.height.t':'Maximum leaf depth, i.e. the graph distance from the root to the deepest leaf.',
+ 's.mindepth.t':'Minimum leaf depth.',
+ 's.meandepth.t':'Sackin index divided by n: the expected depth of a uniformly random leaf.',
+ 's.sackin.t':'S(T) = Σ over leaves of depth(leaf). Larger means a more imbalanced tree.',
+ 's.colless.t':'C(T) = Σ over internal nodes of |n_L(v) − n_R(v)|. Larger means a more imbalanced tree.',
+ 's.rootsplit.t':'The realized split i + (n − i) at the root.',
+ 's.rootbal.t':'2·min(i, n−i)/n at the root: 0 is maximally lopsided, 1 is a perfect halving.',
+ 's.ctcsmax.t':'Largest leaf birth time in the critical continuous-time embedding.',
+ 's.ctcsmean.t':'Mean leaf birth time in the critical continuous-time embedding.',
+ 's.tbl.t':'Sum of all edge lengths; each internal clade contributes twice its holding time.',
+ 'tag.id':'leaf ID','tag.depth':'graph depth','tag.height':'time height',
+ 'tag.chain':'Clade-size descent','tag.steps':'Splits along the ancestral path',
+ 'th.step':'step','th.m':'m','th.i':'i','th.ratio':'i/m','th.hold':'holding',
+ 'err.nint':'n must be an integer.','err.n2':'n must be at least 2.',
+ 'err.nmax':'n is capped at 5000 for interactive rendering.',
+ 'err.beta':'β must be strictly greater than −2.',
+ 'note.ctcsOff':'CTCS is the canonical continuous-time embedding of the <b>critical</b> model, so it is available only at β = −1.',
+ 'note.ctcsOn':'Holding time of a clade of size m is Exp(H<sub>m−1</sub>); the ordered split rate is m / (2 i (m−i)).',
+ 'note.dendro':'Topology-oriented view: aligning the leaves destroys the direct meaning of depth and of CTCS time.',
+ 'note.force':'Exploratory view — Euclidean distances here carry <b>no</b> probabilistic meaning. Drag nodes to rearrange.',
+ 'note.icicle':'The root interval has width n; a split m → i + (m−i) divides it in the ratio i : (m−i).',
+ 'note.forceBig':'Force layout is limited to n ≤ 1200; showing the tidy tree instead.',
+ 'hud.gen':'generation','hud.time':'time','hud.nodes':'nodes','hud.shown':'shown',
+ 'q.formula':'At β = −1: q(m,i) = m / (2 H<sub>m−1</sub> i (m−i)).',
+ 'q.none':'Select a clade with m ≥ 2.','q.realized':'realized i',
+ 'ens.running':'running…','ens.done':'done','ens.worker':'Web Worker','ens.main':'main thread (chunked)',
+ 'ens.mean':'mean','ens.sd':'s.d.','ens.median':'median','ens.min':'min','ens.max':'max','ens.q':'quantiles',
+ 'ens.theory':'exact q_β(n,i)','ens.emp':'empirical',
+ 'ens.stale':'Parameters changed since this run (β, n).',
+ 'cmp.leaves':'leaves','b.selftest':'Run self-tests','selftest.note':'Checks 1–6 of the specification.'
+},
+zh: {
+ 'app.title':'Beta-Splitting 随机树浏览器',
+ 'app.sub':'Aldous 的 <span class="mv">&beta;</span>-splitting 随机二叉树',
+ 'ui.theme':'&#9681; 主题','ui.svg':'&#8681; SVG','ui.svgAria':'把当前视图下载为 SVG',
+ 'h.controls':'控制面板',
+ 'l.beta':'分裂参数 <span class="mv">&beta;</span> <span style="text-transform:none;letter-spacing:0">(&beta; &gt; &minus;2)</span>',
+ 'p.comb':'接近梳状 / 极不平衡','p.pda':'PDA / 均匀 cladogram',
+ 'p.crit':'临界 beta-splitting 树','p.yule':'Yule–Harding','p.bal':'高度平衡',
+ 'l.n':'叶子数 n','b.resample':'重新抽样',
+ 'b.resampleT':'换一个随机种子,生成新的实现',
+ 'b.rerollT':'用当前种子重新生成',
+ 'l.model':'模型','m.discrete':'离散','m.ctcs':'临界 CTCS',
+ 'l.layout':'布局',
+ 'ly.tidy':'整洁树 (Tidy tree)','ly.icicle':'碎裂图 / 冰柱图','ly.radial':'径向树',
+ 'ly.dendro':'叶对齐树状图','ly.force':'力导向',
+ 'l.scale':'纵轴刻度','sc.gen':'代数 (图距离)','sc.time':'连续时间 (CTCS)',
+ 'l.anim':'动画','b.play':'&#9654; 播放','b.pause':'&#10073;&#10073; 暂停',
+ 'b.reset':'&#10226; 重置','l.speed':'速度','l.display':'显示',
+ 'ck.sizes':'团大小','ck.leaf':'叶编号','ck.ratio':'分裂比',
+ 'ck.color':'平衡度配色','ck.tips':'悬浮提示','ck.grid':'坐标轴 / 网格',
+ 'b.tag':'&#9678; 随机标记一片叶','b.untagT':'取消标记','b.fit':'适应窗口',
+ 'note.interact':'点击任意节点查看信息;点击叶子会标记它到根的祖先路径。键盘:&uarr; 父节点,&larr;/&rarr; 子节点,<code>t</code> 标记,<code>space</code> 播放。',
+ 'lg.lo':'不平衡','lg.hi':'平衡',
+ 'h.selected':'选中的团 (clade)','h.splitlaw':'局部分裂律 <span class="mv">q</span><sub>&beta;</sub>(<span class="mv">m</span>,&thinsp;<span class="mv">i</span>)',
+ 'ck.qlog':'对数纵轴','h.tagged':'被标记的叶',
+ 'hint.hover':'把鼠标移到图上,或点击一个节点。','empty.tag':'尚未标记任何叶子。',
+ 'sec.ens':'系综统计 —— 多次独立实现的经验分布',
+ 'l.M':'重复次数 M','l.stat':'统计量',
+ 'st.height':'树高 (最大叶深度)','st.mean':'平均叶深度',
+ 'st.sackin':'Sackin 指数','st.colless':'Colless 指数',
+ 'st.rootfrac':'根分裂比例 min(i,n−i)/n',
+ 'st.rooti':'根分裂 i —— 与精确 q_β(n,i) 对照',
+ 'st.ctcsmax':'CTCS 最大叶时间高度','st.ctcsmean':'CTCS 平均叶时间高度',
+ 'b.runEns':'运行系综','b.stop':'停止','ens.summary':'上次运行的摘要',
+ 'ens.empty':'运行一次系综模拟即可看到摘要统计。',
+ 'sec.cmp':'比较 &beta; —— 并排展示不同参数的实现',
+ 'l.betalist':'&beta; 取值 (逗号分隔)','l.view':'视图','b.draw':'绘制',
+ 'note.cmp':'各个实现相互独立 —— 这里并未声称它们之间有任何耦合。',
+ 'sec.help':'数学说明与自检','foot':'参考文献:Aldous &amp; Janson, <em>The Critical Beta-splitting Random Tree II: Overview and Open Problems</em>, arXiv:2303.02529;<em>… III: The exchangeable partition representation and the fringe tree</em>, arXiv:2412.09655。全部计算都在你的浏览器本地完成,没有后端。',
+ 'k.kind':'类型','k.internal':'内部团','k.leaf':'叶','k.root':'根',
+ 'k.m':'团大小 m','k.children':'两个子团 i + (m−i)','k.ratio':'分裂比 i/m',
+ 'k.balance':'平衡度 B = 2min(i,m−i)/m','k.depth':'深度 / 代数','k.leafid':'叶编号',
+ 'k.birth':'出生时刻','k.split':'分裂时刻','k.hold':'停留时间','k.rate':'总分裂速率 H<sub>m−1</sub>',
+ 'k.subtree':'子树叶数','k.parent':'父团大小',
+ 's.n':'叶子数 n','s.height':'树高','s.mindepth':'最小深度','s.meandepth':'平均深度',
+ 's.sackin':'Sackin S(T)','s.colless':'Colless C(T)','s.rootsplit':'根分裂','s.rootbal':'根平衡度',
+ 's.ctcsmax':'CTCS 最大高度','s.ctcsmean':'CTCS 平均高度','s.tbl':'CTCS 总枝长',
+ 's.n.t':'本次实现的叶子数。',
+ 's.height.t':'最大叶深度,即从根到最深叶子的图距离。',
+ 's.mindepth.t':'最小叶深度。',
+ 's.meandepth.t':'Sackin 指数除以 n:均匀随机取一片叶子时深度的平均值。',
+ 's.sackin.t':'S(T) = Σ_{叶 ℓ} depth(ℓ)。越大表示树越不平衡。',
+ 's.colless.t':'C(T) = Σ_{内部节点 v} |n_L(v) − n_R(v)|。越大表示树越不平衡。',
+ 's.rootsplit.t':'根处实际发生的分裂 i + (n − i)。',
+ 's.rootbal.t':'根处的 2·min(i, n−i)/n:0 表示极度偏斜,1 表示恰好平分。',
+ 's.ctcsmax.t':'临界连续时间嵌入中最大的叶出生时刻。',
+ 's.ctcsmean.t':'临界连续时间嵌入中叶出生时刻的平均值。',
+ 's.tbl.t':'所有边长之和;每个内部团贡献两倍于它的停留时间。',
+ 'tag.id':'叶编号','tag.depth':'图深度','tag.height':'时间高度',
+ 'tag.chain':'团大小下降链','tag.steps':'祖先路径上的各次分裂',
+ 'th.step':'第','th.m':'m','th.i':'i','th.ratio':'i/m','th.hold':'停留时间',
+ 'err.nint':'n 必须是整数。','err.n2':'n 至少为 2。',
+ 'err.nmax':'为保证交互流畅,n 上限为 5000。',
+ 'err.beta':'β 必须严格大于 −2。',
+ 'note.ctcsOff':'CTCS 是<b>临界</b>模型的典范连续时间嵌入,因此只在 β = −1 时可用。',
+ 'note.ctcsOn':'大小为 m 的团的停留时间服从 Exp(H<sub>m−1</sub>);有序分裂速率为 m / (2 i (m−i))。',
+ 'note.dendro':'这是偏拓扑的视图:把叶子对齐会破坏深度和 CTCS 时间的直接几何含义。',
+ 'note.force':'探索性视图 —— 这里的欧氏距离<b>没有</b>概率含义。可以拖动节点。',
+ 'note.icicle':'根区间宽度正比于 n;一次分裂 m → i + (m−i) 把区间按 i : (m−i) 切开。',
+ 'note.forceBig':'力导向布局限制在 n ≤ 1200,已改为显示整洁树。',
+ 'hud.gen':'代','hud.time':'时刻','hud.nodes':'节点','hud.shown':'已显示',
+ 'q.formula':'当 β = −1 时:q(m,i) = m / (2 H<sub>m−1</sub> i (m−i))。',
+ 'q.none':'请选择一个 m ≥ 2 的团。','q.realized':'实际取到的 i',
+ 'ens.running':'运行中…','ens.done':'完成','ens.worker':'Web Worker','ens.main':'主线程(分块)',
+ 'ens.mean':'均值','ens.sd':'标准差','ens.median':'中位数','ens.min':'最小','ens.max':'最大','ens.q':'分位数',
+ 'ens.theory':'精确 q_β(n,i)','ens.emp':'经验分布',
+ 'ens.stale':'自这次运行后参数 (β, n) 已改变。',
+ 'cmp.leaves':'片叶子','b.selftest':'运行自检','selftest.note':'对应规范中的第 1–6 项检查。'
+}};
+var lang = 'en';
+function T(k) { var d = LANG[lang]; return (d && d[k] !== undefined) ? d[k] : (LANG.en[k] !== undefined ? LANG.en[k] : k); }
+function applyLang() {
+  document.documentElement.lang = (lang === 'zh' ? 'zh-CN' : 'en');
+  var i, e, els = document.querySelectorAll('[data-i18n]');
+  for (i = 0; i < els.length; i++) { e = els[i]; e.innerHTML = T(e.getAttribute('data-i18n')); }
+  els = document.querySelectorAll('[data-i18n-title]');
+  for (i = 0; i < els.length; i++) { e = els[i]; e.title = stripTags(T(e.getAttribute('data-i18n-title'))); }
+  els = document.querySelectorAll('[data-i18n-aria]');
+  for (i = 0; i < els.length; i++) { e = els[i]; e.setAttribute('aria-label', stripTags(T(e.getAttribute('data-i18n-aria')))); }
+  $('btnLang').innerHTML = (lang === 'en' ? '&#127760; 中文' : '&#127760; EN');
+  document.title = stripTags(T('app.title'));
+}
+function stripTags(s) { return String(s).replace(/<[^>]*>/g, ''); }
+
+/* ================= 2. small helpers ================= */
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function clamp(x, a, b) { return x < a ? a : (x > b ? b : x); }
+function fmt(x, d) {
+  if (!isFinite(x)) return '—';
+  if (d === undefined) d = 3;
+  if (Math.abs(x) >= 1e6) return x.toExponential(2);
+  var r = x.toFixed(d);
+  return r.indexOf('.') >= 0 ? r.replace(/\.?0+$/, '') : r;
+}
+function num(x) { return isFinite(x) ? x.toLocaleString('en-US') : '—'; }
+function kv(rows) {
+  var h = '<dl class="kv">', i;
+  for (i = 0; i < rows.length; i++) if (rows[i]) h += '<dt>' + rows[i][0] + '</dt><dd>' + rows[i][1] + '</dd>';
+  return h + '</dl>';
+}
+/* viridis, sampled; ordered and colour-vision-safe. */
+var VIRIDIS = [[68,1,84],[72,40,120],[62,74,137],[49,104,142],[38,130,142],
+               [31,158,137],[53,183,121],[109,205,89],[180,222,44],[253,231,37]];
+function viridis(t) {
+  t = clamp(t, 0, 1) * (VIRIDIS.length - 1);
+  var i = Math.min(VIRIDIS.length - 2, Math.floor(t)), f = t - i, a = VIRIDIS[i], b = VIRIDIS[i + 1];
+  return 'rgb(' + Math.round(a[0] + f * (b[0] - a[0])) + ',' + Math.round(a[1] + f * (b[1] - a[1])) + ',' + Math.round(a[2] + f * (b[2] - a[2])) + ')';
+}
+var NBUCKET = 24;
+function isDark() { return document.documentElement.classList.contains('dark'); }
+/* On the dark canvas the deep-purple end of viridis disappears, so the ramp is
+   lifted off its floor. The ordering (and the legend) stay consistent. */
+function rampPos(t) { return isDark() ? 0.26 + 0.74 * t : t; }
+function balColor(B) { return viridis(rampPos(Math.round(clamp(B, 0, 1) * (NBUCKET - 1)) / (NBUCKET - 1))); }
+function cssv(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+/* ================= 3. application state ================= */
+var S = {
+  beta: -1, n: 100, seed: 'aldous-1', model: 'discrete', layout: 'tidy', scale: 'gen',
+  showSizes: true, showLeaf: false, showRatio: false, color: true, tips: true, grid: true,
+  qlog: false,
+  tree: null, stats: null,
+  sel: -1, hov: -1, tag: -1,
+  animT: Infinity, playing: false, speed: 1, lastFrame: 0,
+  view: { k: 1, tx: 0, ty: 0 }, vw: 0, vh: 0,
+  L: null, pick: null, force: null, morph: null,
+  ens: null
+};
+var MAXN = 5000, FORCE_MAX = 1200;
+
+function useTime() { return S.model === 'ctcs' && S.scale === 'time'; }
+function vMaxOf(t, ut, kind) {
+  if (ut) return Math.max(1e-9, t.maxTime * (kind === 'icicle' ? 1.06 : 1));
+  return Math.max(1, t.maxDepth + (kind === 'icicle' ? 1 : 0));
+}
+
+/* ================= 4. tree lifecycle ================= */
+function rebuild(keepSel) {
+  var t = C.simulateTree(S.n, S.beta, S.seed);
+  S.tree = t; S.stats = C.computeStats(t);
+  // A resample gives a different tree, so node indices only carry over when
+  // they still denote the same kind of object (and a tag must still be a leaf).
+  if (!keepSel) { S.sel = 0; S.tag = -1; }
+  else {
+    if (S.sel < 0 || S.sel >= t.N) S.sel = 0;
+    if (S.tag >= t.N || (S.tag >= 0 && t.size[S.tag] !== 1)) S.tag = -1;
+  }
+  S.hov = -1; S.force = null;
+  S.animT = Infinity;
+  S.playing = false;
+  refreshAll(true);
+}
+function refreshAll(fit) {
+  syncControls(); layoutAndDraw(fit); drawStats(); drawInfo(); drawQ(); drawTag(); writeHash();
+}
+
+/* ================= 5. layout engine =================
+   All layouts return coordinates already fitted into the viewport box;
+   the user's zoom/pan is a second affine applied at draw time.       */
+function computeLayout(t, kind, ut, W, H, opt) {
+  opt = opt || {};
+  var padL = opt.padL !== undefined ? opt.padL : 34, padR = opt.padR !== undefined ? opt.padR : 22,
+      padT = opt.padT !== undefined ? opt.padT : 42, padB = opt.padB !== undefined ? opt.padB : 26,
+      N = t.N, n = t.n, v, L;
+
+  if (kind === 'icicle') {
+    var vM = vMaxOf(t, ut, 'icicle'),
+        iw = Math.max(1, W - padL - padR), ih = Math.max(1, H - padT - padB),
+        X0 = new Float64Array(N), X1 = new Float64Array(N),
+        Y0 = new Float64Array(N), Y1 = new Float64Array(N),
+        Xc = new Float64Array(N), Yc = new Float64Array(N);
+    // root (val=0) at the bottom, growing upward as val increases
+    var yOf = function (val) { return padT + ih - (val / vM) * ih; };
+    for (v = 0; v < N; v++) {
+      X0[v] = padL + (t.x0[v] / n) * iw;
+      X1[v] = padL + ((t.x0[v] + t.size[v]) / n) * iw;
+      var b = ut ? t.birth[v] : t.depth[v];
+      var e = t.size[v] > 1 ? (ut ? t.splitT[v] : t.depth[v] + 1) : vM;   // singletons persist forever
+      // e > b always, and yOf is now decreasing, so e's screen position is
+      // the smaller one: Y0 stays "top edge" (e, the growing end), Y1 stays
+      // "bottom edge" (b, the fixed birth) — Y0 <= Y1 is preserved.
+      Y0[v] = yOf(e); Y1[v] = yOf(b);
+      Xc[v] = 0.5 * (X0[v] + X1[v]); Yc[v] = 0.5 * (Y0[v] + Y1[v]);
+    }
+    L = { kind: 'icicle', X0: X0, X1: X1, Y0: Y0, Y1: Y1, X: Xc, Y: Yc, yOf: yOf, vMax: vM,
+          axisX: padL, axisX2: W - padR, leafPitch: iw / Math.max(1, n) };
+  } else if (kind === 'radial') {
+    var vMr = vMaxOf(t, ut, 'radial'),
+        cx = W / 2, cy = H / 2,
+        rMax = Math.max(20, Math.min(W - padL - padR, H - padT - padB) / 2),
+        r0 = Math.min(16, rMax * 0.12), gap = 0.22,
+        A = new Float64Array(N), R = new Float64Array(N), RS = new Float64Array(N),
+        Xr = new Float64Array(N), Yr = new Float64Array(N);
+    var rOf = function (val) { return r0 + (val / vMr) * (rMax - r0); };
+    for (v = 0; v < N; v++) {
+      A[v] = gap / 2 + (t.leafPos[v] / Math.max(1, n)) * (2 * Math.PI - gap);
+      R[v] = rOf(ut ? t.birth[v] : t.depth[v]);
+      RS[v] = t.size[v] > 1 ? rOf(ut ? t.splitT[v] : t.depth[v] + 1) : R[v];
+      Xr[v] = cx + R[v] * Math.sin(A[v]); Yr[v] = cy - R[v] * Math.cos(A[v]);
+    }
+    L = { kind: 'radial', A: A, R: R, RS: RS, X: Xr, Y: Yr, cx: cx, cy: cy, rOf: rOf, vMax: vMr, rMax: rMax,
+          leafPitch: (2 * Math.PI - gap) * rMax / Math.max(1, n) };
+  } else if (kind === 'force') {
+    L = forceLayout(t, W, H, padL, padT);
+  } else {
+    var dendro = (kind === 'dendro'),
+        vMc = vMaxOf(t, ut, 'tree'),
+        cw = Math.max(1, W - padL - padR), ch = Math.max(1, H - padT - padB),
+        X = new Float64Array(N), Y = new Float64Array(N), YS = new Float64Array(N);
+    // root (val=0) at the bottom, increasing depth/time toward the top
+    var yOfC = function (val) { return padT + ch - (val / vMc) * ch; };
+    var xu = n > 1 ? cw / (n - 1) : 0, xoff = n > 1 ? padL : padL + cw / 2;
+    for (v = 0; v < N; v++) {
+      X[v] = xoff + t.leafPos[v] * xu;
+      if (dendro && t.size[v] === 1) Y[v] = yOfC(vMc);
+      else Y[v] = yOfC(ut ? t.birth[v] : t.depth[v]);
+      YS[v] = t.size[v] > 1 ? yOfC(ut ? t.splitT[v] : t.depth[v] + 1) : Y[v];
+    }
+    L = { kind: 'cart', X: X, Y: Y, YS: YS, yOf: yOfC, vMax: vMc, dendro: dendro,
+          axisX: padL, axisX2: W - padR, leafPitch: xu };
+  }
+  L.W = W; L.H = H; L.ut = ut; L.name = kind;
+  return L;
+}
+
+/* Force-directed: springs + repulsion, velocity Verlet with alpha decay.
+   Seeded from the tidy layout so it converges in a few hundred ticks.
+   Repulsion is sampled once the node count gets large. */
+function forceLayout(t, W, H, padL, padT) {
+  var N = t.N, f = S.force;
+  if (!f || f.N !== N) {
+    var base = computeLayout(t, 'tidy', false, W, H, {});
+    f = { N: N, X: new Float64Array(N), Y: new Float64Array(N),
+          VX: new Float64Array(N), VY: new Float64Array(N), alpha: 1, fixed: -1, phase: 0 };
+    // seed from the tidy layout, with a deterministic jitter so that
+    // coincident points never produce a singular repulsion term
+    for (var v = 0; v < N; v++) {
+      f.X[v] = base.X[v] + ((v * 2654435761) % 1000) / 1000 - 0.5;
+      f.Y[v] = base.Y[v] + ((v * 40503) % 1000) / 1000 - 0.5;
+    }
+    f.W = W; f.H = H;
+    S.force = f;
+  } else if (Math.abs(f.W - W) > 1 || Math.abs(f.H - H) > 1) {
+    // panel resized: rescale into the new box and let the simulation resettle
+    var kx = W / (f.W || W), ky = H / (f.H || H);
+    for (var u = 0; u < N; u++) { f.X[u] *= kx; f.Y[u] *= ky; }
+    f.W = W; f.H = H; f.alpha = Math.max(f.alpha, 0.45);
+  }
+  return { kind: 'cart', straight: true, X: f.X, Y: f.Y, YS: f.Y, force: f,
+           yOf: function (x) { return x; }, vMax: 1 };
+}
+/* Tuning constants for the exploratory force layout. `rest` is the target
+   spacing as a fraction of sqrt(area/N); `cut` is the repulsion cutoff in
+   units of `rest` (keeping it local is what stops the cloud from inflating
+   against the panel walls). */
+var FORCE = { rest: 0.55, rep: 0.35, cut: 3, center: 0.025, vmax: 0.5, spring: 0.30, decay: 0.977, damp: 0.62 };
+/* One step of a d3-style force simulation: alpha scales the *forces*,
+   velocity is damped every tick, and both the per-tick displacement and the
+   distance floor are bounded so the system cannot blow up in a small panel. */
+function forceTick(t) {
+  var f = S.force; if (!f) return false;
+  var N = f.N, X = f.X, Y = f.Y, VX = f.VX, VY = f.VY,
+      W = S.L.W || 800, H = S.L.H || 500, cx = W / 2, cy = H / 2, a = f.alpha,
+      rest = clamp(Math.sqrt(W * H / N) * FORCE.rest, 5, 34),
+      rep = rest * rest * FORCE.rep, minD2 = rest * rest * 0.06,
+      maxD2 = rest * rest * FORCE.cut * FORCE.cut,
+      VMAX = rest * FORCE.vmax, sample = N > 700 ? 40 : 0, i, j, k, dx, dy, d2, d, fq;
+
+  if (sample) {                                   // sampled repulsion for big trees
+    var stride = Math.max(1, Math.floor(N / sample)), scale = N / sample;
+    for (i = 0; i < N; i++) {
+      for (k = 0; k < sample; k++) {
+        j = (i + 1 + k * stride + f.phase) % N; if (j === i) continue;
+        dx = X[i] - X[j]; dy = Y[i] - Y[j]; d2 = dx * dx + dy * dy;
+        if (d2 > maxD2) continue;
+        if (d2 < minD2) d2 = minD2;
+        fq = rep * a * scale / d2; VX[i] += fq * dx; VY[i] += fq * dy;
+      }
+    }
+    f.phase = (f.phase + 7) % N;
+  } else {
+    for (i = 0; i < N; i++) for (j = i + 1; j < N; j++) {
+      dx = X[i] - X[j]; dy = Y[i] - Y[j]; d2 = dx * dx + dy * dy;
+      if (d2 > maxD2) continue;
+      if (d2 < minD2) d2 = minD2;
+      fq = rep * a / d2; dx *= fq; dy *= fq;
+      VX[i] += dx; VY[i] += dy; VX[j] -= dx; VY[j] -= dy;
+    }
+  }
+  for (i = 1; i < N; i++) {                       // parent-child springs
+    j = t.parent[i];
+    dx = X[i] - X[j]; dy = Y[i] - Y[j]; d = Math.sqrt(dx * dx + dy * dy) || 1e-6;
+    fq = FORCE.spring * a * (d - rest) / d;
+    VX[i] -= fq * dx; VY[i] -= fq * dy; VX[j] += fq * dx; VY[j] += fq * dy;
+  }
+  for (i = 0; i < N; i++) {
+    VX[i] += (cx - X[i]) * FORCE.center * a; VY[i] += (cy - Y[i]) * FORCE.center * a;
+    if (i === f.fixed) { VX[i] = VY[i] = 0; continue; }
+    VX[i] = clamp(VX[i], -VMAX, VMAX); VY[i] = clamp(VY[i], -VMAX, VMAX);
+    X[i] = clamp(X[i] + VX[i], 8, W - 8); Y[i] = clamp(Y[i] + VY[i], 8, H - 8);
+    VX[i] *= FORCE.damp; VY[i] *= FORCE.damp;
+  }
+  f.alpha *= FORCE.decay;
+  return f.alpha > 0.02;
+}
+
+/* ================= 6. renderer ================= */
+function r1(x) { return Math.round(x * 10) / 10; }
+function r2(x) { return Math.round(x * 100) / 100; }
+function easeOutCubic(u) { var w = 1 - u; return 1 - w * w * w; }
+function easeInOutCubic(u) { var w; if (u < 0.5) return 4 * u * u * u; w = 2 - 2 * u; return 1 - w * w * w / 2; }
+/* Deterministic [0,1) hash of a node index. Used only for the purely cosmetic
+   per-branch stagger of the discrete animation, never by the model. */
+function hash01(v) { var x = Math.imul(v ^ 0x9e3779b9, 2654435761) >>> 0; return (x >>> 8) / 16777216; }
+
+function balanceOf(t, v) {
+  if (t.size[v] < 2) return NaN;
+  var i = t.splitI[v], m = t.size[v];
+  return 2 * Math.min(i, m - i) / m;
+}
+function nodeColor(t, v, on) {
+  if (!on) return v === 0 ? '#c2410c' : (t.size[v] === 1 ? '#94a3b8' : '#64748b');
+  if (t.size[v] === 1) return '#9aa6b5';
+  return balColor(balanceOf(t, v));
+}
+function radOf(m, n) { return clamp(1.6 + 3.6 * Math.sqrt(Math.log(1 + m) / Math.log(1 + n)), 1.6, 9); }
+function widOf(m, n) { return clamp(0.55 + 2.9 * Math.log(1 + m) / Math.log(1 + n), 0.55, 3.6); }
+
+/* Every edge with the same width bucket is emitted as one <path>. The bucket
+   is a monotone function of log(1+m), so deriving the ink colour from it costs
+   no extra paths: the whole edge layer is still ~13 elements. */
+var WB_MIN = 2, WB_MAX = 15;
+function wbOf(m, n) { return Math.min(WB_MAX, Math.max(WB_MIN, Math.round(widOf(m, n) * 4))); }
+/* Neutral ink that darkens (light theme) / lightens (dark theme) with the
+   clade size, so the backbone of the tree reads at a glance. Colour still
+   carries only one meaning — balance, on the nodes; this is a value ramp. */
+var EDGE_RAMP = { light: [[196, 205, 214], [88, 102, 119]], dark: [[72, 83, 97], [161, 178, 194]] };
+function edgeColor(wb, dark) {
+  var e = dark ? EDGE_RAMP.dark : EDGE_RAMP.light, a = e[0], b = e[1],
+      u = (wb - WB_MIN) / (WB_MAX - WB_MIN);
+  return 'rgb(' + Math.round(a[0] + u * (b[0] - a[0])) + ',' + Math.round(a[1] + u * (b[1] - a[1])) +
+         ',' + Math.round(a[2] + u * (b[2] - a[2])) + ')';
+}
+/* Accent colours come from CSS custom properties; reading them forces a style
+   recalculation, so they are cached and invalidated on a theme switch. */
+var THEME = null;
+function themeColors() {
+  if (!THEME) THEME = { acc: cssv('--accent') || '#b4530a', acc2: cssv('--accent2') || '#0b6ea8' };
+  return THEME;
+}
+function invalidateTheme() { THEME = null; }
+
+/* Truncate a polyline to `travel` units of arc length. */
+function cutPoly(pts, travel) {
+  if (travel <= 0) return null;
+  var i, out = [pts[0]], dx, dy, d, u;
+  for (i = 1; i < pts.length; i++) {
+    dx = pts[i][0] - pts[i - 1][0]; dy = pts[i][1] - pts[i - 1][1];
+    d = Math.sqrt(dx * dx + dy * dy);
+    if (travel >= d) { out.push(pts[i]); travel -= d; }
+    else { u = d > 0 ? travel / d : 0; out.push([pts[i - 1][0] + u * dx, pts[i - 1][1] + u * dy]); return out; }
+  }
+  return out;
+}
+function polyD(pts) {
+  var s = 'M' + r1(pts[0][0]) + ' ' + r1(pts[0][1]), i;
+  for (i = 1; i < pts.length; i++) s += 'L' + r1(pts[i][0]) + ' ' + r1(pts[i][1]);
+  return s;
+}
+/* The same polyline with its interior corners rounded. The last vertex is
+   never rounded: while a branch grows it is a moving cut point. */
+function roundedPolyD(pts, r) {
+  var m = pts.length;
+  if (r <= 0.2 || m < 3) return polyD(pts);
+  var s = 'M' + r1(pts[0][0]) + ' ' + r1(pts[0][1]), i, a, b, c, d1, d2, rr, q1x, q1y, q2x, q2y;
+  for (i = 1; i < m - 1; i++) {
+    a = pts[i - 1]; b = pts[i]; c = pts[i + 1];
+    d1 = Math.sqrt((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]));
+    d2 = Math.sqrt((c[0] - b[0]) * (c[0] - b[0]) + (c[1] - b[1]) * (c[1] - b[1]));
+    rr = Math.min(r, d1 * 0.5, d2 * 0.5);
+    if (!(rr > 0.2)) { s += 'L' + r1(b[0]) + ' ' + r1(b[1]); continue; }
+    q1x = b[0] + (a[0] - b[0]) * rr / d1; q1y = b[1] + (a[1] - b[1]) * rr / d1;
+    q2x = b[0] + (c[0] - b[0]) * rr / d2; q2y = b[1] + (c[1] - b[1]) * rr / d2;
+    s += 'L' + r1(q1x) + ' ' + r1(q1y) + 'Q' + r1(b[0]) + ' ' + r1(b[1]) + ' ' + r1(q2x) + ' ' + r1(q2y);
+  }
+  return s + 'L' + r1(pts[m - 1][0]) + ' ' + r1(pts[m - 1][1]);
+}
+/* True when every vertex of a branch group lies off-screen. */
+function bboxOut(g, lo, hiX, hiY) {
+  var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, i, j, a, q;
+  for (i = -1; i < 2; i++) {
+    a = i < 0 ? g.stem : g.kid[i];
+    if (!a) continue;
+    for (j = 0; j < a.length; j++) {
+      q = a[j];
+      if (q[0] < x0) x0 = q[0]; if (q[0] > x1) x1 = q[0];
+      if (q[1] < y0) y0 = q[1]; if (q[1] > y1) y1 = q[1];
+    }
+  }
+  return x1 < lo || x0 > hiX || y1 < lo || y0 > hiY;
+}
+
+/* Fraction of the parent's branch group that has been revealed.
+   Discrete mode adds a small deterministic stagger and an ease-in-out so a
+   generation grows as a wave rather than a synchronised sweep; both are purely
+   cosmetic and both still complete exactly at animT = depth + 1.
+   Continuous time gets neither: there an edge's drawn length *is* the clade's
+   exponential holding time, and easing it would be a lie. */
+function branchFrac(t, p, o) {
+  if (!isFinite(o.animT)) return 1;
+  if (o.ut) {
+    var span = t.splitT[p] - t.birth[p];
+    return span <= 0 ? 1 : clamp((o.animT - t.birth[p]) / span, 0, 1);
+  }
+  var s = 0.28 * hash01(p);
+  return easeInOutCubic(clamp((o.animT - t.depth[p] - s) / (1 - s), 0, 1));
+}
+function nodeVisible(t, v, o) {
+  if (!isFinite(o.animT)) return true;
+  return o.ut ? (t.birth[v] <= o.animT + 1e-12) : (t.depth[v] <= o.animT + 1e-12);
+}
+/* 0 the instant a node is reached, 1 once it has settled: scales the node in
+   (and fades its label in) instead of popping it at full size. */
+function nodeGrow(t, v, o) {
+  if (!isFinite(o.animT)) return 1;
+  var arrive = o.ut ? t.birth[v] : t.depth[v];
+  return easeOutCubic(clamp((o.animT - arrive) / o.popWin, 0, 1));
+}
+
+/* How far along a branch group the reveal has travelled, in px.
+   On the generation scale the whole elbow shares the arc length, which is what
+   makes the growth read as one continuous stroke. On the continuous-time scale
+   the stem alone carries time — its length *is* the clade's holding time — so
+   the stem is advanced by exactly u of its own length and the horizontal
+   connector, which carries no time at all, only appears at the split instant. */
+function travelOf(u, g, ut) {
+  if (u >= 1) return Infinity;
+  return u * (ut ? g.s1 : g.sTot);
+}
+
+/* Branch geometry for one internal clade, in screen space: the parent's own
+   vertical stem — drawn once, at the *parent's* width, because its length is
+   the parent clade's holding time — plus one connector+drop per child.
+   `sTot` is shared by both children, so they advance at the same pixel speed
+   and the shorter one lands first. */
+function branchGeom(t, L, p, o) {
+  var SX = o.SX, SY = o.SY, i, c, xc, yc,
+      xp = SX(L.X[p]), yp = SY(L.Y[p]), ys = SY(L.YS[p]),
+      g = { stem: null, s1: 0, kid: [], sKid: [0, 0], sTot: 0 };
+  if (!L.straight) { g.stem = [[xp, yp], [xp, ys]]; g.s1 = Math.abs(ys - yp); }
+  for (i = 0; i < 2; i++) {
+    c = i ? t.right[p] : t.left[p];
+    xc = SX(L.X[c]); yc = SY(L.Y[c]);
+    if (L.straight) {
+      g.kid.push([[xp, yp], [xc, yc]]);
+      g.sKid[i] = Math.sqrt((xc - xp) * (xc - xp) + (yc - yp) * (yc - yp));
+    } else {
+      /* A short lead-in *inside* the stem gives the fork a corner to round:
+         the stem is a separate, wider path, so without it the only bend in this
+         polyline would be the connector->drop one, which is degenerate whenever
+         the child sits exactly at the split level (tidy tree, generation scale).
+         The lead-in is hidden under the stem and is counted in sKid, so the
+         growth timing stays exact. It is skipped when rounding is off, which
+         also keeps the path one point shorter on dense trees. */
+      var back = o.corner > 0.4 ? Math.min(7, g.s1 * 0.5) : 0, pts = [];
+      if (back > 0.4) pts.push([xp, ys + (yp < ys ? -back : back)]); else back = 0;
+      pts.push([xp, ys]);
+      if (Math.abs(xc - xp) > 1e-6) pts.push([xc, ys]);
+      if (Math.abs(yc - ys) > 1e-6) pts.push([xc, yc]);
+      if (pts.length < 2) pts.push([xc, yc]);
+      g.kid.push(pts);
+      g.sKid[i] = back + Math.abs(xc - xp) + Math.abs(yc - ys);
+    }
+  }
+  g.sTot = g.s1 + Math.max(g.sKid[0], g.sKid[1]);
+  return g;
+}
+/* Radial counterpart: a radial stem, then an arc at the split radius and a
+   radial drop per child. Same shared-travel rule. */
+function radialGeom(t, L, p, o) {
+  var k = o.k, i, c, ac, rc,
+      g = { cx: o.SX(L.cx), cy: o.SY(L.cy), ap: L.A[p], rp: L.R[p] * k, rs: L.RS[p] * k, kid: [], sKid: [0, 0] };
+  g.s1 = Math.abs(g.rs - g.rp);
+  for (i = 0; i < 2; i++) {
+    c = i ? t.right[p] : t.left[p];
+    ac = L.A[c]; rc = L.R[c] * k;
+    g.kid.push({ ac: ac, rc: rc });
+    g.sKid[i] = Math.abs(ac - g.ap) * g.rs + Math.abs(rc - g.rs);
+  }
+  g.sTot = g.s1 + Math.max(g.sKid[0], g.sKid[1]);
+  return g;
+}
+function radP(g, ang, r) { return [g.cx + r * Math.sin(ang), g.cy - r * Math.cos(ang)]; }
+function radialStemD(g, travel) {
+  if (travel <= 0 || g.s1 <= 1e-9) return null;
+  var r = travel >= g.s1 ? g.rs : g.rp + (g.rs - g.rp) * (travel / g.s1),
+      a = radP(g, g.ap, g.rp), b = radP(g, g.ap, r);
+  return { d: 'M' + r1(a[0]) + ' ' + r1(a[1]) + 'L' + r1(b[0]) + ' ' + r1(b[1]), tip: b };
+}
+function radialKidD(g, i, travel) {
+  if (travel <= 0) return null;
+  var kd = g.kid[i], sArc = Math.abs(kd.ac - g.ap) * g.rs, sDrop = Math.abs(kd.rc - g.rs),
+      p0 = radP(g, g.ap, g.rs), s = 'M' + r1(p0[0]) + ' ' + r1(p0[1]), a2, p2, u3, p3;
+  if (travel < sArc) {
+    a2 = g.ap + (kd.ac - g.ap) * (travel / (sArc || 1)); p2 = radP(g, a2, g.rs);
+    s += 'A' + r1(g.rs) + ' ' + r1(g.rs) + ' 0 0 ' + (a2 > g.ap ? 1 : 0) + ' ' + r1(p2[0]) + ' ' + r1(p2[1]);
+    return { d: s, tip: p2 };
+  }
+  p2 = radP(g, kd.ac, g.rs);
+  if (Math.abs(kd.ac - g.ap) > 1e-6)
+    s += 'A' + r1(g.rs) + ' ' + r1(g.rs) + ' 0 0 ' + (kd.ac > g.ap ? 1 : 0) + ' ' + r1(p2[0]) + ' ' + r1(p2[1]);
+  travel -= sArc;
+  u3 = sDrop > 0 ? Math.min(1, travel / sDrop) : 1;
+  p3 = radP(g, kd.ac, g.rs + (kd.rc - g.rs) * u3);
+  return { d: s + 'L' + r1(p3[0]) + ' ' + r1(p3[1]), tip: p3 };
+}
+/* One continuous stroke for the step p -> c at progress u (stem included).
+   Used by the ancestral-line highlight, which wants one path per step. */
+function branchPathD(t, L, p, c, o, u) {
+  var i = (c === t.right[p]) ? 1 : 0, travel, rest, seg, out = [], g;
+  if (L.kind === 'radial') {
+    g = radialGeom(t, L, p, o);
+    travel = travelOf(u, g, o.ut);
+    var st = radialStemD(g, travel), kd = radialKidD(g, i, travel - g.s1);
+    if (st) out.push(st.d);
+    if (kd) out.push(kd.d);
+    return out.length ? out.join('') : null;
+  }
+  g = branchGeom(t, L, p, o);
+  travel = travelOf(u, g, o.ut);
+  if (g.stem) {
+    seg = travel >= g.s1 ? g.stem : cutPoly(g.stem, travel);
+    if (seg && seg.length > 1) out.push(polyD(seg));
+  }
+  rest = travel - g.s1;
+  if (rest > 0) {
+    seg = rest >= g.sKid[i] ? g.kid[i] : cutPoly(g.kid[i], rest);
+    if (seg && seg.length > 1) out.push(roundedPolyD(seg, o.corner));
+  }
+  return out.length ? out.join('') : null;
+}
+
+/* ---- axis / grid, split out so the layout morph can cross-fade it ---- */
+function buildAxis(t, L, o) {
+  if (!o.grid || L.kind === 'force' || L.straight) return '';
+  var a = [], ticks = niceTicks(L.vMax, L.kind === 'radial' ? 5 : 9, o.ut), i, tv, ty2, rr,
+      k = o.k, inkGrid = o.dark ? '#2a323d' : '#e7ebf0', inkAxis = o.dark ? '#788493' : '#7c8695';
+  if (L.kind === 'radial') {
+    for (i = 0; i < ticks.length; i++) {
+      tv = ticks[i]; if (tv <= 0) continue;
+      rr = L.rOf(tv) * k;
+      a.push('<circle cx="' + r1(o.SX(L.cx)) + '" cy="' + r1(o.SY(L.cy)) + '" r="' + r1(rr) +
+             '" fill="none" stroke="' + inkGrid + '" stroke-width="1"/>');
+      a.push('<text x="' + r1(o.SX(L.cx) + 3) + '" y="' + r1(o.SY(L.cy) - rr - 2) + '" fill="' + inkAxis +
+             '" font-size="9">' + fmt(tv, o.ut ? 2 : 0) + '</text>');
+    }
+  } else {
+    for (i = 0; i < ticks.length; i++) {
+      tv = ticks[i]; ty2 = o.SY(L.yOf(tv));
+      if (ty2 < -20 || ty2 > o.H + 20) continue;
+      a.push('<line x1="0" y1="' + r1(ty2) + '" x2="' + o.W + '" y2="' + r1(ty2) + '" stroke="' + inkGrid +
+             '" stroke-width="1" shape-rendering="crispEdges"/>');
+      // the top-left corner belongs to the HUD badges; skip labels that would sit under them
+      if (ty2 >= 26)
+        a.push('<text x="4" y="' + r1(ty2 - 2.5) + '" fill="' + inkAxis + '" font-size="9.5">' + fmt(tv, o.ut ? 2 : 0) + '</text>');
+    }
+  }
+  return a.join('');
+}
+
+function buildScene(t, L, o) {
+  var n = t.n, N = t.N, v, c, i, key, arr, out = { axis: '', edge: '', node: '', label: '' };
+  var SX = o.SX, SY = o.SY, k = o.k, tips = [];
+
+  out.axis = buildAxis(t, L, o);
+
+  /* ---- edges (or icicle rectangles), bucketed ---- */
+  if (L.kind === 'icicle') {
+    var rb = {}, yStop = isFinite(o.animT) ? SY(L.yOf(o.animT)) : -Infinity;
+    for (v = 0; v < N; v++) {
+      var y1 = SY(L.Y1[v]), y0 = Math.max(SY(L.Y0[v]), yStop);
+      if (y1 < yStop || y1 - y0 < 0.05) continue;
+      var x0 = SX(L.X0[v]), x1 = SX(L.X1[v]), w = x1 - x0;
+      if (w < 0.12 || x1 < -40 || x0 > o.W + 40 || y1 < -40 || y0 > o.H + 40) continue;
+      var col = t.size[v] === 1 ? (o.color ? '#c9d2dc' : '#b8c2cd') : nodeColor(t, v, o.color);
+      (rb[col] || (rb[col] = [])).push('M' + r1(x0) + ' ' + r1(y0) + 'h' + r1(w) + 'v' + r1(y1 - y0) + 'h' + r1(-w) + 'Z');
+    }
+    arr = [];
+    for (key in rb) arr.push('<path d="' + rb[key].join('') + '" fill="' + key + '" stroke="' +
+      (o.dark ? '#11151b' : '#ffffff') + '" stroke-width="' + (N > 1600 ? 0.35 : 0.7) + '"/>');
+    out.edge = arr.join('');
+  } else {
+    var eb = {}, radial = L.kind === 'radial', rad = o.corner,
+        animating = isFinite(o.animT), lo = -60, hiX = o.W + 60, hiY = o.H + 60;
+    function push(wb, d) { (eb[wb] || (eb[wb] = [])).push(d); }
+    for (v = 0; v < N; v++) {
+      if (t.size[v] < 2) continue;
+      var u = branchFrac(t, v, o);
+      if (u <= 0) continue;
+      var g, travel, rest, seg, tip = null;
+      if (radial) {
+        g = radialGeom(t, L, v, o);
+        travel = travelOf(u, g, o.ut);
+        var st = radialStemD(g, travel);
+        if (st) { push(wbOf(t.size[v], n), st.d); if (animating && travel < g.s1) tip = st.tip; }
+        rest = travel - g.s1;
+        if (rest > 0) for (i = 0; i < 2; i++) {
+          c = i ? t.right[v] : t.left[v];
+          var kd = radialKidD(g, i, rest);
+          if (!kd) continue;
+          push(wbOf(t.size[c], n), kd.d);
+          if (animating && rest < g.sKid[i]) tips.push(kd.tip);
+        }
+        if (tip) tips.push(tip);
+        continue;
+      }
+      g = branchGeom(t, L, v, o);
+      // exact cull: every branch is a polyline, so its bbox is its vertices'
+      if (bboxOut(g, lo, hiX, hiY)) continue;
+      travel = travelOf(u, g, o.ut);
+      if (g.stem) {
+        seg = travel >= g.s1 ? g.stem : cutPoly(g.stem, travel);
+        if (seg && seg.length > 1) {
+          push(wbOf(t.size[v], n), polyD(seg));
+          if (animating && travel < g.s1) tips.push(seg[seg.length - 1]);
+        }
+      }
+      rest = travel - g.s1;
+      if (rest > 0) for (i = 0; i < 2; i++) {
+        c = i ? t.right[v] : t.left[v];
+        seg = rest >= g.sKid[i] ? g.kid[i] : cutPoly(g.kid[i], rest);
+        if (!seg || seg.length < 2) continue;
+        push(wbOf(t.size[c], n), rad > 0.2 ? roundedPolyD(seg, rad) : polyD(seg));
+        if (animating && rest < g.sKid[i]) tips.push(seg[seg.length - 1]);
+      }
+    }
+    // thin/pale first, thick/dark last, so the backbone sits on top
+    var wbs = [];
+    for (key in eb) wbs.push(+key);
+    wbs.sort(function (a, b) { return a - b; });
+    arr = [];
+    for (i = 0; i < wbs.length; i++)
+      arr.push('<path d="' + eb[wbs[i]].join('') + '" fill="none" stroke="' + edgeColor(wbs[i], o.dark) +
+               '" stroke-width="' + (wbs[i] / 4) + '" stroke-linecap="round" stroke-linejoin="round"/>');
+    out.edge = arr.join('');
+  }
+
+  /* ---- nodes ---- */
+  if (L.kind !== 'icicle' && !o.noNodes) {
+    var nb = {}, shown = 0, halo = o.dark ? '#0e1116' : '#ffffff', bare = !!o.leafBare;
+    for (v = 0; v < N; v++) {
+      if (!nodeVisible(t, v, o)) continue;
+      var x = SX(L.X[v]), y = SY(L.Y[v]);
+      if (x < -20 || x > o.W + 20 || y < -20 || y > o.H + 20) continue;
+      var isLeaf = t.size[v] === 1,
+          rr2 = radOf(t.size[v], n) * (o.mini ? 0.7 : 1) * (bare && isLeaf ? 0.8 : 1),
+          gw = nodeGrow(t, v, o);
+      if (gw < 1) rr2 *= 0.25 + 0.75 * gw;
+      var cb = Math.max(1, Math.round(rr2 * 2));
+      key = nodeColor(t, v, o.color) + '|' + cb + (bare && isLeaf ? '|b' : '');
+      (nb[key] || (nb[key] = [])).push('M' + r1(x) + ' ' + r1(y) + 'h0.01');
+      shown++;
+    }
+    var pass1 = [], pass2 = [];
+    for (key in nb) {
+      var pr = key.split('|'), dd = nb[key].join(''), rw = parseInt(pr[1], 10) / 2;
+      if (shown < 4000 && pr[2] !== 'b')
+        pass1.push('<path d="' + dd + '" fill="none" stroke="' + halo + '" stroke-width="' + (rw * 2 + 1.4) + '" stroke-linecap="round"/>');
+      pass2.push('<path d="' + dd + '" fill="none" stroke="' + pr[0] + '" stroke-width="' + (rw * 2) + '" stroke-linecap="round"/>');
+    }
+    out.node = pass1.join('') + pass2.join('');
+    // the root carries the whole sample; give it a ring so it reads unselected
+    if (!o.mini && nodeVisible(t, 0, o)) {
+      var r0 = radOf(n, n) * (0.25 + 0.75 * nodeGrow(t, 0, o));
+      out.node += '<circle cx="' + r1(SX(L.X[0])) + '" cy="' + r1(SY(L.Y[0])) + '" r="' + r1(r0 + 2.4) +
+                  '" fill="none" stroke="' + (o.dark ? '#8d99a8' : '#8a94a2') + '" stroke-width="1"/>';
+    }
+    out.shown = shown;
+  }
+
+  /* ---- growth frontier: one path holding every branch tip in flight ---- */
+  if (tips.length && !o.mini) {
+    var td = [];
+    for (i = 0; i < tips.length; i++) td.push('M' + r1(tips[i][0]) + ' ' + r1(tips[i][1]) + 'h0.01');
+    out.node += '<path d="' + td.join('') + '" fill="none" stroke="' + themeColors().acc +
+                '" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/>';
+  }
+
+  /* ---- labels, culled by an occupancy grid (largest clades win) ---- */
+  if (!o.mini && (o.sizes || o.leafIds || o.ratios)) {
+    // once the tree is visually dense, keep only the largest clades labelled
+    // (bySize order) and space the occupancy grid out; the rest is on hover.
+    var dense = t.N > 700, cellW = dense ? 60 : 42, cellH = dense ? 21 : 14, maxLab = dense ? 140 : 420;
+    var occ = {}, lab = [], cnt = 0, order = bySize(t), idx, txt, tx2, ty3, op;
+    var inkT = o.dark ? '#d6dee7' : '#39424e';
+    for (idx = 0; idx < order.length && cnt < maxLab; idx++) {
+      v = order[idx];
+      if (!nodeVisible(t, v, o)) continue;
+      var leaf = t.size[v] === 1;
+      txt = '';
+      if (leaf) { if (o.leafIds) txt = String(t.label[v]); }
+      else {
+        if (o.sizes) txt = String(t.size[v]);
+        if (o.ratios) txt = (txt ? txt + ' ' : '') + '(' + t.splitI[v] + ':' + (t.size[v] - t.splitI[v]) + ')';
+      }
+      if (!txt) continue;
+      if (L.kind === 'icicle') {
+        tx2 = SX(0.5 * (L.X0[v] + L.X1[v])); ty3 = SY(L.Y0[v]) + 9;
+        if (SX(L.X1[v]) - SX(L.X0[v]) < txt.length * 5.6) continue;
+        if (isFinite(o.animT) && L.Y1[v] < L.yOf(o.animT)) continue;
+      } else { tx2 = SX(L.X[v]); ty3 = SY(L.Y[v]) - radOf(t.size[v], n) - 3; }
+      if (tx2 < 2 || tx2 > o.W - 2 || ty3 < 8 || ty3 > o.H - 2) continue;
+      key = Math.floor(tx2 / cellW) + ',' + Math.floor(ty3 / cellH);
+      if (occ[key]) continue;
+      occ[key] = 1; cnt++;
+      op = nodeGrow(t, v, o);
+      lab.push('<text x="' + r1(tx2) + '" y="' + r1(ty3) + '" fill="' + inkT + '" font-size="10" text-anchor="middle"' +
+               (op < 0.999 ? ' opacity="' + r1(op) + '"' : '') +
+               ' paint-order="stroke" stroke="' + (o.dark ? '#11151b' : '#fdfdfc') + '" stroke-width="2.6">' + esc(txt) + '</text>');
+    }
+    out.label = lab.join('');
+  }
+  return out;
+}
+
+function bySize(t) {
+  if (t._bySize) return t._bySize;
+  var o = new Int32Array(t.N), i;
+  for (i = 0; i < t.N; i++) o[i] = i;
+  var arr = Array.prototype.slice.call(o);
+  arr.sort(function (a, b) { return t.size[b] - t.size[a]; });
+  t._bySize = arr; return arr;
+}
+function niceTicks(vmax, want, cont) {
+  var out = [], i;
+  if (!cont) {
+    var stepd = Math.max(1, Math.ceil(vmax / want));
+    for (i = 0; i <= vmax + 1e-9; i += stepd) out.push(i);
+    return out;
+  }
+  var raw = vmax / want, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), norm = raw / mag,
+      step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag;
+  for (i = 0; i * step <= vmax * 1.0001; i++) out.push(i * step);
+  return out;
+}
+
+/* ---- main draw ---- */
+/* The canvas size is cached: reading svg.clientWidth inside draw() forces a
+   layout flush on every animation frame. The ResizeObserver keeps it fresh. */
+function vizSize() {
+  if (!S.vw) { var svg = $('viz'); S.vw = svg.clientWidth || 900; S.vh = svg.clientHeight || 520; }
+  return S.vw;
+}
+function renderOpts(W, H) {
+  var k = S.view.k, tx = S.view.tx, ty = S.view.ty, L = S.L, ut = useTime();
+  return {
+    k: k, W: W, H: H, ut: ut, animT: S.animT, color: S.color,
+    sizes: S.showSizes, leafIds: S.showLeaf, ratios: S.showRatio, grid: S.grid,
+    dark: document.documentElement.classList.contains('dark'),
+    // how long a node takes to scale in once the growing branch reaches it
+    popWin: ut ? Math.max(1e-9, 0.02 * (L ? L.vMax : 1)) : 0.35,
+    // when the leaves are packed tighter than this they stop wearing a halo,
+    // which otherwise fuses a whole generation into one dotted line
+    leafBare: !!(L && L.leafPitch !== undefined && L.leafPitch * k < 6),
+    // corner rounding is a ~3px detail; above this many nodes the branches are
+    // packed tighter than that, so it is dropped along with its string cost
+    corner: (S.tree && S.tree.N > 3000) ? 0 : clamp(3.5 * Math.min(1, k), 0, 5),
+    SX: function (x) { return x * k + tx; }, SY: function (y) { return y * k + ty; }
+  };
+}
+function layoutAndDraw(fit) {
+  var t = S.tree, kind = S.layout;
+  vizSize();
+  if (kind === 'force' && t.n > FORCE_MAX) kind = 'tidy';
+  S.L = computeLayout(t, kind, useTime(), S.vw, S.vh, {});
+  if (fit) S.view = { k: 1, tx: 0, ty: 0 };
+  buildPick(t, S.L);
+  if (kind === 'force') startForce();
+  draw();
+}
+function draw() {
+  var t = S.tree, L = S.L; if (!t || !L) return;
+  vizSize();
+  var o = renderOpts(S.vw, S.vh);
+  var sc = buildScene(t, L, o);
+  $('lyAxis').innerHTML = sc.axis;
+  $('lyEdge').innerHTML = sc.edge;
+  $('lyNode').innerHTML = sc.node || '';
+  $('lyLabel').innerHTML = sc.label || '';
+  $('lyHi').innerHTML = buildHighlight(t, L, o);
+  var dim = S.tag >= 0 ? 'dimmed' : '';
+  $('lyEdge').setAttribute('class', dim); $('lyNode').setAttribute('class', dim); $('lyLabel').setAttribute('class', dim);
+  updateHUD(o, sc.shown);
+}
+/* Hover and plain selection only change the highlight layer. Rebuilding the
+   entire scene for a mouse move is what made hovering feel heavy at large n. */
+function drawHi() {
+  var t = S.tree, L = S.L; if (!t || !L) return;
+  vizSize();
+  $('lyHi').innerHTML = buildHighlight(t, L, renderOpts(S.vw, S.vh));
+}
+
+/* Highlight layer: tagged ancestral path, selection ring, hover ring. */
+function buildHighlight(t, L, o) {
+  var h = [], SX = o.SX, SY = o.SY, n = t.n, tc = themeColors(), acc = tc.acc, acc2 = tc.acc2;
+  var ringR = function (v) { return radOf(t.size[v], n) * (0.25 + 0.75 * nodeGrow(t, v, o)); };
+  if (S.tag >= 0) {
+    var chain = ancestry(t, S.tag), i, v, c, d;
+    if (L.kind !== 'icicle') for (i = 0; i < chain.length - 1; i++) {
+      v = chain[i]; c = chain[i + 1];
+      var frac = branchFrac(t, v, o);
+      if (frac <= 0) continue;
+      d = branchPathD(t, L, v, c, o, frac);
+      if (d) h.push('<path d="' + d + '" fill="none" stroke="' + acc +
+                    '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>');
+    }
+    for (i = 0; i < chain.length; i++) {
+      v = chain[i]; if (!nodeVisible(t, v, o)) continue;
+      if (L.kind === 'icicle') h.push(rectMark(L, v, o, acc, 1.6));
+      else h.push('<circle cx="' + r1(SX(L.X[v])) + '" cy="' + r1(SY(L.Y[v])) + '" r="' + r1(ringR(v) + 1.2) +
+                  '" fill="' + (i === chain.length - 1 ? acc : 'none') + '" stroke="' + acc + '" stroke-width="1.8"/>');
+    }
+  }
+  var mark = function (v, col, w) {
+    if (v < 0 || v >= t.N || !nodeVisible(t, v, o)) return;
+    if (L.kind === 'icicle') h.push(rectMark(L, v, o, col, w));
+    else h.push('<circle cx="' + r1(SX(L.X[v])) + '" cy="' + r1(SY(L.Y[v])) + '" r="' + r1(ringR(v) + 3) +
+                '" fill="none" stroke="' + col + '" stroke-width="' + w + '"/>');
+  };
+  if (S.hov >= 0 && S.hov !== S.sel) mark(S.hov, acc2, 1.4);
+  mark(S.sel, acc2, 2.2);
+  return h.join('');
+}
+function rectMark(L, v, o, col, w) {
+  var x0 = o.SX(L.X0[v]), x1 = o.SX(L.X1[v]), y0 = o.SY(L.Y0[v]), y1 = o.SY(L.Y1[v]);
+  return '<rect x="' + r1(x0) + '" y="' + r1(y0) + '" width="' + r1(Math.max(1, x1 - x0)) + '" height="' + r1(Math.max(1, y1 - y0)) + '" fill="none" stroke="' + col + '" stroke-width="' + w + '"/>';
+}
+function ancestry(t, leaf) {
+  var out = [], v = leaf;
+  while (v >= 0) { out.push(v); v = t.parent[v]; }
+  return out.reverse();
+}
+
+/* ---- picking ----
+   The grid lives in *layout* coordinates and holds every node, so panning,
+   zooming and the reveal animation never invalidate it; the animation's
+   visibility test is applied at query time instead. */
+function buildPick(t, L) {
+  if (!t || !L) { S.pick = null; return; }
+  if (L.kind === 'icicle') { S.pick = { icicle: true, L: L }; return; }
+  var cell = 26, g = {}, v, key;
+  for (v = 0; v < t.N; v++) {
+    key = Math.floor(L.X[v] / cell) + ',' + Math.floor(L.Y[v] / cell);
+    (g[key] || (g[key] = [])).push(v);
+  }
+  S.pick = { grid: g, cell: cell, L: L };
+}
+function pickAt(px, py) {
+  var p = S.pick, t = S.tree; if (!p || !t) return -1;
+  var k = S.view.k, lx = (px - S.view.tx) / k, ly = (py - S.view.ty) / k,
+      o = { ut: useTime(), animT: S.animT }, L = p.L;
+  if (p.icicle) {
+    var v = 0, guard = 0, tol = 1 / k, stop = isFinite(S.animT) ? L.yOf(S.animT) : -Infinity;
+    if (lx < L.X0[0] || lx > L.X1[0]) return -1;
+    while (guard++ < 100000) {
+      if (L.Y1[v] < stop) return -1;
+      if (ly >= Math.max(L.Y0[v], stop) - tol && ly <= L.Y1[v] + tol) return v;
+      if (t.size[v] < 2) return -1;
+      v = (lx <= L.X1[t.left[v]]) ? t.left[v] : t.right[v];
+    }
+    return -1;
+  }
+  var reach = 20 / k, bd = reach * reach, best = -1, span = Math.ceil(reach / p.cell),
+      cx = Math.floor(lx / p.cell), cy = Math.floor(ly / p.cell), i, j, a, q, w, d;
+  for (i = -span; i <= span; i++) for (j = -span; j <= span; j++) {
+    a = p.grid[(cx + i) + ',' + (cy + j)]; if (!a) continue;
+    for (q = 0; q < a.length; q++) {
+      w = a[q];
+      if (!nodeVisible(t, w, o)) continue;
+      d = (L.X[w] - lx) * (L.X[w] - lx) + (L.Y[w] - ly) * (L.Y[w] - ly);
+      if (d < bd) { bd = d; best = w; }
+    }
+  }
+  return best;
+}
+
+/* HUD badges are rewritten every frame otherwise; the guard keeps the
+   animation loop from re-parsing three fragments of HTML 60 times a second. */
+var hudLast = { clock: null, count: null, note: null, legend: null };
+function setHud(id, slot, html) {
+  if (hudLast[slot] === html) return;
+  hudLast[slot] = html; $(id).innerHTML = html;
+}
+function updateHUD(o, shown) {
+  var t = S.tree, done = !isFinite(S.animT);
+  var cur = done ? (o.ut ? t.maxTime : t.maxDepth) : S.animT;
+  setHud('hudClock', 'clock', o.ut
+    ? T('hud.time') + ' <b>' + fmt(cur, 3) + '</b> / ' + fmt(t.maxTime, 3)
+    : T('hud.gen') + ' <b>' + Math.floor(cur + 1e-9) + '</b> / ' + t.maxDepth);
+  setHud('hudCount', 'count', t.n + ' ' + (lang === 'zh' ? '叶' : 'leaves') + ' &middot; ' + T('hud.nodes') + ' <b>' + num(t.N) + '</b>' + (shown !== undefined && shown < t.N ? ' &middot; ' + T('hud.shown') + ' ' + num(shown) : ''));
+  var note = '';
+  if (S.layout === 'dendro') note = T('note.dendro');
+  else if (S.layout === 'force') note = t.n > FORCE_MAX ? T('note.forceBig') : T('note.force');
+  else if (S.layout === 'icicle') note = T('note.icicle');
+  if (hudLast.note !== note) { setHud('hudNote', 'note', note); $('hudNote').style.display = note ? '' : 'none'; }
+  var lg = S.color ? '' : 'none';
+  if (hudLast.legend !== lg) { hudLast.legend = lg; $('hudLegend').style.display = lg; }
+}
+
+/* ================= 7. interaction ================= */
+var drag = null, rafPending = false, rafHi = false;
+function schedule() { if (rafPending) return; rafPending = true; requestAnimationFrame(function () { rafPending = false; draw(); }); }
+/* Hover only needs the highlight layer. */
+function scheduleHi() { if (rafHi) return; rafHi = true; requestAnimationFrame(function () { rafHi = false; drawHi(); }); }
+function reduceMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+
+function initViz() {
+  var svg = $('viz');
+  svg.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    var r = svg.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    stopTween();
+    zoomAbout(mx, my, Math.pow(1.0016, -e.deltaY));
+  }, { passive: false });
+
+  svg.addEventListener('pointerdown', function (e) {
+    var r = svg.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    stopTween();
+    var v = pickAt(mx, my);
+    if (S.layout === 'force' && v >= 0 && S.force) {
+      drag = { node: v, sx: mx, sy: my }; S.force.fixed = v; S.force.alpha = Math.max(S.force.alpha, 0.5); startForce();
+    } else {
+      drag = { pan: true, sx: mx, sy: my, tx: S.view.tx, ty: S.view.ty, moved: 0 };
+      svg.classList.add('grabbing');
+    }
+    svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener('pointermove', function (e) {
+    var r = svg.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    if (drag && drag.pan) {
+      drag.moved += Math.abs(mx - drag.sx) + Math.abs(my - drag.sy);
+      S.view.tx = drag.tx + (mx - drag.sx); S.view.ty = drag.ty + (my - drag.sy);
+      schedule(); return;
+    }
+    if (drag && drag.node >= 0 && S.force) {
+      var k = S.view.k;
+      S.force.X[drag.node] = (mx - S.view.tx) / k; S.force.Y[drag.node] = (my - S.view.ty) / k;
+      S.force.alpha = Math.max(S.force.alpha, 0.35); return;
+    }
+    var v = pickAt(mx, my);
+    if (v !== S.hov) { S.hov = v; scheduleHi(); drawInfo(); }
+    showTip(e.clientX, e.clientY, v);
+  });
+  function endDrag(e) {
+    var svgEl = $('viz');
+    if (drag && drag.pan && drag.moved < 4) {
+      var r = svgEl.getBoundingClientRect(), v = pickAt(e.clientX - r.left, e.clientY - r.top);
+      if (v >= 0) selectNode(v, S.tree.size[v] === 1);
+    }
+    if (drag && drag.node >= 0 && S.force) S.force.fixed = -1;
+    drag = null; svgEl.classList.remove('grabbing');
+  }
+  svg.addEventListener('pointerup', endDrag);
+  svg.addEventListener('pointercancel', function () { drag = null; $('viz').classList.remove('grabbing'); });
+  svg.addEventListener('pointerleave', function () { S.hov = -1; hideTip(); scheduleHi(); });
+
+  svg.addEventListener('keydown', function (e) {
+    var t = S.tree, v = S.sel, handled = true;
+    if (e.key === 'ArrowUp') { if (v > 0) selectNode(t.parent[v], false); }
+    else if (e.key === 'ArrowLeft') { if (v >= 0 && t.size[v] > 1) selectNode(t.left[v], false); }
+    else if (e.key === 'ArrowRight') { if (v >= 0 && t.size[v] > 1) selectNode(t.right[v], false); }
+    else if (e.key === 't' || e.key === 'T') { tagRandom(); }
+    else if (e.key === 'Escape') { S.tag = -1; refreshTagUI(); }
+    else if (e.key === ' ') { togglePlay(); }
+    else if (e.key === '+' || e.key === '=') { tweenView(zoomTarget(S.vw / 2, S.vh / 2, 1.25)); }
+    else if (e.key === '-') { tweenView(zoomTarget(S.vw / 2, S.vh / 2, 0.8)); }
+    else handled = false;
+    if (handled) e.preventDefault();
+  });
+
+  $('btnZi').onclick = function () { vizSize(); tweenView(zoomTarget(S.vw / 2, S.vh / 2, 1.3)); };
+  $('btnZo').onclick = function () { vizSize(); tweenView(zoomTarget(S.vw / 2, S.vh / 2, 1 / 1.3)); };
+  $('btnZf').onclick = function () { tweenView({ k: 1, tx: 0, ty: 0 }, 240); };
+
+  var ro = new ResizeObserver(function () {
+    if (!S.tree) return;
+    S.vw = svg.clientWidth || 900; S.vh = svg.clientHeight || 520;
+    layoutAndDraw(false);
+  });
+  ro.observe(svg);
+}
+function zoomTarget(mx, my, f) {
+  var k0 = S.view.k, k1 = clamp(k0 * f, 0.15, 60);
+  return { k: k1, tx: mx - (mx - S.view.tx) * (k1 / k0), ty: my - (my - S.view.ty) * (k1 / k0) };
+}
+function zoomAbout(mx, my, f) { S.view = zoomTarget(mx, my, f); schedule(); }
+/* Button/keyboard zoom and "fit" are tweened so the frame of reference never
+   teleports. The wheel is deliberately left instant. */
+var viewTween = 0;
+function stopTween() { if (viewTween) { cancelAnimationFrame(viewTween); viewTween = 0; } }
+function tweenView(target, dur) {
+  stopTween();
+  if (reduceMotion() || document.visibilityState === 'hidden') { S.view = target; draw(); return; }
+  var from = { k: S.view.k, tx: S.view.tx, ty: S.view.ty }, t0 = performance.now();
+  dur = dur || 180;
+  var step = function (now) {
+    var e = easeInOutCubic(clamp((now - t0) / dur, 0, 1));
+    S.view = { k: from.k + (target.k - from.k) * e, tx: from.tx + (target.tx - from.tx) * e,
+               ty: from.ty + (target.ty - from.ty) * e };
+    draw();
+    viewTween = e < 1 ? requestAnimationFrame(step) : 0;
+  };
+  viewTween = requestAnimationFrame(step);
+}
+function selectNode(v, tagIt) {
+  var tag0 = S.tag;
+  S.sel = v;
+  if (tagIt) S.tag = (S.tag === v ? -1 : v);
+  // the tag dims the rest of the tree, so it needs the whole scene; a plain
+  // selection change is confined to the highlight layer
+  if (S.tag !== tag0) draw(); else drawHi();
+  drawInfo(); drawQ(); drawTag();
+}
+function tagRandom() {
+  var t = S.tree; if (!t) return;
+  var v = t.leafOrder[Math.floor(Math.random() * t.n)];
+  S.tag = v; S.sel = v; draw(); drawInfo(); drawQ(); drawTag();
+}
+function refreshTagUI() { draw(); drawInfo(); drawQ(); drawTag(); }
+
+function showTip(cx, cy, v) {
+  var el = $('tip'), t = S.tree;
+  if (!S.tips || v < 0 || !t) { hideTip(); return; }
+  var m = t.size[v], rows = [];
+  rows.push('<b>' + (v === 0 ? T('k.root') : m === 1 ? T('k.leaf') : T('k.internal')) + '</b>');
+  rows.push(T('k.m') + ': <b>' + num(m) + '</b>');
+  if (m > 1) {
+    var i = t.splitI[v];
+    rows.push(T('k.children') + ': <b>' + i + ' + ' + (m - i) + '</b>');
+    rows.push(T('k.balance') + ': <b>' + fmt(balanceOf(t, v), 3) + '</b>');
+  } else rows.push(T('k.leafid') + ': <b>' + t.label[v] + '</b>');
+  rows.push(T('k.depth') + ': <b>' + t.depth[v] + '</b>');
+  if (S.model === 'ctcs') {
+    rows.push(T('k.birth') + ': <b>' + fmt(t.birth[v], 3) + '</b>');
+    if (m > 1) rows.push(T('k.hold') + ': <b>' + fmt(t.splitT[v] - t.birth[v], 3) + '</b>');
+  }
+  el.innerHTML = rows.join('<br>');
+  el.classList.add('on');
+  var r = el.getBoundingClientRect();
+  el.style.left = clamp(cx + 14, 6, window.innerWidth - r.width - 8) + 'px';
+  el.style.top = clamp(cy + 14, 6, window.innerHeight - r.height - 8) + 'px';
+}
+function hideTip() { $('tip').classList.remove('on'); }
+
+/* ================= 8. animation ================= */
+/* A full sweep takes ANIM_SECONDS at 1x regardless of the tree's height. The
+   old fixed 1.8 generations/second made a comb-like tree at beta = -1.9 crawl. */
+var ANIM_SECONDS = 7;
+function animMax() { return useTime() ? S.tree.maxTime : S.tree.maxDepth; }
+function togglePlay() {
+  S.playing = !S.playing;
+  if (S.playing) {
+    if (!isFinite(S.animT) || S.animT >= animMax() - 1e-9) S.animT = 0;
+    S.lastFrame = performance.now();
+    requestAnimationFrame(animFrame);
+  }
+  syncPlayButtons();
+}
+function animFrame(now) {
+  if (!S.playing) return;
+  var dt = Math.min(0.1, (now - S.lastFrame) / 1000); S.lastFrame = now;
+  var mx = animMax(), rate = Math.max(1e-9, mx) / ANIM_SECONDS;
+  S.animT = (isFinite(S.animT) ? S.animT : 0) + dt * rate * S.speed;
+  if (S.animT >= mx) { S.animT = Infinity; S.playing = false; syncPlayButtons(); }
+  syncScrub(); draw();
+  if (S.playing) requestAnimationFrame(animFrame);
+}
+function syncPlayButtons() {
+  $('btnPlay').innerHTML = S.playing ? T('b.pause') : T('b.play');
+  $('btnPlay2').innerHTML = S.playing ? '&#10073;&#10073;' : '&#9654;';
+}
+function syncScrub() {
+  var mx = animMax(), cur = isFinite(S.animT) ? S.animT : mx;
+  $('rgTime').value = Math.round(1000 * (mx > 0 ? cur / mx : 1));
+  $('lblTime').textContent = useTime()
+    ? 't = ' + fmt(cur, 3) + ' / ' + fmt(mx, 3)
+    : (lang === 'zh' ? '第 ' : 'gen ') + Math.floor(cur + 1e-9) + ' / ' + mx;
+}
+function startForce() {
+  if (S.forceRAF) return;
+  var step = function () {
+    S.forceRAF = 0;
+    if (S.layout !== 'force' || !S.force) return;
+    var alive = forceTick(S.tree);
+    buildPick(S.tree, S.L);          // every node moves on every tick here
+    draw();
+    if (alive || drag) S.forceRAF = requestAnimationFrame(step);
+  };
+  S.forceRAF = requestAnimationFrame(step);
+}
+
+/* ================= 9. right-hand panels ================= */
+function drawInfo() {
+  var t = S.tree, v = S.hov >= 0 ? S.hov : S.sel, el = $('infoClade');
+  if (!t || v < 0) { el.innerHTML = '<div class="empty">' + T('hint.hover') + '</div>'; return; }
+  var m = t.size[v], rows = [], ctcs = S.model === 'ctcs';
+  rows.push([T('k.kind'), '<b>' + (v === 0 ? T('k.root') : m === 1 ? T('k.leaf') : T('k.internal')) + '</b>']);
+  rows.push([T('k.m'), num(m)]);
+  if (m > 1) {
+    var i = t.splitI[v], j = m - i;
+    rows.push([T('k.children'), '<b>' + i + ' + ' + j + '</b>']);
+    rows.push([T('k.ratio'), fmt(i / m, 4) + ' / ' + fmt(j / m, 4)]);
+    rows.push([T('k.balance'), '<b>' + fmt(balanceOf(t, v), 4) + '</b>']);
+  } else rows.push([T('k.leafid'), '<b>' + t.label[v] + '</b>']);
+  rows.push([T('k.depth'), t.depth[v]]);
+  if (v > 0) rows.push([T('k.parent'), num(t.size[t.parent[v]])]);
+  if (ctcs) {
+    rows.push([T('k.birth'), fmt(t.birth[v], 4)]);
+    if (m > 1) {
+      rows.push([T('k.split'), fmt(t.splitT[v], 4)]);
+      rows.push([T('k.hold'), '<b>' + fmt(t.splitT[v] - t.birth[v], 4) + '</b>']);
+      rows.push([T('k.rate'), fmt(C.harmonic(m - 1), 4)]);
+    }
+  }
+  el.innerHTML = kv(rows);
+}
+
+/* Split-law chart for the selected clade, with the realized i marked. */
+function drawQ() {
+  var t = S.tree, v = S.hov >= 0 ? S.hov : S.sel, svg = $('qchart');
+  var W = 300, H = 150, padL = 26, padR = 8, padT = 10, padB = 20;
+  if (!t || v < 0 || t.size[v] < 2) {
+    svg.innerHTML = '<text x="150" y="76" text-anchor="middle" font-size="11" fill="' + (cssv('--ink3') || '#888') + '">' + esc(T('q.none')) + '</text>';
+    $('qnote').innerHTML = ''; return;
+  }
+  var m = t.size[v], p = C.splitProbs(m, S.beta), L = p.length, realized = t.splitI[v],
+      iw = W - padL - padR, ih = H - padT - padB, i, x, y, h = [];
+  var lo = Infinity, hi = 0;
+  for (i = 0; i < L; i++) { if (p[i] > hi) hi = p[i]; if (p[i] > 0 && p[i] < lo) lo = p[i]; }
+  if (!isFinite(lo) || lo <= 0) lo = hi * 1e-6;
+  var logMode = S.qlog && lo < hi;
+  var yOf = logMode
+    ? function (q) { return padT + ih * (1 - (Math.log(Math.max(q, lo)) - Math.log(lo)) / (Math.log(hi) - Math.log(lo) || 1)); }
+    : function (q) { return padT + ih * (1 - q / (hi || 1)); };
+  var xOf = function (ii) { return padL + (L === 1 ? iw / 2 : iw * (ii - 1) / (L - 1)); };
+  var ink = cssv('--ink3') || '#888', line = cssv('--line') || '#ddd', acc = cssv('--accent') || '#b4530a';
+
+  h.push('<rect x="' + padL + '" y="' + padT + '" width="' + iw + '" height="' + ih + '" fill="none" stroke="' + line + '"/>');
+  if (L <= 110) {
+    var bw = Math.max(1, iw / L * 0.72);
+    for (i = 1; i <= L; i++) {
+      x = xOf(i); y = yOf(p[i - 1]);
+      h.push('<rect x="' + r1(x - bw / 2) + '" y="' + r1(y) + '" width="' + r1(bw) + '" height="' + r1(padT + ih - y) + '" fill="' + (i === realized ? acc : (cssv('--accent2') || '#0b6ea8')) + '" opacity="' + (i === realized ? 1 : 0.5) + '"/>');
+    }
+  } else {
+    var d = '';
+    for (i = 1; i <= L; i++) d += (i === 1 ? 'M' : 'L') + r1(xOf(i)) + ' ' + r1(yOf(p[i - 1]));
+    h.push('<path d="' + d + 'L' + r1(xOf(L)) + ' ' + (padT + ih) + 'L' + r1(xOf(1)) + ' ' + (padT + ih) + 'Z" fill="' + (cssv('--accent2') || '#0b6ea8') + '" opacity="0.28"/>');
+    h.push('<path d="' + d + '" fill="none" stroke="' + (cssv('--accent2') || '#0b6ea8') + '" stroke-width="1.2"/>');
+    h.push('<line x1="' + r1(xOf(realized)) + '" y1="' + padT + '" x2="' + r1(xOf(realized)) + '" y2="' + (padT + ih) + '" stroke="' + acc + '" stroke-width="1.4"/>');
+  }
+  h.push('<circle cx="' + r1(xOf(realized)) + '" cy="' + r1(yOf(p[realized - 1])) + '" r="2.6" fill="' + acc + '"/>');
+  var xr = clamp(xOf(realized), padL + 8, W - padR - 8);
+  if (xr - padL > 26) h.push('<text x="' + padL + '" y="' + (H - 6) + '" font-size="9" fill="' + ink + '">1</text>');
+  if (W - padR - xr > 26) h.push('<text x="' + (W - padR) + '" y="' + (H - 6) + '" font-size="9" fill="' + ink + '" text-anchor="end">' + (m - 1) + '</text>');
+  h.push('<text x="' + r1(xr) + '" y="' + (H - 6) + '" font-size="9" fill="' + acc + '" text-anchor="middle">i=' + realized + '</text>');
+  h.push('<text x="2" y="' + (padT + 8) + '" font-size="8.5" fill="' + ink + '">' + fmt(hi, 4) + '</text>');
+  h.push('<text x="2" y="' + (padT + ih) + '" font-size="8.5" fill="' + ink + '">' + (logMode ? fmt(lo, 4) : '0') + '</text>');
+  svg.innerHTML = h.join('');
+  $('qnote').innerHTML = 'm = ' + m + (Math.abs(S.beta + 1) < 1e-9 ? ' &middot; ' + T('q.formula') : '');
+}
+
+function drawTag() {
+  var t = S.tree, el = $('infoTag');
+  if (!t || S.tag < 0) { el.innerHTML = '<div class="empty">' + T('empty.tag') + '</div>'; return; }
+  var ch = ancestry(t, S.tag), i, v, ctcs = S.model === 'ctcs', h = [];
+  var chain = [];
+  for (i = 0; i < ch.length; i++) chain.push(i === ch.length - 1 ? '<b>' + t.size[ch[i]] + '</b>' : String(t.size[ch[i]]));
+  h.push(kv([
+    [T('tag.id'), '<b>' + t.label[S.tag] + '</b>'],
+    [T('tag.depth'), '<b>' + t.depth[S.tag] + '</b>'],
+    ctcs ? [T('tag.height'), '<b>' + fmt(t.birth[S.tag], 4) + '</b>'] : null
+  ]));
+  h.push('<div class="lab" style="margin-top:9px">' + T('tag.chain') + '</div>');
+  h.push('<div class="chain">' + chain.join(' &rarr; ') + '</div>');
+  if (ch.length > 1) {
+    h.push('<div class="lab" style="margin-top:9px">' + T('tag.steps') + '</div>');
+    var rows = '<div class="scrollbox"><table class="tbl"><thead><tr><th>' + T('th.step') + '</th><th>' + T('th.m') + '</th><th>' + (lang === 'zh' ? '分裂' : 'split') + '</th><th>' + T('th.ratio') + '</th>' + (ctcs ? '<th>' + T('th.hold') + '</th>' : '') + '</tr></thead><tbody>';
+    for (i = 0; i < ch.length - 1; i++) {
+      v = ch[i];
+      var m = t.size[v], si = t.splitI[v], taken = t.size[ch[i + 1]];
+      rows += '<tr><td>' + (i + 1) + '</td><td>' + m + '</td><td>' + si + ' + ' + (m - si) + '</td><td>' + fmt(taken / m, 3) + '</td>' +
+              (ctcs ? '<td>' + fmt(t.splitT[v] - t.birth[v], 3) + '</td>' : '') + '</tr>';
+    }
+    h.push(rows + '</tbody></table></div>');
+  }
+  el.innerHTML = h.join('');
+}
+
+function drawStats() {
+  var s = S.stats, t = S.tree; if (!s) return;
+  var cards = [
+    ['s.n', num(s.n), ''],
+    ['s.height', num(s.height), ''],
+    ['s.mindepth', num(s.minDepth), ''],
+    ['s.meandepth', fmt(s.meanDepth, 3), ''],
+    ['s.sackin', num(s.sackin), ''],
+    ['s.colless', num(s.colless), ''],
+    ['s.rootsplit', s.rootI + ' + ' + s.rootJ, ''],
+    ['s.rootbal', fmt(2 * s.rootFrac, 4), 'min/n = ' + fmt(s.rootFrac, 4)]
+  ];
+  if (S.model === 'ctcs') {
+    cards.push(['s.ctcsmax', fmt(s.ctcsMax, 3), '']);
+    cards.push(['s.ctcsmean', fmt(s.ctcsMean, 3), '']);
+    cards.push(['s.tbl', fmt(s.ctcsTotalBranch, 2), '']);
+  }
+  var h = '', i;
+  for (i = 0; i < cards.length; i++)
+    h += '<div class="stat" title="' + esc(stripTags(T(cards[i][0] + '.t'))) + '"><div class="k">' + T(cards[i][0]) +
+         '</div><div class="v">' + cards[i][1] + '</div>' + (cards[i][2] ? '<div class="s">' + cards[i][2] + '</div>' : '') + '</div>';
+  $('stats').innerHTML = h;
+}
+
+/* ================= 10. controls, validation, URL state ================= */
+function showErr(msg) { var e = $('errIn'); e.innerHTML = msg || ''; e.className = msg ? 'err show' : 'err'; return !msg; }
+function readInputs() {
+  var b = parseFloat($('inBeta').value), n = parseFloat($('inN').value);
+  if (!isFinite(b)) return showErr(T('err.beta'));
+  if (b <= -2) return showErr(T('err.beta'));
+  if (!isFinite(n)) return showErr(T('err.nint'));
+  if (Math.abs(n - Math.round(n)) > 1e-9) return showErr(T('err.nint'));
+  n = Math.round(n);
+  if (n < 2) return showErr(T('err.n2'));
+  if (n > MAXN) return showErr(T('err.nmax'));
+  showErr('');
+  var changed = (b !== S.beta) || (n !== S.n);
+  S.beta = b; S.n = n;
+  if (Math.abs(S.beta + 1) > 1e-9 && S.model === 'ctcs') { S.model = 'discrete'; S.scale = 'gen'; }
+  return changed || true;
+}
+function syncControls() {
+  var isCrit = Math.abs(S.beta + 1) < 1e-9;
+  $('inBeta').value = S.beta;
+  $('rgBeta').value = clamp(S.beta, -1.99, 10);
+  $('inN').value = S.n; $('inSeed').value = S.seed;
+  $('selLayout').value = S.layout; $('selScale').value = S.scale;
+  $('btnCtcs').disabled = !isCrit;
+  var mb = document.querySelectorAll('[data-model]'), i;
+  for (i = 0; i < mb.length; i++) mb[i].classList.toggle('on', mb[i].getAttribute('data-model') === S.model);
+  $('selScale').disabled = (S.model !== 'ctcs');
+  $('modelNote').innerHTML = isCrit ? (S.model === 'ctcs' ? T('note.ctcsOn') : '') : T('note.ctcsOff');
+  $('betaNote').innerHTML = betaBlurb();
+  $('chipModel').textContent = S.model === 'ctcs' ? 'CTCS' : (lang === 'zh' ? '离散' : 'discrete');
+  $('chipParams').innerHTML = '&beta; = ' + fmt(S.beta, 3) + ' &middot; n = ' + S.n + ' &middot; seed ' + esc(S.seed);
+  $('ckSizes').checked = S.showSizes; $('ckLeaf').checked = S.showLeaf; $('ckRatio').checked = S.showRatio;
+  $('ckColor').checked = S.color; $('ckTips').checked = S.tips; $('ckGrid').checked = S.grid; $('ckQlog').checked = S.qlog;
+  $('lblSpeed').textContent = fmt(S.speed, 2) + '×';
+  $('layoutNote').innerHTML = '';
+  syncPlayButtons(); syncScrub();
+}
+function betaBlurb() {
+  var b = S.beta, z = lang === 'zh';
+  if (Math.abs(b + 1) < 1e-9) return z ? '临界 β = −1:q(m,i) = m / (2H<sub>m−1</sub> i (m−i))。' : 'Critical case: q(m,i) = m / (2H<sub>m−1</sub> i (m−i)).';
+  if (Math.abs(b) < 1e-9) return z ? 'β = 0:分裂位置在 {1,…,m−1} 上均匀 (Yule–Harding)。' : 'β = 0: the split point is uniform on {1,…,m−1} (Yule–Harding).';
+  if (Math.abs(b + 1.5) < 1e-9) return z ? 'β = −3/2:PDA / 均匀 cladogram 模型。' : 'β = −3/2: the PDA / uniform cladogram model.';
+  if (b < -1.5) return z ? 'β 接近 −2:极端分裂 1 + (m−1) 占主导,树接近梳状。' : 'β near −2: extreme splits 1 + (m−1) dominate; the tree approaches a comb.';
+  if (b > 2) return z ? 'β 较大:分裂接近等分,树接近完全平衡。' : 'Large β: splits are close to even, so the tree is nearly balanced.';
+  return '';
+}
+function writeHash() {
+  var h = '#b=' + S.beta + '&n=' + S.n + '&s=' + encodeURIComponent(S.seed) + '&l=' + S.layout + '&m=' + S.model + '&sc=' + S.scale + '&lang=' + lang;
+  if (location.hash !== h) history.replaceState(null, '', h);
+}
+function readHash() {
+  var q = {}, parts = location.hash.replace(/^#/, '').split('&'), i, kvp;
+  for (i = 0; i < parts.length; i++) { kvp = parts[i].split('='); if (kvp[0]) q[kvp[0]] = decodeURIComponent(kvp[1] || ''); }
+  if (q.lang === 'zh' || q.lang === 'en') lang = q.lang;
+  if (q.b !== undefined && isFinite(parseFloat(q.b)) && parseFloat(q.b) > -2) S.beta = parseFloat(q.b);
+  if (q.n !== undefined && isFinite(parseInt(q.n, 10))) S.n = clamp(parseInt(q.n, 10), 2, MAXN);
+  if (q.s) S.seed = q.s;
+  if (['tidy', 'icicle', 'radial', 'dendro', 'force'].indexOf(q.l) >= 0) S.layout = q.l;
+  if (q.m === 'ctcs' && Math.abs(S.beta + 1) < 1e-9) S.model = 'ctcs';
+  if (q.sc === 'time' && S.model === 'ctcs') S.scale = 'time';
+}
+
+function initControls() {
+  function applyParams(refit) { if (readInputs()) rebuild(true), (refit && (S.view = { k: 1, tx: 0, ty: 0 }, draw())); }
+  $('inBeta').addEventListener('change', function () { applyParams(false); });
+  $('inN').addEventListener('change', function () { applyParams(true); });
+  $('rgBeta').addEventListener('input', function () { $('inBeta').value = parseFloat(this.value); applyParams(false); });
+  $('inSeed').addEventListener('change', function () { S.seed = this.value || 'seed'; rebuild(false); });
+  $('btnResample').onclick = function () { S.seed = randSeed(); rebuild(false); };
+  $('btnReroll').onclick = function () { rebuild(false); };
+  var pb = document.querySelectorAll('[data-beta]'), i;
+  for (i = 0; i < pb.length; i++) pb[i].onclick = function () { $('inBeta').value = this.getAttribute('data-beta'); readInputs(); rebuild(true); };
+  var mb = document.querySelectorAll('[data-model]');
+  for (i = 0; i < mb.length; i++) mb[i].onclick = function () {
+    if (this.disabled) return;
+    var oldL = S.L, oldName = S.layout;
+    S.model = this.getAttribute('data-model');
+    S.scale = (S.model === 'ctcs') ? 'time' : 'gen';
+    S.animT = Infinity; S.playing = false;
+    morphTo(oldL, oldName); drawStats(); drawInfo(); drawTag();
+  };
+  $('selLayout').onchange = function () {
+    var old = S.L, oldName = S.layout;
+    S.layout = this.value;
+    morphTo(old, oldName);
+  };
+  $('selScale').onchange = function () {
+    var oldL = S.L, oldName = S.layout;
+    S.scale = this.value; S.animT = Infinity;
+    morphTo(oldL, oldName);
+  };
+  $('btnPlay').onclick = togglePlay; $('btnPlay2').onclick = togglePlay;
+  $('btnReset').onclick = function () { S.playing = false; S.animT = 0; syncPlayButtons(); syncScrub(); draw(); };
+  $('rgSpeed').addEventListener('input', function () { S.speed = Math.pow(2, parseFloat(this.value)); $('lblSpeed').textContent = fmt(S.speed, 2) + '×'; });
+  $('rgTime').addEventListener('input', function () {
+    S.playing = false; syncPlayButtons();
+    var f = parseFloat(this.value) / 1000, mx = animMax();
+    S.animT = f >= 0.999 ? Infinity : f * mx;
+    syncScrub(); draw();
+  });
+  var toggles = [['ckSizes', 'showSizes'], ['ckLeaf', 'showLeaf'], ['ckRatio', 'showRatio'], ['ckColor', 'color'], ['ckTips', 'tips'], ['ckGrid', 'grid']];
+  for (i = 0; i < toggles.length; i++) (function (id, key) {
+    $(id).onchange = function () { S[key] = this.checked; draw(); };
+  })(toggles[i][0], toggles[i][1]);
+  $('ckQlog').onchange = function () { S.qlog = this.checked; drawQ(); };
+  $('btnTag').onclick = tagRandom;
+  $('btnUntag').onclick = function () { S.tag = -1; refreshTagUI(); };
+  $('btnTheme').onclick = function () {
+    document.documentElement.classList.toggle('dark');
+    try { localStorage.setItem('bst-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {}
+    invalidateTheme();
+    paintRamp(); draw(); drawQ(); drawEns();
+  };
+  $('btnLang').onclick = function () {
+    lang = (lang === 'en' ? 'zh' : 'en');
+    try { localStorage.setItem('bst-lang', lang); } catch (e) {}
+    applyLang(); buildHelp(); refreshAll(false); drawEns(); renderEnsTable();
+  };
+  $('btnSvg').onclick = exportSVG;
+  $('btnEns').onclick = runEnsemble;
+  $('btnEnsStop').onclick = stopEnsemble;
+  $('selStat').onchange = drawEns;
+  $('btnCmp').onclick = drawCompare;
+  $('selCmpView').onchange = drawCompare;
+  window.addEventListener('resize', function () { drawEns(); });
+}
+function randSeed() {
+  var s = 'abcdefghjkmnpqrstuvwxyz23456789', o = '', i;
+  for (i = 0; i < 8; i++) o += s[Math.floor(Math.random() * s.length)];
+  return o;
+}
+/* Layout switch: interpolate node positions while keeping the real visual
+   encoding (node radius and colour, edge width and ink), cross-fade the axis,
+   and cross-fade the icicle's rectangles whenever either end of the switch is
+   the icicle view. Also used for the generation <-> continuous-time switch. */
+var morphActive = null;
+function morphOpts(W, H, kk, ttx, tty, ut) {
+  return { k: kk, W: W, H: H, ut: ut, animT: Infinity, color: S.color, grid: S.grid,
+           sizes: false, leafIds: false, ratios: false, popWin: 1, leafBare: false, corner: 0,
+           dark: isDark(), mini: false,
+           SX: function (x) { return x * kk + ttx; }, SY: function (y) { return y * kk + tty; } };
+}
+function morphTo(oldL, oldName) {
+  var t = S.tree, kind = S.layout;
+  vizSize();
+  var W = S.vw, H = S.vh;
+  if (kind === 'force' && t.n > FORCE_MAX) kind = 'tidy';
+  var oldXY = null, oldUt = oldL ? !!oldL.ut : useTime();
+  if (oldL && oldL.X && oldL.X.length === t.N && document.visibilityState !== 'hidden' &&
+      !reduceMotion() && t.N <= 4000) {
+    oldXY = { X: Float64Array.from(oldL.X), Y: Float64Array.from(oldL.Y) };
+  }
+  var oldView = S.view;
+  S.view = { k: 1, tx: 0, ty: 0 };
+  S.L = computeLayout(t, kind, useTime(), W, H, {});
+  buildPick(t, S.L);
+  if (!oldXY) { if (kind === 'force') startForce(); draw(); syncControls(); writeHash(); return; }
+
+  stopTween();
+  var newL = S.L, newXY = { X: newL.X, Y: newL.Y }, newUt = useTime(),
+      t0 = performance.now(), DUR = 560, done = false, dark = isDark(), n = t.n, v;
+  /* Icicle rectangles are built once at identity and repositioned with a group
+     transform, which is exactly the view affine; the axis is rebuilt per frame
+     because its labels must not scale with the view. */
+  var idOpt = morphOpts(W, H, 1, 0, 0, oldUt);
+  var rectOld = oldName === 'icicle' ? buildScene(t, oldL, idOpt).edge : '';
+  var rectNew = kind === 'icicle' ? buildScene(t, newL, morphOpts(W, H, 1, 0, 0, newUt)).edge : '';
+  // per-node ink / per-edge width, so the morph reads as the real tree moving
+  var nodeKey = new Array(t.N), edgeKey = new Int32Array(t.N);
+  for (v = 0; v < t.N; v++) {
+    nodeKey[v] = nodeColor(t, v, S.color) + '|' + Math.max(1, Math.round(radOf(t.size[v], n) * 2));
+    edgeKey[v] = wbOf(t.size[v], n);
+  }
+
+  var finish = function () {
+    if (done) return;
+    done = true; morphActive = null; clearTimeout(guard);
+    $('lyMorph').innerHTML = '';
+    $('lyLabel').style.opacity = '';
+    if (kind === 'force') startForce();
+    draw();
+  };
+  morphActive = finish;
+  // rAF is suspended in background tabs; this guarantees the view is never
+  // left cleared if the animation frames never arrive.
+  var guard = setTimeout(finish, DUR + 500);
+  $('lyEdge').innerHTML = ''; $('lyNode').innerHTML = ''; $('lyLabel').innerHTML = ''; $('lyHi').innerHTML = '';
+  $('lyLabel').style.opacity = '0';
+  var vscale = oldView.k, vtx = oldView.tx, vty = oldView.ty;
+  function step(now) {
+    if (done) return;
+    var u = clamp((now - t0) / DUR, 0, 1), e = easeInOutCubic(u);
+    var kk = vscale + (1 - vscale) * e, ttx = vtx * (1 - e), tty = vty * (1 - e);
+    var eb = {}, nb = {}, i, key, x, y, px, py, pp, wbs = [], h = '';
+    for (v = 0; v < t.N; v++) {
+      x = (oldXY.X[v] + (newXY.X[v] - oldXY.X[v]) * e) * kk + ttx;
+      y = (oldXY.Y[v] + (newXY.Y[v] - oldXY.Y[v]) * e) * kk + tty;
+      if (v > 0) {
+        pp = t.parent[v];
+        px = (oldXY.X[pp] + (newXY.X[pp] - oldXY.X[pp]) * e) * kk + ttx;
+        py = (oldXY.Y[pp] + (newXY.Y[pp] - oldXY.Y[pp]) * e) * kk + tty;
+        (eb[edgeKey[v]] || (eb[edgeKey[v]] = [])).push('M' + r1(px) + ' ' + r1(py) + 'L' + r1(x) + ' ' + r1(y));
+      }
+      key = nodeKey[v];
+      (nb[key] || (nb[key] = [])).push('M' + r1(x) + ' ' + r1(y) + 'h0.01');
+    }
+    for (key in eb) wbs.push(+key);
+    wbs.sort(function (a, b) { return a - b; });
+    for (i = 0; i < wbs.length; i++)
+      h += '<path d="' + eb[wbs[i]].join('') + '" fill="none" stroke="' + edgeColor(wbs[i], dark) +
+           '" stroke-width="' + (wbs[i] / 4) + '" stroke-linecap="round"/>';
+    for (key in nb) {
+      var pr = key.split('|');
+      h += '<path d="' + nb[key].join('') + '" fill="none" stroke="' + pr[0] +
+           '" stroke-width="' + parseInt(pr[1], 10) + '" stroke-linecap="round"/>';
+    }
+    $('lyMorph').innerHTML = h;
+    // axis: the old one fades out over the first half, the new one in over the second
+    var aOut = 1 - clamp(u / 0.45, 0, 1), aIn = clamp((u - 0.55) / 0.45, 0, 1), ax = '';
+    if (aOut > 0.02) ax += '<g opacity="' + r2(aOut) + '">' + buildAxis(t, oldL, morphOpts(W, H, kk, ttx, tty, oldUt)) + '</g>';
+    if (aIn > 0.02) ax += '<g opacity="' + r2(aIn) + '">' + buildAxis(t, newL, morphOpts(W, H, kk, ttx, tty, newUt)) + '</g>';
+    $('lyAxis').innerHTML = ax;
+    if (rectOld || rectNew) {
+      // the rectangles yield to the travelling point cloud a little faster than
+      // linear, so the middle of the morph does not read as mud
+      var oOut = Math.pow(1 - e, 1.6), oIn = Math.pow(e, 1.6),
+          tf = ' transform="translate(' + r1(ttx) + ' ' + r1(tty) + ') scale(' + (Math.round(kk * 1e4) / 1e4) + ')"';
+      $('lyEdge').innerHTML =
+        (rectOld && oOut > 0.02 ? '<g opacity="' + r2(oOut) + '"' + tf + '>' + rectOld + '</g>' : '') +
+        (rectNew && oIn > 0.02 ? '<g opacity="' + r2(oIn) + '"' + tf + '>' + rectNew + '</g>' : '');
+    }
+    if (u < 1) requestAnimationFrame(step); else finish();
+  }
+  requestAnimationFrame(step);
+  syncControls(); writeHash();
+}
+function paintRamp() {
+  var stops = [], i;
+  for (i = 0; i <= 10; i++) stops.push(viridis(rampPos(i / 10)) + ' ' + (i * 10) + '%');
+  $('ramp').style.background = 'linear-gradient(90deg,' + stops.join(',') + ')';
+}
+function exportSVG() {
+  if (morphActive) morphActive();          // land any layout morph first
+  var svg = $('viz'), W = svg.clientWidth, H = svg.clientHeight, dark = document.documentElement.classList.contains('dark');
+  var clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('width', W); clone.setAttribute('height', H);
+  clone.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  var bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('width', W); bg.setAttribute('height', H); bg.setAttribute('fill', dark ? '#11151b' : '#fdfdfc');
+  clone.insertBefore(bg, clone.firstChild);
+  var dimEls = clone.querySelectorAll('.dimmed'), i;
+  for (i = 0; i < dimEls.length; i++) { dimEls[i].setAttribute('opacity', '0.14'); dimEls[i].removeAttribute('class'); }
+  var blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + clone.outerHTML], { type: 'image/svg+xml' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'beta-splitting_b' + S.beta + '_n' + S.n + '_' + S.layout + '.svg';
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+/* ================= 11. ensemble ================= */
+var ENS_KEYS = ['height', 'mean', 'sackin', 'colless', 'rootfrac', 'rooti', 'ctcsmax', 'ctcsmean'];
+var worker = null, workerOK = null, ensCancel = false;
+
+function workerSource() {
+  var core = document.getElementById('bst-core').textContent;
+  var glue = "\nself.onmessage=function(e){var d=e.data;" +
+    "if(d.t==='ping'){postMessage({t:'pong'});return;}" +
+    "if(d.t==='run'){var rs=BSTCore.makeRNG(d.seed+'|es'),rt=BSTCore.makeRNG(d.seed+'|et'),ca=new BSTCore.SplitCache(d.beta);" +
+    "var K=" + JSON.stringify(ENS_KEYS) + ",res={},i,j;for(j=0;j<K.length;j++)res[K[j]]=new Float64Array(d.M);" +
+    "for(i=0;i<d.M;i++){var s=BSTCore.simulateStats(d.n,d.beta,rs,rt,ca);" +
+    "res.height[i]=s.height;res.mean[i]=s.meanDepth;res.sackin[i]=s.sackin;res.colless[i]=s.colless;" +
+    "res.rootfrac[i]=s.rootFrac;res.rooti[i]=s.rootI;res.ctcsmax[i]=s.ctcsMax;res.ctcsmean[i]=s.ctcsMean;" +
+    "if((i&1023)===0)postMessage({t:'prog',i:i});}postMessage({t:'done',res:res});}};";
+  return core + glue;
+}
+function getWorker(cb) {
+  if (workerOK === false) { cb(null); return; }
+  if (worker && workerOK) { cb(worker); return; }
+  try {
+    var url = URL.createObjectURL(new Blob([workerSource()], { type: 'text/javascript' }));
+    var w = new Worker(url);
+    var settled = false;
+    var to = setTimeout(function () { if (!settled) { settled = true; workerOK = false; try { w.terminate(); } catch (e) {} cb(null); } }, 1200);
+    w.onmessage = function (e) {
+      if (e.data && e.data.t === 'pong' && !settled) { settled = true; clearTimeout(to); workerOK = true; worker = w; cb(w); }
+    };
+    w.onerror = function () { if (!settled) { settled = true; clearTimeout(to); workerOK = false; cb(null); } };
+    w.postMessage({ t: 'ping' });
+  } catch (e) { workerOK = false; cb(null); }
+}
+function runEnsemble() {
+  if (!readInputs()) return;
+  var M = clamp(Math.round(parseFloat($('inM').value) || 500), 1, 200000);
+  $('inM').value = M;
+  var beta = S.beta, n = S.n, seed = S.seed + '|ens';
+  $('btnEns').disabled = true; $('btnEnsStop').disabled = false; ensCancel = false;
+  $('ensNote').textContent = T('ens.running'); $('ensBar').style.width = '0%';
+  var t0 = performance.now();
+  var finish = function (res, how) {
+    S.ens = { beta: beta, n: n, M: M, res: res, how: how, ms: Math.round(performance.now() - t0) };
+    $('btnEns').disabled = false; $('btnEnsStop').disabled = true;
+    $('ensBar').style.width = '100%'; $('ensNote').textContent = T('ens.done') + ' · ' + how + ' · ' + S.ens.ms + ' ms';
+    drawEns(); renderEnsTable();
+  };
+  getWorker(function (w) {
+    if (w) {
+      w.onmessage = function (e) {
+        if (ensCancel) return;
+        if (e.data.t === 'prog') $('ensBar').style.width = (100 * e.data.i / M) + '%';
+        else if (e.data.t === 'done') finish(e.data.res, T('ens.worker'));
+      };
+      w.postMessage({ t: 'run', M: M, n: n, beta: beta, seed: seed });
+    } else {
+      runEnsembleChunked(M, n, beta, seed, finish);
+    }
+  });
+}
+function runEnsembleChunked(M, n, beta, seed, finish) {
+  var rs = C.makeRNG(seed + '|es'), rt = C.makeRNG(seed + '|et'), ca = new C.SplitCache(beta);
+  var res = {}, j;
+  for (j = 0; j < ENS_KEYS.length; j++) res[ENS_KEYS[j]] = new Float64Array(M);
+  var i = 0;
+  function chunk() {
+    if (ensCancel) { $('btnEns').disabled = false; $('btnEnsStop').disabled = true; $('ensNote').textContent = ''; return; }
+    var t0 = performance.now();
+    while (i < M && performance.now() - t0 < 14) {
+      var s = C.simulateStats(n, beta, rs, rt, ca);
+      res.height[i] = s.height; res.mean[i] = s.meanDepth; res.sackin[i] = s.sackin;
+      res.colless[i] = s.colless; res.rootfrac[i] = s.rootFrac; res.rooti[i] = s.rootI;
+      res.ctcsmax[i] = s.ctcsMax; res.ctcsmean[i] = s.ctcsMean;
+      i++;
+    }
+    $('ensBar').style.width = (100 * i / M) + '%';
+    if (i < M) requestAnimationFrame(chunk); else finish(res, T('ens.main'));
+  }
+  requestAnimationFrame(chunk);
+}
+function stopEnsemble() {
+  ensCancel = true;
+  if (worker && workerOK) { try { worker.terminate(); } catch (e) {} worker = null; workerOK = null; }
+  $('btnEns').disabled = false; $('btnEnsStop').disabled = true; $('ensNote').textContent = '';
+}
+function quantile(sorted, p) {
+  var idx = (sorted.length - 1) * p, lo = Math.floor(idx), hi = Math.ceil(idx);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+function summarise(v) {
+  var i, s = 0, n = v.length;
+  for (i = 0; i < n; i++) s += v[i];
+  var mean = s / n, ss = 0;
+  for (i = 0; i < n; i++) ss += (v[i] - mean) * (v[i] - mean);
+  var sorted = Array.prototype.slice.call(v).sort(function (a, b) { return a - b; });
+  return { mean: mean, sd: Math.sqrt(ss / Math.max(1, n - 1)), min: sorted[0], max: sorted[n - 1],
+           med: quantile(sorted, 0.5), q05: quantile(sorted, 0.05), q25: quantile(sorted, 0.25),
+           q75: quantile(sorted, 0.75), q95: quantile(sorted, 0.95) };
+}
+function drawEns() {
+  var e = S.ens, svg = $('ensChart');
+  if (!e) { svg.innerHTML = ''; $('ensTitle').textContent = '—'; $('ensSummary').textContent = ''; return; }
+  var which = $('selStat').value, vals = e.res[which], dark = document.documentElement.classList.contains('dark');
+  var W = 560, H = 260, padL = 44, padR = 12, padT = 14, padB = 30, iw = W - padL - padR, ih = H - padT - padB;
+  var ink = cssv('--ink3') || '#888', line = cssv('--line') || '#ddd', acc = cssv('--accent') || '#b4530a', acc2 = cssv('--accent2') || '#0b6ea8';
+  var h = [], i, bins, lo, hi, nb, counts, theory = null;
+
+  if (which === 'rooti') {
+    lo = 1; hi = e.n - 1; nb = Math.min(hi - lo + 1, 70);
+    counts = new Float64Array(nb);
+    for (i = 0; i < vals.length; i++) counts[Math.min(nb - 1, Math.floor((vals[i] - lo) / (hi - lo + 1e-9) * nb))]++;
+    for (i = 0; i < nb; i++) counts[i] /= vals.length;
+    var q = C.splitProbs(e.n, e.beta);
+    theory = new Float64Array(nb);
+    for (i = 1; i <= e.n - 1; i++) theory[Math.min(nb - 1, Math.floor((i - lo) / (hi - lo + 1e-9) * nb))] += q[i - 1];
+  } else {
+    lo = Infinity; hi = -Infinity;
+    for (i = 0; i < vals.length; i++) { if (vals[i] < lo) lo = vals[i]; if (vals[i] > hi) hi = vals[i]; }
+    var allInt = true;
+    for (i = 0; i < vals.length && allInt; i++) if (Math.abs(vals[i] - Math.round(vals[i])) > 1e-9) allInt = false;
+    nb = (allInt && hi - lo <= 60) ? (hi - lo + 1) : 42;
+    if (hi <= lo) { hi = lo + 1; nb = 1; }
+    counts = new Float64Array(nb);
+    for (i = 0; i < vals.length; i++) counts[clamp(Math.floor((vals[i] - lo) / (hi - lo + 1e-9) * nb), 0, nb - 1)]++;
+    for (i = 0; i < nb; i++) counts[i] /= vals.length;
+  }
+  var ymax = 0;
+  for (i = 0; i < nb; i++) { if (counts[i] > ymax) ymax = counts[i]; if (theory && theory[i] > ymax) ymax = theory[i]; }
+  ymax = ymax || 1;
+  var bw = iw / nb;
+  h.push('<rect x="' + padL + '" y="' + padT + '" width="' + iw + '" height="' + ih + '" fill="none" stroke="' + line + '"/>');
+  for (i = 0; i <= 4; i++) {
+    var yy = padT + ih * i / 4;
+    h.push('<line x1="' + padL + '" y1="' + r1(yy) + '" x2="' + (padL + iw) + '" y2="' + r1(yy) + '" stroke="' + line + '" stroke-width="0.6" opacity="0.6"/>');
+    h.push('<text x="' + (padL - 5) + '" y="' + r1(yy + 3) + '" font-size="9" fill="' + ink + '" text-anchor="end">' + fmt(ymax * (1 - i / 4), 3) + '</text>');
+  }
+  for (i = 0; i < nb; i++) {
+    if (counts[i] <= 0) continue;
+    var bh = ih * counts[i] / ymax;
+    h.push('<rect x="' + r1(padL + i * bw + 0.4) + '" y="' + r1(padT + ih - bh) + '" width="' + r1(Math.max(0.8, bw - 0.8)) + '" height="' + r1(bh) + '" fill="' + acc2 + '" opacity="0.55"/>');
+  }
+  if (theory) {
+    var d = '';
+    for (i = 0; i < nb; i++) d += (i ? 'L' : 'M') + r1(padL + (i + 0.5) * bw) + ' ' + r1(padT + ih - ih * theory[i] / ymax);
+    h.push('<path d="' + d + '" fill="none" stroke="' + acc + '" stroke-width="1.8"/>');
+    h.push('<rect x="' + (padL + iw - 148) + '" y="' + (padT + 4) + '" width="144" height="30" rx="4" fill="' + (dark ? '#161b22' : '#fff') + '" stroke="' + line + '"/>');
+    h.push('<line x1="' + (padL + iw - 140) + '" y1="' + (padT + 13) + '" x2="' + (padL + iw - 122) + '" y2="' + (padT + 13) + '" stroke="' + acc + '" stroke-width="1.8"/>');
+    h.push('<text x="' + (padL + iw - 116) + '" y="' + (padT + 16) + '" font-size="9.5" fill="' + ink + '">' + esc(T('ens.theory')) + '</text>');
+    h.push('<rect x="' + (padL + iw - 140) + '" y="' + (padT + 21) + '" width="18" height="6" fill="' + acc2 + '" opacity="0.55"/>');
+    h.push('<text x="' + (padL + iw - 116) + '" y="' + (padT + 27) + '" font-size="9.5" fill="' + ink + '">' + esc(T('ens.emp')) + ' (M=' + e.M + ')</text>');
+  }
+  var st = summarise(vals);
+  if (!theory) {
+    var mx2 = padL + iw * (st.mean - lo) / (hi - lo + 1e-9);
+    h.push('<line x1="' + r1(mx2) + '" y1="' + padT + '" x2="' + r1(mx2) + '" y2="' + (padT + ih) + '" stroke="' + acc + '" stroke-width="1.4" stroke-dasharray="4 3"/>');
+    h.push('<text x="' + r1(clamp(mx2 + 4, padL, padL + iw - 60)) + '" y="' + (padT + 11) + '" font-size="9.5" fill="' + acc + '">' + T('ens.mean') + ' ' + fmt(st.mean, 3) + '</text>');
+  }
+  h.push('<text x="' + padL + '" y="' + (H - 8) + '" font-size="9.5" fill="' + ink + '">' + fmt(lo, 3) + '</text>');
+  h.push('<text x="' + (padL + iw) + '" y="' + (H - 8) + '" font-size="9.5" fill="' + ink + '" text-anchor="end">' + fmt(hi, 3) + '</text>');
+  h.push('<text x="' + (padL + iw / 2) + '" y="' + (H - 8) + '" font-size="9.5" fill="' + ink + '" text-anchor="middle">' + esc(stripTags(T('st.' + which))) + '</text>');
+  svg.innerHTML = h.join('');
+  $('ensTitle').textContent = stripTags(T('st.' + which));
+  $('ensSummary').innerHTML = 'β = ' + fmt(e.beta, 3) + ' · n = ' + e.n + ' · M = ' + e.M;
+  $('ensMeta').innerHTML = (e.beta !== S.beta || e.n !== S.n) ? '<span style="color:var(--bad)">' + T('ens.stale') + '</span>' : '';
+}
+function renderEnsTable() {
+  var e = S.ens, el = $('ensTable');
+  if (!e) { el.innerHTML = '<div class="empty">' + T('ens.empty') + '</div>'; return; }
+  var rows = '<table class="tbl"><thead><tr><th>' + stripTags(T('l.stat')) + '</th><th>' + T('ens.mean') + '</th><th>' + T('ens.sd') + '</th><th>' + T('ens.median') + '</th><th>5%</th><th>95%</th></tr></thead><tbody>';
+  var keys = ['height', 'mean', 'sackin', 'colless', 'rootfrac'];
+  if (Math.abs(e.beta + 1) < 1e-9) keys.push('ctcsmax', 'ctcsmean');
+  for (var i = 0; i < keys.length; i++) {
+    var s = summarise(e.res[keys[i]]);
+    rows += '<tr><td>' + esc(stripTags(T('st.' + keys[i]))) + '</td><td>' + fmt(s.mean, 3) + '</td><td>' + fmt(s.sd, 3) + '</td><td>' + fmt(s.med, 3) + '</td><td>' + fmt(s.q05, 3) + '</td><td>' + fmt(s.q95, 3) + '</td></tr>';
+  }
+  el.innerHTML = rows + '</tbody></table>';
+}
+
+/* ================= 12. compare-beta ================= */
+function drawCompare() {
+  var betas = ($('inCmp').value || '').split(',').map(function (s) { return parseFloat(s); })
+    .filter(function (b) { return isFinite(b) && b > -2; }).slice(0, 8);
+  if (!betas.length) betas = [-1.9, -1, 0, 5];
+  var view = $('selCmpView').value, grid = $('cmpGrid'), n = S.n, i;
+  var html = '';
+  for (i = 0; i < betas.length; i++)
+    html += '<div class="mini"><div class="cap"><span>β = ' + fmt(betas[i], 3) + '</span><span id="cmpc' + i + '"></span></div><svg id="cmp' + i + '"></svg></div>';
+  grid.innerHTML = html;
+  for (i = 0; i < betas.length; i++) {
+    var svg = $('cmp' + i), W = svg.clientWidth || 240, H = svg.clientHeight || 230;
+    var t = C.simulateTree(n, betas[i], S.seed + '|cmp' + i);
+    var L = computeLayout(t, view, false, W, H, { padL: 10, padR: 10, padT: 10, padB: 10 });
+    var o = {
+      k: 1, W: W, H: H, ut: false, animT: Infinity, color: S.color, sizes: false, leafIds: false,
+      ratios: false, grid: false, mini: true, dark: document.documentElement.classList.contains('dark'),
+      popWin: 1, leafBare: false, corner: 0,
+      SX: function (x) { return x; }, SY: function (y) { return y; }
+    };
+    var sc = buildScene(t, L, o);
+    svg.innerHTML = '<g>' + sc.edge + '</g><g>' + (sc.node || '') + '</g>';
+    var st = C.computeStats(t);
+    $('cmpc' + i).textContent = (lang === 'zh' ? '高 ' : 'h ') + st.height + ' · Colless ' + num(st.colless);
+  }
+}
+
+/* ================= 13. help + self-tests ================= */
+function buildHelp() {
+  var z = lang === 'zh';
+  var body = z ? [
+    '<p>对每个大小为 <i>m</i> ≥ 2 的团 (clade),独立地把它分成大小为 <i>i</i> 与 <i>m−i</i> 的两个非空子团,其中</p>',
+    '<div class="disp">q<sub>β</sub>(m,i) = w<sub>β</sub>(m,i) / Σ<sub>j=1</sub><sup>m−1</sup> w<sub>β</sub>(m,j),&nbsp;&nbsp; w<sub>β</sub>(m,i) = Γ(β+i+1)Γ(β+m−i+1) / (Γ(i+1)Γ(m−i+1)).</div>',
+    '<p>该分布关于 <i>i</i> ↔ <i>m−i</i> 对称。递归进行直到所有团大小为 1,得到一棵有 <i>n</i> 片叶子的有根二叉树;左右次序只是画图用的,不影响无序树形。本页用 log-Γ 加 log-sum-exp 计算,避免直接求 Γ 溢出。</p>',
+    '<h3>参数的作用</h3><ul><li>β ↓ −2:偏向极端分裂 1 + (m−1),树趋于梳状;</li><li>β = −3/2:PDA / 均匀 cladogram;</li><li>β = −1:<b>临界</b> beta-splitting 树;</li><li>β = 0:分裂点均匀,即 Yule–Harding;</li><li>β 大:分裂接近等分,树接近平衡。</li></ul>',
+    '<h3>临界连续时间模型 CTCS(n)</h3>',
+    '<p>只在 β = −1 时可用。此时</p>',
+    '<div class="disp">q<sub>−1</sub>(m,i) = m / (2H<sub>m−1</sub> i (m−i)) = (1/i + 1/(m−i)) / (2H<sub>m−1</sub>),&nbsp;&nbsp; H<sub>m−1</sub> = Σ<sub>k=1</sub><sup>m−1</sup> 1/k.</div>',
+    '<p>大小为 <i>m</i> 的团有独立的停留时间 E<sub>m</sub> ~ Exp(H<sub>m−1</sub>),到时按 q<sub>−1</sub>(m,·) 分裂,两个子团之后独立演化。等价地,有序分裂 m → (i, m−i) 的速率是 m / (2 i (m−i))。子团的出生时刻等于父团的分裂时刻,叶子的连续时间高度就是它的出生时刻。</p>',
+    '<p>对 β ≠ −1,本页<b>不</b>杜撰所谓的「典范 CTCS」,连续时间选项会被禁用。</p>',
+    '<h3>视图说明</h3><ul>',
+    '<li><b>整洁树</b>:纵向是代数(离散)或真实时间(CTCS),此时一条边的长度就是该团的指数停留时间。</li>',
+    '<li><b>碎裂 / 冰柱图</b>:直接展示递归规则 m → i + (m−i) —— 区间按 i : (m−i) 切分。奇点(大小为 1 的碎片)不再分裂,所以一直延伸到底部。</li>',
+    '<li><b>叶对齐树状图</b>:偏拓扑,叶子对齐会破坏深度/时间的几何含义。</li>',
+    '<li><b>力导向</b>:纯探索性,欧氏距离没有概率含义。</li></ul>',
+    '<p>配色表示平衡度 B = 2 min(i, m−i)/m ∈ (0,1];颜色不是唯一的编码通道:枝干的<b>宽度与明暗</b>都随团大小变化(于是大团构成的主干自然凸显),冰柱图的宽度比直接就是分裂比,数值也在右侧面板与标签中给出。</p>'
+  ].join('') : [
+    '<p>Independently for every clade of size <i>m</i> ≥ 2, split it into two nonempty child clades of sizes <i>i</i> and <i>m−i</i>, where</p>',
+    '<div class="disp">q<sub>β</sub>(m,i) = w<sub>β</sub>(m,i) / Σ<sub>j=1</sub><sup>m−1</sup> w<sub>β</sub>(m,j),&nbsp;&nbsp; w<sub>β</sub>(m,i) = Γ(β+i+1)Γ(β+m−i+1) / (Γ(i+1)Γ(m−i+1)).</div>',
+    '<p>The law is symmetric under <i>i</i> ↔ <i>m−i</i>. Recursing until every clade is a singleton gives a rooted binary tree with <i>n</i> leaves; the left/right orientation is only for drawing and does not change the unordered shape. Everything here is computed with log-Γ and the log-sum-exp trick, so no Gamma function is ever evaluated directly.</p>',
+    '<h3>What β does</h3><ul><li>β ↓ −2: extreme splits 1 + (m−1) dominate and the tree approaches a comb;</li><li>β = −3/2: PDA / uniform cladogram;</li><li>β = −1: the <b>critical</b> beta-splitting tree;</li><li>β = 0: uniform split point, i.e. Yule–Harding;</li><li>large β: nearly even splits, so a nearly balanced tree.</li></ul>',
+    '<h3>The critical continuous-time model CTCS(n)</h3>',
+    '<p>Available only at β = −1, where</p>',
+    '<div class="disp">q<sub>−1</sub>(m,i) = m / (2H<sub>m−1</sub> i (m−i)) = (1/i + 1/(m−i)) / (2H<sub>m−1</sub>),&nbsp;&nbsp; H<sub>m−1</sub> = Σ<sub>k=1</sub><sup>m−1</sup> 1/k.</div>',
+    '<p>A clade of size <i>m</i> holds for an independent E<sub>m</sub> ~ Exp(H<sub>m−1</sub>), then splits according to q<sub>−1</sub>(m,·), after which the two children evolve independently. Equivalently the rate of an ordered split m → (i, m−i) is m / (2 i (m−i)). A child’s birth time equals its parent’s split time, and the continuous-time height of a leaf is its birth time.</p>',
+    '<p>For β ≠ −1 no &ldquo;canonical CTCS&rdquo; is invented here — the continuous-time option is simply disabled.</p>',
+    '<h3>Reading the views</h3><ul>',
+    '<li><b>Tidy tree</b>: vertical position is generation (discrete) or actual time (CTCS), in which case an edge’s length <em>is</em> the clade’s exponential holding time.</li>',
+    '<li><b>Fragmentation / icicle</b>: shows the rule m → i + (m−i) directly — an interval cut in the ratio i : (m−i). Singletons never split again, so their fragments run to the bottom.</li>',
+    '<li><b>Leaf-aligned dendrogram</b>: topology-oriented; aligning the leaves destroys the geometric meaning of depth and of CTCS time.</li>',
+    '<li><b>Force-directed</b>: exploratory only; Euclidean distances carry no probabilistic meaning.</li></ul>',
+    '<p>Colour encodes the balance score B = 2 min(i, m−i)/m ∈ (0,1], and is never the only channel: both the <b>width and the darkness</b> of a branch follow the clade size, so the backbone stands out on its own; the icicle’s width ratio <em>is</em> the split ratio; and the same numbers appear in the right-hand panel and in the optional labels.</p>'
+  ].join('');
+  $('helpBody').innerHTML = body +
+    '<div style="margin-top:14px"><button id="btnSelfTest" class="pri">' + T('b.selftest') + '</button> <span class="note" style="margin:0">' + T('selftest.note') + '</span></div><pre class="out" id="selfOut" style="display:none"></pre>';
+  $('btnSelfTest').onclick = runSelfTests;
+}
+function hashTree(t) {
+  var h = 2166136261 >>> 0, v;
+  function mix(x) { h ^= (x | 0); h = Math.imul(h, 16777619) >>> 0; }
+  for (v = 0; v < t.N; v++) { mix(t.size[v]); mix(t.splitI[v]); mix(t.depth[v]); mix(Math.round(t.birth[v] * 1e9)); mix(Math.round(t.splitT[v] * 1e9) || 0); }
+  return h.toString(16);
+}
+function runSelfTests() {
+  var out = $('selfOut'); out.style.display = '';
+  var res = C.selfTest(function () {
+    // check 6: switching layout must not perturb topology, times or the tagged leaf
+    var t = S.tree, before = hashTree(t), tagBefore = S.tag, savedForce = S.force, ok = true, det = [];
+    var kinds = ['tidy', 'icicle', 'radial', 'dendro', 'force'], i;
+    for (i = 0; i < kinds.length; i++) {
+      S.force = null;
+      var L = computeLayout(t, kinds[i], useTime(), 800, 500, {});
+      if (!L || !L.X || L.X.length !== t.N) { ok = false; det.push(kinds[i] + ': bad layout'); }
+      if (hashTree(t) !== before) { ok = false; det.push(kinds[i] + ': tree mutated'); }
+      if (S.tag !== tagBefore) { ok = false; det.push(kinds[i] + ': tag changed'); }
+    }
+    S.force = savedForce;
+    return [{ name: 'layout switch preserves topology, times and tagged leaf', pass: ok,
+              detail: ok ? 'hash ' + before + ' stable across ' + kinds.join(', ') : det.join('; ') }];
+  });
+  var lines = res.map(function (r, i) {
+    return (r.pass ? '<span class="pass">PASS</span>' : '<span class="fail">FAIL</span>') + '  ' + (i + 1) + '. ' + esc(r.name) + '\n        ' + esc(r.detail);
+  });
+  var nPass = res.filter(function (r) { return r.pass; }).length;
+  out.innerHTML = lines.join('\n') + '\n\n' + nPass + ' / ' + res.length + (lang === 'zh' ? ' 项通过' : ' checks passed');
+}
+
+/* ================= 14. boot ================= */
+function init() {
+  try { if (localStorage.getItem('bst-theme') === 'dark') document.documentElement.classList.add('dark'); } catch (e) {}
+  try { var l = localStorage.getItem('bst-lang'); if (l === 'zh' || l === 'en') lang = l; } catch (e) {}
+  readHash();
+  applyLang(); paintRamp(); buildHelp();
+  initControls(); initViz();
+  $('rgSpeed').value = 0; S.speed = 1;
+  rebuild(false);
+  renderEnsTable();
+  $('secCmp').addEventListener('toggle', function () { if (this.open && !$('cmpGrid').children.length) drawCompare(); });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>

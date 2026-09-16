@@ -1,0 +1,18 @@
+{%- comment -%}
+  为论文附件的简写路径补上默认目录；兼容 assets/ 路径、根路径和外部网址。
+  directory 需以 / 结尾，空值不输出任何内容。
+{%- endcomment -%}
+{%- assign asset_path = include.path | default: "" | strip -%}
+{%- if asset_path != "" -%}
+  {%- assign asset_first = asset_path | slice: 0, 1 -%}
+  {%- assign asset_prefix = asset_path | slice: 0, 7 -%}
+  {%- assign asset_protocol = asset_path | slice: 0, 2 -%}
+  {%- if asset_path contains "://" or asset_protocol == "//" -%}
+    {{- asset_path -}}
+  {%- else -%}
+    {%- unless asset_first == "/" or asset_prefix == "assets/" -%}
+      {%- assign asset_path = asset_path | prepend: include.directory -%}
+    {%- endunless -%}
+    {{- asset_path | relative_url -}}
+  {%- endif -%}
+{%- endif -%}
