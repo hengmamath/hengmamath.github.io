@@ -18,3 +18,13 @@ permalink: /teaching/
 The tutorials cover foundational material on topological spaces, metric spaces,
 Banach spaces, Hilbert spaces, convergence of probability measures, conditional
 expectation, and related topics.
+
+## Calculus D (Foundation Class)
+
+**Peking University — c. 2023**
+
+高等数学 D（基础班）
+
+**Lecturer:** [Chunwei Song](https://math.pku.edu.cn/teachers/csong/index.html)
+
+**My role:** I taught problem-solving sessions every two weeks, covering calculus.
