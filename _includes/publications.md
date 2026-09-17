@@ -59,8 +59,10 @@
           只有 publications.yml 中填写了对应字段时，按钮才会显示。
         -->
         <div class="publication-links">
+          {% comment %}
           <!-- AI 使用披露：只在填写有效 ai_use 值后显示，不推断未填写的论文。 -->
           {% include ai-use-button.html level=link.ai_use note=link.ai_use_note %}
+          {% endcomment %}
 
           <!-- 期刊正式页面链接。 -->
           {% if link.journalpage %}
