@@ -53,7 +53,7 @@ main:
     ai_use: "L0"
     image: "MinPath.png"
 
-  - title: "Left tail of the subcritical derivative martingale in a branching Wiener process"
+  - title: "Left Tail of the Derivative Martingale in a Gaussian BRW in the Entire Subcritical Regime"
     coauthors: "Xinxin Chen, Yichao Huang"
     journal: "arxiv, 2025+"
     arXiv: "https://arxiv.org/abs/2508.11983"
