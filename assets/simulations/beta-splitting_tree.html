@@ -6,12 +6,12 @@
   --bg:#f4f5f7; --panel:#ffffff; --canvas:#fdfdfc; --ink:#1b2027; --ink2:#4a5461;
   --ink3:#7c8695; --line:#dfe3e9; --line2:#eceff3; --accent:#b4530a; --accent2:#0b6ea8;
   --good:#1a7f5a; --bad:#b3261e; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 8px rgba(16,24,40,.05);
-  --edge:#93a0b1; --dim:.2;
+  --edge:#93a0b1; --dim:.2; --hl:#fdf3c4;
 }
 .dark{
   --bg:#0e1116; --panel:#161b22; --canvas:#11151b; --ink:#e6edf3; --ink2:#adb9c6;
   --ink3:#788493; --line:#262d36; --line2:#1d232b; --accent:#f0a35e; --accent2:#5cb8ee;
-  --good:#4ac08c; --bad:#f0736a; --shadow:0 1px 2px rgba(0,0,0,.4); --edge:#5b6875; --dim:.18;
+  --good:#4ac08c; --bad:#f0736a; --shadow:0 1px 2px rgba(0,0,0,.4); --edge:#5b6875; --dim:.18; --hl:#3a3418;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -21,7 +21,6 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 i,em,.mv{font-family:"Latin Modern Math",Cambria,Georgia,"Times New Roman",serif;font-style:italic}
-.mv{font-style:italic}
 sub,sup{font-size:.72em}
 /* never let the small-caps section headers mangle mathematical symbols */
 .mv,sub,sup,i,em{text-transform:none}
@@ -38,10 +37,6 @@ header{
 header h1{font-size:15px;letter-spacing:.2px;font-family:Georgia,"Times New Roman",serif}
 header .sub{color:var(--ink3);font-size:11.5px}
 .spacer{flex:1}
-.chip{
-  display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--line);
-  border-radius:999px;background:var(--bg);font-size:11.5px;color:var(--ink2);white-space:nowrap
-}
 main{padding:12px;display:flex;flex-direction:column;gap:12px;max-width:2000px;margin:0 auto}
 .cols{display:grid;grid-template-columns:272px minmax(0,1fr) 330px;gap:12px;align-items:start}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
@@ -90,13 +85,11 @@ button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
 .vizwrap{position:relative;background:var(--canvas);border-radius:10px;overflow:hidden}
 #viz{display:block;width:100%;height:min(70vh,720px);min-height:380px;touch-action:none;cursor:grab}
 #viz.grabbing{cursor:grabbing}
-#viz.picking{cursor:crosshair}
 .dimmed{opacity:var(--dim)}
 #lyEdge,#lyNode,#lyLabel{transition:opacity .18s}
 .hud{position:absolute;display:flex;gap:6px;align-items:center;pointer-events:none}
-.hud.tl{top:8px;left:8px}
 .hud.tr{top:8px;right:8px;flex-direction:column;align-items:flex-end}
-.hud.bl{bottom:8px;left:8px}
+.hud.bl{bottom:8px;left:8px;right:48px}   /* wraps before the zoom buttons */
 .badge{
   background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);
   border-radius:6px;padding:3px 7px;font-size:11.5px;color:var(--ink2);backdrop-filter:blur(3px)
@@ -116,6 +109,7 @@ button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
 #tip b{color:var(--ink)}
 .scrub{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--line2)}
 .scrub input[type=range]{flex:1}
+.scrub #rgSpeed{flex:0 0 72px}
 .scrub .val{font-size:11.5px;color:var(--ink2);min-width:104px;text-align:right}
 
 /* ---------- info panel ---------- */
@@ -154,13 +148,13 @@ details.sec>summary::-webkit-details-marker{display:none}
 details.sec>summary::before{content:"▸";font-size:10px;transition:transform .15s}
 details.sec[open]>summary::before{transform:rotate(90deg)}
 details.sec[open]>summary{border-bottom:1px solid var(--line2)}
+/* the scaling-limit panel is the page's one limit theorem, so its header stands out */
+#secScale{overflow:hidden}
+#secScale>summary{background:var(--hl);color:var(--ink);font-weight:700}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
 .field{display:flex;flex-direction:column;gap:4px}
 .field .lab{margin:0}
 .field input,.field select{width:auto;min-width:88px}
-.progress{height:4px;background:var(--line2);border-radius:2px;overflow:hidden;margin-top:8px}
-.progress>i{display:block;height:100%;width:0;background:var(--accent);transition:width .1s}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
 .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
 .mini{background:var(--canvas);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .mini .cap{padding:5px 8px;font-size:11.5px;color:var(--ink2);border-bottom:1px solid var(--line2);
@@ -179,12 +173,35 @@ pre.out{
 }
 .pass{color:var(--good);font-weight:600}
 .fail{color:var(--bad);font-weight:600}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+/* wide screens show hover info in the right panel, so the tooltip would repeat it */
+@media (min-width:1181px){#tip{display:none}}
+/* fullscreen covers the whole three-column stage: the tree fills it, the controls panel
+   becomes a drawer that pushes the tree aside (so nothing is hidden under it), and the
+   details panel is dropped because the tooltip returns with the same numbers */
+#stage:fullscreen{display:block;background:var(--bg)}
+#stage:fullscreen>#vizCard{height:100%;display:flex;flex-direction:column;border:0;border-radius:0}
+#stage:fullscreen .vizwrap{flex:1;border-radius:0}
+#stage:fullscreen #viz{height:100%}
+#stage:fullscreen #tip{display:block}
+#stage:fullscreen>#infoPanel{display:none}
+#stage:fullscreen>#ctrlPanel{position:absolute;top:0;bottom:0;left:0;width:280px;overflow:auto;z-index:50;border-radius:0;
+  transform:translateX(-100%);visibility:hidden;transition:transform .2s,visibility .2s}
+#stage.drawer>#ctrlPanel{transform:none;visibility:visible}
+#stage:fullscreen.drawer>#vizCard{margin-left:280px}
+#btnDrawer{display:none;position:absolute;top:8px;left:8px;z-index:5}
+#stage:fullscreen #btnDrawer{display:block}
+/* narrower: tree first at full width, controls and details side by side below */
 @media (max-width:1180px){
-  .cols{grid-template-columns:1fr}
+  .cols{grid-template-columns:1fr 1fr}
+  .cols>section:nth-child(2){grid-column:1/-1;order:-1}
   .sticky{position:static}
   #viz{height:min(60vh,560px)}
+}
+@media (max-width:700px){
+  .cols{grid-template-columns:1fr}
+  .scrub{flex-wrap:wrap}
+  .scrub #rgTime{order:-1;flex:1 0 100%}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -192,8 +209,6 @@ pre.out{
 <header>
   <h1 data-i18n="app.title">Beta-Splitting Tree Explorer</h1>
   <span class="sub" data-i18n="app.sub"></span>
-  <span class="chip" id="chipModel"></span>
-  <span class="chip" id="chipParams"></span>
   <span class="spacer"></span>
   <button id="btnLang" aria-label="Switch language">&#127760; 中文</button>
   <button id="btnTheme" data-i18n="ui.theme" data-i18n-aria="ui.theme">&#9681; Theme</button>
@@ -201,10 +216,10 @@ pre.out{
 </header>
 
 <main>
-<div class="cols">
+<div class="cols" id="stage">
 
   <!-- ============ LEFT: CONTROLS ============ -->
-  <section class="card sticky" aria-label="Controls">
+  <section class="card sticky" id="ctrlPanel" aria-label="Controls">
     <h2 data-i18n="h.controls"></h2>
 
     <div class="grp">
@@ -226,12 +241,11 @@ pre.out{
     <div class="grp">
       <label for="inN" data-i18n="l.n"></label>
       <div class="row">
-        <input id="inN" type="number" min="2" max="5000" step="1" value="100" aria-label="number of leaves">
+        <input id="inN" type="number" min="2" max="9999" step="1" value="888" aria-label="number of leaves">
         <button id="btnResample" class="pri" data-i18n="b.resample" data-i18n-title="b.resampleT"></button>
       </div>
       <div class="row" style="margin-top:6px">
         <input id="inSeed" type="text" value="aldous-1" aria-label="random seed" spellcheck="false">
-        <button id="btnReroll" data-i18n-title="b.rerollT">&#8635;</button>
       </div>
       <div class="err" id="errIn" role="alert"></div>
     </div>
@@ -248,31 +262,16 @@ pre.out{
     <div class="grp">
       <label for="selLayout" data-i18n="l.layout"></label>
       <select id="selLayout" aria-label="layout">
+        <option value="botanic" data-i18n="ly.botanic"></option>
         <option value="tidy" data-i18n="ly.tidy"></option>
         <option value="icicle" data-i18n="ly.icicle"></option>
         <option value="radial" data-i18n="ly.radial"></option>
-        <option value="dendro" data-i18n="ly.dendro"></option>
-        <option value="force" data-i18n="ly.force"></option>
       </select>
       <label for="selScale" style="margin-top:8px" data-i18n="l.scale"></label>
       <select id="selScale" aria-label="vertical scale">
         <option value="gen" data-i18n="sc.gen"></option>
         <option value="time" data-i18n="sc.time"></option>
       </select>
-      <div class="note" id="layoutNote"></div>
-    </div>
-
-    <div class="grp">
-      <label data-i18n="l.anim"></label>
-      <div class="seg" role="group" aria-label="animation controls">
-        <button id="btnPlay" data-i18n="b.play"></button>
-        <button id="btnReset" data-i18n="b.reset"></button>
-      </div>
-      <div class="row" style="margin-top:7px">
-        <span class="lab" style="margin:0;min-width:42px" data-i18n="l.speed"></span>
-        <input id="rgSpeed" type="range" min="-2" max="3" step="0.25" value="0" aria-label="animation speed">
-        <span class="badge" id="lblSpeed" style="min-width:44px;text-align:center">1&times;</span>
-      </div>
     </div>
 
     <div class="grp">
@@ -282,7 +281,6 @@ pre.out{
         <label class="chk"><input type="checkbox" id="ckLeaf"> <span data-i18n="ck.leaf"></span></label>
         <label class="chk"><input type="checkbox" id="ckRatio"> <span data-i18n="ck.ratio"></span></label>
         <label class="chk"><input type="checkbox" id="ckColor" checked> <span data-i18n="ck.color"></span></label>
-        <label class="chk"><input type="checkbox" id="ckTips" checked> <span data-i18n="ck.tips"></span></label>
         <label class="chk"><input type="checkbox" id="ckGrid" checked> <span data-i18n="ck.grid"></span></label>
       </div>
       <div class="row" style="margin-top:8px">
@@ -294,13 +292,13 @@ pre.out{
   </section>
 
   <!-- ============ CENTER: VISUALIZATION ============ -->
-  <section class="card" aria-label="Visualization">
+  <section class="card" id="vizCard" aria-label="Visualization">
     <div class="vizwrap">
       <svg id="viz" tabindex="0" role="application" aria-label="Beta-splitting tree visualization">
         <g id="lyAxis"></g><g id="lyEdge"></g><g id="lyNode"></g>
         <g id="lyLabel"></g><g id="lyHi"></g><g id="lyMorph"></g>
       </svg>
-      <div class="hud tl"><span class="badge" id="hudClock"></span><span class="badge" id="hudCount"></span></div>
+      <button id="btnDrawer" aria-controls="ctrlPanel" aria-expanded="false">&#9776; <span data-i18n="h.controls"></span></button>
       <div class="hud tr">
         <span class="badge legend" id="hudLegend">
           <span data-i18n="lg.lo"></span><span class="ramp" id="ramp"></span><span data-i18n="lg.hi"></span>
@@ -311,17 +309,21 @@ pre.out{
         <button id="btnZi" aria-label="Zoom in">+</button>
         <button id="btnZo" aria-label="Zoom out">&minus;</button>
         <button id="btnZf" aria-label="Fit to view" data-i18n-title="b.fit">&#9723;</button>
+        <button id="btnFs" aria-label="Full screen" data-i18n-title="b.fs"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
       </div>
     </div>
     <div class="scrub">
       <button id="btnPlay2" aria-label="Play or pause">&#9654;</button>
       <input id="rgTime" type="range" min="0" max="1000" step="1" value="1000" aria-label="animation scrubber">
       <span class="val" id="lblTime"></span>
+      <input id="rgSpeed" type="range" min="-2" max="3" step="0.25" value="0" aria-label="animation speed" data-i18n-title="l.speed">
+      <span class="badge" id="lblSpeed" style="min-width:44px;text-align:center">1&times;</span>
     </div>
+    <div id="tip" role="tooltip"></div>
   </section>
 
   <!-- ============ RIGHT: INFO ============ -->
-  <section class="card sticky" aria-label="Selected clade">
+  <section class="card sticky" id="infoPanel" aria-label="Selected clade">
     <h2 data-i18n="h.selected"></h2>
     <div class="pad" id="infoClade"></div>
     <h2 style="border-top:1px solid var(--line2)" data-i18n="h.splitlaw"></h2>
@@ -340,56 +342,37 @@ pre.out{
 <!-- ============ STATS ============ -->
 <div class="stats" id="stats"></div>
 
-<!-- ============ ENSEMBLE ============ -->
-<details class="sec" id="secEns">
-  <summary data-i18n="sec.ens"></summary>
-  <div class="pad">
-    <div class="toolbar">
-      <div class="field"><span class="lab" data-i18n="l.M"></span><input id="inM" type="number" min="1" max="200000" step="50" value="500"></div>
-      <div class="field"><span class="lab" data-i18n="l.stat"></span>
-        <select id="selStat">
-          <option value="height" data-i18n="st.height"></option>
-          <option value="mean" data-i18n="st.mean"></option>
-          <option value="sackin" data-i18n="st.sackin"></option>
-          <option value="colless" data-i18n="st.colless"></option>
-          <option value="rootfrac" data-i18n="st.rootfrac"></option>
-          <option value="rooti" data-i18n="st.rooti"></option>
-          <option value="ctcsmax" data-i18n="st.ctcsmax"></option>
-          <option value="ctcsmean" data-i18n="st.ctcsmean"></option>
-        </select>
-      </div>
-      <button id="btnEns" class="pri" data-i18n="b.runEns"></button>
-      <button id="btnEnsStop" disabled data-i18n="b.stop"></button>
-      <span class="note" id="ensNote" style="margin:0"></span>
-    </div>
-    <div class="progress"><i id="ensBar"></i></div>
-    <div class="grid2" style="margin-top:12px">
-      <div class="mini"><div class="cap"><span id="ensTitle">&mdash;</span><span id="ensSummary"></span></div>
-        <svg id="ensChart" viewBox="0 0 560 260" style="height:260px"></svg></div>
-      <div class="mini"><div class="cap"><span data-i18n="ens.summary"></span><span id="ensMeta"></span></div>
-        <div class="pad" id="ensTable" style="height:260px;overflow:auto"></div></div>
-    </div>
-  </div>
-</details>
-
 <!-- ============ COMPARE ============ -->
 <details class="sec" id="secCmp">
   <summary data-i18n="sec.cmp"></summary>
   <div class="pad">
     <div class="toolbar">
-      <div class="field"><span class="lab" data-i18n="l.betalist"></span><input id="inCmp" type="text" value="-1.9, -1, 0, 5" style="min-width:200px"></div>
+      <div class="field"><span class="lab" data-i18n="l.betalist"></span><input id="inCmp" type="text" value="-1.5, -1, 0, 1" style="min-width:200px"></div>
       <div class="field"><span class="lab" data-i18n="l.view"></span>
         <select id="selCmpView">
+          <option value="botanic" data-i18n="ly.botanic"></option>
           <option value="tidy" data-i18n="ly.tidy"></option>
           <option value="icicle" data-i18n="ly.icicle"></option>
           <option value="radial" data-i18n="ly.radial"></option>
-          <option value="dendro" data-i18n="ly.dendro"></option>
         </select>
       </div>
       <button id="btnCmp" class="pri" data-i18n="b.draw"></button>
       <span class="note" style="margin:0" data-i18n="note.cmp"></span>
     </div>
     <div class="grid4" id="cmpGrid" style="margin-top:12px"></div>
+  </div>
+</details>
+
+<!-- ============ SCALING LIMIT ============ -->
+<details class="sec" id="secScale">
+  <summary data-i18n="sec.scale"></summary>
+  <div class="pad">
+    <div class="toolbar">
+      <div class="field"><span class="lab" data-i18n="l.beta"></span><input id="inScaleBeta" type="number" step="0.05" value="-1.5" aria-label="beta for the scaling-limit panels"></div>
+      <button id="btnScale" class="pri" data-i18n="b.draw"></button>
+      <span class="note" style="margin:0" id="scaleNote"></span>
+    </div>
+    <div class="grid4" id="scaleGrid" style="margin-top:12px"></div>
   </div>
 </details>
 
@@ -402,13 +385,9 @@ pre.out{
 <p style="color:var(--ink3);font-size:11px;text-align:center;margin:4px 0 18px" data-i18n="foot"></p>
 </main>
 
-<div id="tip" role="tooltip"></div>
-
 <script id="bst-core">
 /* =====================================================================
    BSTCore — model layer.  Pure math + simulation, no DOM.
-   The text of this <script> is also reused verbatim to build the ensemble
-   Web Worker, so it must not touch `document` or `window`.
    ===================================================================== */
 var BSTCore = (function () {
 'use strict';
@@ -470,7 +449,17 @@ function harmonic(k) {
    shortcuts are used because they are both faster and numerically cleaner:
      beta =  0 : w == 1                       (uniform  -> Yule–Harding)
      beta = -1 : w == 1/(i(m-i))              (critical -> q = m/(2H_{m-1} i (m-i)))
+   lgamma(beta+k+1) and lgamma(k+1) do not depend on m, so they are tabulated
+   once per beta; a comb-like tree visits ~n sizes, and recomputing them made
+   n = 10^4 at beta = -1.9 take seconds.
    --------------------------------------------------------------------- */
+var LGT = { beta: NaN, A: [], B: [] };
+function lgTables(beta, k) {
+  if (LGT.beta !== beta) { LGT.beta = beta; LGT.A = []; }
+  for (var j = LGT.A.length; j <= k; j++) LGT.A[j] = lgamma(beta + j + 1);
+  for (j = LGT.B.length; j <= k; j++) LGT.B[j] = lgamma(j + 1);
+  return LGT;
+}
 function splitLogWeights(m, beta, out) {
   var L = m - 1, i;
   if (!out || out.length !== L) out = new Float64Array(L);
@@ -479,10 +468,8 @@ function splitLogWeights(m, beta, out) {
     for (i = 1; i <= L; i++) out[i - 1] = -Math.log(i) - Math.log(m - i);
     return out;
   }
-  for (i = 1; i <= L; i++) {
-    out[i - 1] = lgamma(beta + i + 1) + lgamma(beta + m - i + 1)
-               - lgamma(i + 1) - lgamma(m - i + 1);
-  }
+  var g = lgTables(beta, m), A = g.A, B = g.B;
+  for (i = 1; i <= L; i++) out[i - 1] = A[i] + A[m - i] - B[i] - B[m - i];
   return out;
 }
 /* Normalised probabilities via log-sum-exp. */
@@ -621,35 +608,6 @@ function computeStats(t) {
   };
 }
 
-/* Cheap version for ensembles: no layout/label bookkeeping, no big object. */
-function simulateStats(n, beta, rSplit, rTime, cache) {
-  var size = new Int32Array(2 * n - 1), depth = new Int32Array(2 * n - 1),
-      birth = new Float64Array(2 * n - 1),
-      sackin = 0, colless = 0, maxD = 0, minD = Infinity, sumT = 0, maxT = 0,
-      rootI = 0, count = 1, stack = [0], v, m, i, a, b, st;
-  size[0] = n;
-  while (stack.length) {
-    v = stack.pop(); m = size[v];
-    if (m < 2) {
-      sackin += depth[v]; if (depth[v] > maxD) maxD = depth[v]; if (depth[v] < minD) minD = depth[v];
-      sumT += birth[v]; if (birth[v] > maxT) maxT = birth[v];
-      continue;
-    }
-    i = sampleFromCum(cache.get(m), rSplit());
-    if (v === 0) rootI = i;
-    colless += Math.abs(2 * i - m);
-    st = birth[v] + (-Math.log(1 - rTime()) / harmonic(m - 1));
-    a = count++; b = count++;
-    size[a] = i; size[b] = m - i;
-    depth[a] = depth[b] = depth[v] + 1;
-    birth[a] = birth[b] = st;
-    stack.push(b); stack.push(a);
-  }
-  return { height: maxD, minDepth: minD, meanDepth: sackin / n, sackin: sackin,
-           colless: colless, rootI: rootI, rootFrac: Math.min(rootI, n - rootI) / n,
-           ctcsMax: maxT, ctcsMean: sumT / n };
-}
-
 /* ---------- mathematical self-tests (section 14 of the spec) ---------- */
 function selfTest(extra) {
   var out = [], i, m, b, s, ok, worst, p, q, t, v;
@@ -717,7 +675,7 @@ return {
   splitLogWeights: splitLogWeights, splitProbs: splitProbs,
   splitCumulative: splitCumulative, sampleFromCum: sampleFromCum,
   SplitCache: SplitCache, simulateTree: simulateTree,
-  computeStats: computeStats, simulateStats: simulateStats, selfTest: selfTest
+  computeStats: computeStats, selfTest: selfTest
 };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = BSTCore;
@@ -743,35 +701,24 @@ en: {
  'p.crit':'critical beta-splitting tree',
  'p.yule':'Yule–Harding',
  'p.bal':'strongly balanced',
- 'l.n':'Number of leaves n', 'b.resample':'Resample',
+ 'l.n':'Number of leaves <span class="mv">n</span> &middot; seed', 'b.resample':'Resample',
  'b.resampleT':'New realization (new random seed)',
- 'b.rerollT':'Re-run with the current seed',
  'l.model':'Model', 'm.discrete':'Discrete', 'm.ctcs':'Critical CTCS',
  'l.layout':'Layout',
  'ly.tidy':'Tidy tree', 'ly.icicle':'Fragmentation / icicle', 'ly.radial':'Radial tree',
- 'ly.dendro':'Leaf-aligned dendrogram', 'ly.force':'Force-directed',
+ 'ly.botanic':'Botanical tree',
  'l.scale':'Vertical scale', 'sc.gen':'Generation (graph distance)', 'sc.time':'Continuous time (CTCS)',
- 'l.anim':'Animation', 'b.play':'&#9654; Animate', 'b.pause':'&#10073;&#10073; Pause',
- 'b.reset':'&#10226; Reset', 'l.speed':'Speed', 'l.display':'Display',
+ 'l.speed':'Animation speed', 'l.display':'Display',
  'ck.sizes':'clade sizes','ck.leaf':'leaf IDs','ck.ratio':'split ratios',
- 'ck.color':'balance color','ck.tips':'tooltips','ck.grid':'axis / grid',
- 'b.tag':'&#9678; Tag random leaf','b.untagT':'Clear tagged leaf','b.fit':'Fit to view',
+ 'ck.color':'balance color','ck.grid':'axis / grid',
+ 'b.tag':'&#9678; Tag random leaf','b.untagT':'Clear tagged leaf','b.fit':'Fit to view','b.fs':'Full screen (Esc to exit)',
  'note.interact':'Click any node to inspect it; click a leaf to tag its ancestral line. Keyboard: &uarr; parent, &larr;/&rarr; children, <code>t</code> tag, <code>space</code> play.',
  'lg.lo':'imbal.','lg.hi':'bal.',
  'h.selected':'Selected clade','h.splitlaw':'Local split law <span class="mv">q</span><sub>&beta;</sub>(<span class="mv">m</span>,&thinsp;<span class="mv">i</span>)',
  'ck.qlog':'log scale','h.tagged':'Tagged leaf',
  'hint.hover':'Hover or click a node in the visualization.','empty.tag':'No leaf tagged.',
- 'sec.ens':'Simulation statistics — ensemble of independent realizations',
- 'l.M':'Replicates M','l.stat':'Statistic',
- 'st.height':'Tree height (max leaf depth)','st.mean':'Mean leaf depth',
- 'st.sackin':'Sackin index','st.colless':'Colless index',
- 'st.rootfrac':'Root split fraction min(i,n−i)/n',
- 'st.rooti':'Root split i — vs. exact q_β(n,i)',
- 'st.ctcsmax':'CTCS max leaf time-height','st.ctcsmean':'CTCS mean leaf time-height',
- 'b.runEns':'Run ensemble','b.stop':'Stop','ens.summary':'Summary of last run',
- 'ens.empty':'Run an ensemble to see summary statistics.',
- 'sec.cmp':'Compare &beta; — independent realizations side by side',
- 'l.betalist':'&beta; values (comma separated)','l.view':'View','b.draw':'Draw',
+ 'sec.cmp':'Compare <span class="mv">&beta;</span> — independent realizations side by side',
+ 'l.betalist':'<span class="mv">&beta;</span> values (comma separated)','l.view':'View','b.draw':'Draw',
  'note.cmp':'Realizations are independent — no coupling between them is claimed.',
  'sec.help':'The mathematics &amp; self-tests','foot':'References: Aldous &amp; Janson, <em>The Critical Beta-splitting Random Tree II: Overview and Open Problems</em>, arXiv:2303.02529; <em>… III: The exchangeable partition representation and the fringe tree</em>, arXiv:2412.09655. Everything runs locally in your browser; there is no backend.',
  /* dynamic */
@@ -780,40 +727,32 @@ en: {
  'k.balance':'balance B = 2min(i,m−i)/m','k.depth':'depth / generation','k.leafid':'leaf ID',
  'k.birth':'birth time','k.split':'split time','k.hold':'holding time','k.rate':'total split rate H<sub>m−1</sub>',
  'k.subtree':'subtree leaves','k.parent':'parent clade size',
- 's.n':'leaves n','s.height':'height','s.mindepth':'min depth','s.meandepth':'mean depth',
- 's.sackin':'Sackin S(T)','s.colless':'Colless C(T)','s.rootsplit':'root split','s.rootbal':'root balance',
- 's.ctcsmax':'CTCS max height','s.ctcsmean':'CTCS mean height','s.tbl':'CTCS total branch length',
- 's.n.t':'Number of leaves of the realization.',
- 's.height.t':'Maximum leaf depth, i.e. the graph distance from the root to the deepest leaf.',
- 's.mindepth.t':'Minimum leaf depth.',
- 's.meandepth.t':'Sackin index divided by n: the expected depth of a uniformly random leaf.',
- 's.sackin.t':'S(T) = Σ over leaves of depth(leaf). Larger means a more imbalanced tree.',
+ 's.height':'height','s.mindepth':'min depth','s.meandepth':'mean depth',
+ 's.sackin':'Sackin S(T)','s.colless':'Colless C(T)','s.rootsplit':'root split',
+ 's.ctcsmax':'CTCS max height','s.tbl':'CTCS total branch length',
+ 's.height.t':'Maximum leaf depth, i.e. the graph distance from the root to the deepest leaf; below it, the minimum leaf depth.',
+ 's.sackin.t':'S(T) = Σ over leaves of depth(leaf); S/n is the mean depth of a uniformly random leaf. Larger means a more imbalanced tree.',
  's.colless.t':'C(T) = Σ over internal nodes of |n_L(v) − n_R(v)|. Larger means a more imbalanced tree.',
- 's.rootsplit.t':'The realized split i + (n − i) at the root.',
- 's.rootbal.t':'2·min(i, n−i)/n at the root: 0 is maximally lopsided, 1 is a perfect halving.',
- 's.ctcsmax.t':'Largest leaf birth time in the critical continuous-time embedding.',
- 's.ctcsmean.t':'Mean leaf birth time in the critical continuous-time embedding.',
+ 's.rootsplit.t':'The realized split i + (n − i) at the root, with its balance B = 2·min(i, n−i)/n: 0 is maximally lopsided, 1 is a perfect halving.',
+ 's.ctcsmax.t':'Largest leaf birth time in the critical continuous-time embedding; below it, the mean leaf birth time.',
  's.tbl.t':'Sum of all edge lengths; each internal clade contributes twice its holding time.',
  'tag.id':'leaf ID','tag.depth':'graph depth','tag.height':'time height',
  'tag.chain':'Clade-size descent','tag.steps':'Splits along the ancestral path',
  'th.step':'step','th.m':'m','th.i':'i','th.ratio':'i/m','th.hold':'holding',
  'err.nint':'n must be an integer.','err.n2':'n must be at least 2.',
- 'err.nmax':'n is capped at 5000 for interactive rendering.',
+ 'err.nmax':'n is capped at 9999 for interactive rendering.',
  'err.beta':'β must be strictly greater than −2.',
  'note.ctcsOff':'CTCS is the canonical continuous-time embedding of the <b>critical</b> model, so it is available only at β = −1.',
  'note.ctcsOn':'Holding time of a clade of size m is Exp(H<sub>m−1</sub>); the ordered split rate is m / (2 i (m−i)).',
- 'note.dendro':'Topology-oriented view: aligning the leaves destroys the direct meaning of depth and of CTCS time.',
- 'note.force':'Exploratory view — Euclidean distances here carry <b>no</b> probabilistic meaning. Drag nodes to rearrange.',
  'note.icicle':'The root interval has width n; a split m → i + (m−i) divides it in the ratio i : (m−i).',
- 'note.forceBig':'Force layout is limited to n ≤ 1200; showing the tidy tree instead.',
- 'hud.gen':'generation','hud.time':'time','hud.nodes':'nodes','hud.shown':'shown',
- 'q.formula':'At β = −1: q(m,i) = m / (2 H<sub>m−1</sub> i (m−i)).',
+ 'note.botanic':'Branch width ∝ √m (area-preserving, since sizes add); the larger child bends less. A segment is one generation or the CTCS holding time; leaf twigs have a fixed length.',
+ 'sec.scale':'Scaling limit — rescaled trees at <span class="mv">n</span> = 100, 1000, 10000',
+ 'sc.leafh':'leaf-height function',
+ 'note.scaleCRT':'Heights divided by n<sup>−β−1</sup>. For −2 &lt; β &lt; −1 the rescaled tree converges to a self-similar fragmentation tree (the Brownian CRT at β = −3/2), and so does the leaf-height function drawn under each tree (Haas, Miermont, Pitman &amp; Winkel 2008, Cor. 16): the panels should look alike as n grows.',
+ 'note.scaleLog':'For β ≥ −1 heights are only of order log n (log² n at β = −1; Aldous &amp; Pittel 2025, Thm 1.2), so there is no rescaled limit tree of this kind; these panels are normalised by that order for comparison only.',
  'q.none':'Select a clade with m ≥ 2.','q.realized':'realized i',
- 'ens.running':'running…','ens.done':'done','ens.worker':'Web Worker','ens.main':'main thread (chunked)',
- 'ens.mean':'mean','ens.sd':'s.d.','ens.median':'median','ens.min':'min','ens.max':'max','ens.q':'quantiles',
- 'ens.theory':'exact q_β(n,i)','ens.emp':'empirical',
- 'ens.stale':'Parameters changed since this run (β, n).',
- 'cmp.leaves':'leaves','b.selftest':'Run self-tests','selftest.note':'Checks 1–6 of the specification.'
+ 's.mean':'mean',
+ 'cmp.leaves':'leaves','b.selftest':'Run self-tests','selftest.note':'Checks 1–6 of the specification, plus the geometry of the newer layouts.'
 },
 zh: {
  'app.title':'Beta-Splitting 随机树浏览器',
@@ -823,35 +762,24 @@ zh: {
  'l.beta':'分裂参数 <span class="mv">&beta;</span> <span style="text-transform:none;letter-spacing:0">(&beta; &gt; &minus;2)</span>',
  'p.comb':'接近梳状 / 极不平衡','p.pda':'PDA / 均匀 cladogram',
  'p.crit':'临界 beta-splitting 树','p.yule':'Yule–Harding','p.bal':'高度平衡',
- 'l.n':'叶子数 n','b.resample':'重新抽样',
+ 'l.n':'叶子数 <span class="mv">n</span> &middot; 种子','b.resample':'重新抽样',
  'b.resampleT':'换一个随机种子,生成新的实现',
- 'b.rerollT':'用当前种子重新生成',
  'l.model':'模型','m.discrete':'离散','m.ctcs':'临界 CTCS',
  'l.layout':'布局',
  'ly.tidy':'整洁树 (Tidy tree)','ly.icicle':'碎裂图 / 冰柱图','ly.radial':'径向树',
- 'ly.dendro':'叶对齐树状图','ly.force':'力导向',
+ 'ly.botanic':'植物树',
  'l.scale':'纵轴刻度','sc.gen':'代数 (图距离)','sc.time':'连续时间 (CTCS)',
- 'l.anim':'动画','b.play':'&#9654; 播放','b.pause':'&#10073;&#10073; 暂停',
- 'b.reset':'&#10226; 重置','l.speed':'速度','l.display':'显示',
+ 'l.speed':'动画速度','l.display':'显示',
  'ck.sizes':'团大小','ck.leaf':'叶编号','ck.ratio':'分裂比',
- 'ck.color':'平衡度配色','ck.tips':'悬浮提示','ck.grid':'坐标轴 / 网格',
- 'b.tag':'&#9678; 随机标记一片叶','b.untagT':'取消标记','b.fit':'适应窗口',
+ 'ck.color':'平衡度配色','ck.grid':'坐标轴 / 网格',
+ 'b.tag':'&#9678; 随机标记一片叶','b.untagT':'取消标记','b.fit':'适应窗口','b.fs':'全屏 (Esc 退出)',
  'note.interact':'点击任意节点查看信息;点击叶子会标记它到根的祖先路径。键盘:&uarr; 父节点,&larr;/&rarr; 子节点,<code>t</code> 标记,<code>space</code> 播放。',
  'lg.lo':'不平衡','lg.hi':'平衡',
  'h.selected':'选中的团 (clade)','h.splitlaw':'局部分裂律 <span class="mv">q</span><sub>&beta;</sub>(<span class="mv">m</span>,&thinsp;<span class="mv">i</span>)',
  'ck.qlog':'对数纵轴','h.tagged':'被标记的叶',
  'hint.hover':'把鼠标移到图上,或点击一个节点。','empty.tag':'尚未标记任何叶子。',
- 'sec.ens':'系综统计 —— 多次独立实现的经验分布',
- 'l.M':'重复次数 M','l.stat':'统计量',
- 'st.height':'树高 (最大叶深度)','st.mean':'平均叶深度',
- 'st.sackin':'Sackin 指数','st.colless':'Colless 指数',
- 'st.rootfrac':'根分裂比例 min(i,n−i)/n',
- 'st.rooti':'根分裂 i —— 与精确 q_β(n,i) 对照',
- 'st.ctcsmax':'CTCS 最大叶时间高度','st.ctcsmean':'CTCS 平均叶时间高度',
- 'b.runEns':'运行系综','b.stop':'停止','ens.summary':'上次运行的摘要',
- 'ens.empty':'运行一次系综模拟即可看到摘要统计。',
- 'sec.cmp':'比较 &beta; —— 并排展示不同参数的实现',
- 'l.betalist':'&beta; 取值 (逗号分隔)','l.view':'视图','b.draw':'绘制',
+ 'sec.cmp':'比较 <span class="mv">&beta;</span> —— 并排展示不同参数的实现',
+ 'l.betalist':'<span class="mv">&beta;</span> 取值 (逗号分隔)','l.view':'视图','b.draw':'绘制',
  'note.cmp':'各个实现相互独立 —— 这里并未声称它们之间有任何耦合。',
  'sec.help':'数学说明与自检','foot':'参考文献:Aldous &amp; Janson, <em>The Critical Beta-splitting Random Tree II: Overview and Open Problems</em>, arXiv:2303.02529;<em>… III: The exchangeable partition representation and the fringe tree</em>, arXiv:2412.09655。全部计算都在你的浏览器本地完成,没有后端。',
  'k.kind':'类型','k.internal':'内部团','k.leaf':'叶','k.root':'根',
@@ -859,40 +787,32 @@ zh: {
  'k.balance':'平衡度 B = 2min(i,m−i)/m','k.depth':'深度 / 代数','k.leafid':'叶编号',
  'k.birth':'出生时刻','k.split':'分裂时刻','k.hold':'停留时间','k.rate':'总分裂速率 H<sub>m−1</sub>',
  'k.subtree':'子树叶数','k.parent':'父团大小',
- 's.n':'叶子数 n','s.height':'树高','s.mindepth':'最小深度','s.meandepth':'平均深度',
- 's.sackin':'Sackin S(T)','s.colless':'Colless C(T)','s.rootsplit':'根分裂','s.rootbal':'根平衡度',
- 's.ctcsmax':'CTCS 最大高度','s.ctcsmean':'CTCS 平均高度','s.tbl':'CTCS 总枝长',
- 's.n.t':'本次实现的叶子数。',
- 's.height.t':'最大叶深度,即从根到最深叶子的图距离。',
- 's.mindepth.t':'最小叶深度。',
- 's.meandepth.t':'Sackin 指数除以 n:均匀随机取一片叶子时深度的平均值。',
- 's.sackin.t':'S(T) = Σ_{叶 ℓ} depth(ℓ)。越大表示树越不平衡。',
+ 's.height':'树高','s.mindepth':'最小深度','s.meandepth':'平均深度',
+ 's.sackin':'Sackin S(T)','s.colless':'Colless C(T)','s.rootsplit':'根分裂',
+ 's.ctcsmax':'CTCS 最大高度','s.tbl':'CTCS 总枝长',
+ 's.height.t':'最大叶深度,即从根到最深叶子的图距离;下方是最小叶深度。',
+ 's.sackin.t':'S(T) = Σ_{叶 ℓ} depth(ℓ);S/n 是均匀随机一片叶子的平均深度。越大表示树越不平衡。',
  's.colless.t':'C(T) = Σ_{内部节点 v} |n_L(v) − n_R(v)|。越大表示树越不平衡。',
- 's.rootsplit.t':'根处实际发生的分裂 i + (n − i)。',
- 's.rootbal.t':'根处的 2·min(i, n−i)/n:0 表示极度偏斜,1 表示恰好平分。',
- 's.ctcsmax.t':'临界连续时间嵌入中最大的叶出生时刻。',
- 's.ctcsmean.t':'临界连续时间嵌入中叶出生时刻的平均值。',
+ 's.rootsplit.t':'根处实际发生的分裂 i + (n − i),以及平衡度 B = 2·min(i, n−i)/n:0 表示极度偏斜,1 表示恰好平分。',
+ 's.ctcsmax.t':'临界连续时间嵌入中最大的叶出生时刻;下方是叶出生时刻的平均值。',
  's.tbl.t':'所有边长之和;每个内部团贡献两倍于它的停留时间。',
  'tag.id':'叶编号','tag.depth':'图深度','tag.height':'时间高度',
  'tag.chain':'团大小下降链','tag.steps':'祖先路径上的各次分裂',
  'th.step':'第','th.m':'m','th.i':'i','th.ratio':'i/m','th.hold':'停留时间',
  'err.nint':'n 必须是整数。','err.n2':'n 至少为 2。',
- 'err.nmax':'为保证交互流畅,n 上限为 5000。',
+ 'err.nmax':'为保证交互流畅,n 上限为 9999。',
  'err.beta':'β 必须严格大于 −2。',
  'note.ctcsOff':'CTCS 是<b>临界</b>模型的典范连续时间嵌入,因此只在 β = −1 时可用。',
  'note.ctcsOn':'大小为 m 的团的停留时间服从 Exp(H<sub>m−1</sub>);有序分裂速率为 m / (2 i (m−i))。',
- 'note.dendro':'这是偏拓扑的视图:把叶子对齐会破坏深度和 CTCS 时间的直接几何含义。',
- 'note.force':'探索性视图 —— 这里的欧氏距离<b>没有</b>概率含义。可以拖动节点。',
  'note.icicle':'根区间宽度正比于 n;一次分裂 m → i + (m−i) 把区间按 i : (m−i) 切开。',
- 'note.forceBig':'力导向布局限制在 n ≤ 1200,已改为显示整洁树。',
- 'hud.gen':'代','hud.time':'时刻','hud.nodes':'节点','hud.shown':'已显示',
- 'q.formula':'当 β = −1 时:q(m,i) = m / (2 H<sub>m−1</sub> i (m−i))。',
+ 'note.botanic':'枝宽 ∝ √m(截面积守恒,因为团大小可加);较大的子团弯折更少。每段长度是一代或 CTCS 停留时间;叶的细枝取固定长度。',
+ 'sec.scale':'尺度极限 —— <span class="mv">n</span> = 100、1000、10000 的重标度树',
+ 'sc.leafh':'叶高函数',
+ 'note.scaleCRT':'高度除以 n<sup>−β−1</sup>。当 −2 &lt; β &lt; −1 时,重标度后的树收敛到一棵自相似碎裂树(β = −3/2 时即 Brownian CRT),每棵树下方的叶高函数也一致收敛(Haas, Miermont, Pitman &amp; Winkel 2008, 推论 16):n 增大时各面板应当越来越像。',
+ 'note.scaleLog':'当 β ≥ −1 时高度只有 log n 的量级(β = −1 时为 log² n;Aldous &amp; Pittel 2025, 定理 1.2),不存在这种重标度极限树;这里按该量级归一化,仅供比较。',
  'q.none':'请选择一个 m ≥ 2 的团。','q.realized':'实际取到的 i',
- 'ens.running':'运行中…','ens.done':'完成','ens.worker':'Web Worker','ens.main':'主线程(分块)',
- 'ens.mean':'均值','ens.sd':'标准差','ens.median':'中位数','ens.min':'最小','ens.max':'最大','ens.q':'分位数',
- 'ens.theory':'精确 q_β(n,i)','ens.emp':'经验分布',
- 'ens.stale':'自这次运行后参数 (β, n) 已改变。',
- 'cmp.leaves':'片叶子','b.selftest':'运行自检','selftest.note':'对应规范中的第 1–6 项检查。'
+ 's.mean':'均值',
+ 'cmp.leaves':'片叶子','b.selftest':'运行自检','selftest.note':'对应规范中的第 1–6 项检查,外加新布局的几何检查。'
 }};
 var lang = 'en';
 function T(k) { var d = LANG[lang]; return (d && d[k] !== undefined) ? d[k] : (LANG.en[k] !== undefined ? LANG.en[k] : k); }
@@ -944,17 +864,16 @@ function cssv(n) { return getComputedStyle(document.documentElement).getProperty
 
 /* ================= 3. application state ================= */
 var S = {
-  beta: -1, n: 100, seed: 'aldous-1', model: 'discrete', layout: 'tidy', scale: 'gen',
-  showSizes: true, showLeaf: false, showRatio: false, color: true, tips: true, grid: true,
+  beta: -1, n: 888, seed: 'aldous-1', model: 'discrete', layout: 'botanic', scale: 'gen',
+  showSizes: true, showLeaf: false, showRatio: false, color: true, grid: true,
   qlog: false,
   tree: null, stats: null,
   sel: -1, hov: -1, tag: -1,
   animT: Infinity, playing: false, speed: 1, lastFrame: 0,
   view: { k: 1, tx: 0, ty: 0 }, vw: 0, vh: 0,
-  L: null, pick: null, force: null, morph: null,
-  ens: null
+  L: null, pick: null, morph: null
 };
-var MAXN = 5000, FORCE_MAX = 1200;
+var MAXN = 9999;
 
 function useTime() { return S.model === 'ctcs' && S.scale === 'time'; }
 function vMaxOf(t, ut, kind) {
@@ -973,13 +892,13 @@ function rebuild(keepSel) {
     if (S.sel < 0 || S.sel >= t.N) S.sel = 0;
     if (S.tag >= t.N || (S.tag >= 0 && t.size[S.tag] !== 1)) S.tag = -1;
   }
-  S.hov = -1; S.force = null;
+  S.hov = -1;
   S.animT = Infinity;
   S.playing = false;
   refreshAll(true);
 }
 function refreshAll(fit) {
-  syncControls(); layoutAndDraw(fit); drawStats(); drawInfo(); drawQ(); drawTag(); writeHash();
+  layoutAndDraw(fit); syncControls(); drawStats();   // layout first: the scrubber reads its animEnd drawInfo(); drawQ(); drawTag(); writeHash();
 }
 
 /* ================= 5. layout engine =================
@@ -1010,8 +929,10 @@ function computeLayout(t, kind, ut, W, H, opt) {
       Y0[v] = yOf(e); Y1[v] = yOf(b);
       Xc[v] = 0.5 * (X0[v] + X1[v]); Yc[v] = 0.5 * (Y0[v] + Y1[v]);
     }
-    L = { kind: 'icicle', X0: X0, X1: X1, Y0: Y0, Y1: Y1, X: Xc, Y: Yc, yOf: yOf, vMax: vM,
+    L = { kind: 'icicle', region: true, X0: X0, X1: X1, Y0: Y0, Y1: Y1, X: Xc, Y: Yc, yOf: yOf, vMax: vM,
           axisX: padL, axisX2: W - padR, leafPitch: iw / Math.max(1, n) };
+  } else if (kind === 'botanic') {
+    L = botanicLayout(t, ut, W, H, padL, padR, padT, padB);
   } else if (kind === 'radial') {
     var vMr = vMaxOf(t, ut, 'radial'),
         cx = W / 2, cy = H / 2,
@@ -1028,11 +949,8 @@ function computeLayout(t, kind, ut, W, H, opt) {
     }
     L = { kind: 'radial', A: A, R: R, RS: RS, X: Xr, Y: Yr, cx: cx, cy: cy, rOf: rOf, vMax: vMr, rMax: rMax,
           leafPitch: (2 * Math.PI - gap) * rMax / Math.max(1, n) };
-  } else if (kind === 'force') {
-    L = forceLayout(t, W, H, padL, padT);
   } else {
-    var dendro = (kind === 'dendro'),
-        vMc = vMaxOf(t, ut, 'tree'),
+    var vMc = opt.vMax || vMaxOf(t, ut, 'tree'),
         cw = Math.max(1, W - padL - padR), ch = Math.max(1, H - padT - padB),
         X = new Float64Array(N), Y = new Float64Array(N), YS = new Float64Array(N);
     // root (val=0) at the bottom, increasing depth/time toward the top
@@ -1040,96 +958,55 @@ function computeLayout(t, kind, ut, W, H, opt) {
     var xu = n > 1 ? cw / (n - 1) : 0, xoff = n > 1 ? padL : padL + cw / 2;
     for (v = 0; v < N; v++) {
       X[v] = xoff + t.leafPos[v] * xu;
-      if (dendro && t.size[v] === 1) Y[v] = yOfC(vMc);
-      else Y[v] = yOfC(ut ? t.birth[v] : t.depth[v]);
+      Y[v] = yOfC(ut ? t.birth[v] : t.depth[v]);
       YS[v] = t.size[v] > 1 ? yOfC(ut ? t.splitT[v] : t.depth[v] + 1) : Y[v];
     }
-    L = { kind: 'cart', X: X, Y: Y, YS: YS, yOf: yOfC, vMax: vMc, dendro: dendro,
+    L = { kind: 'cart', X: X, Y: Y, YS: YS, yOf: yOfC, vMax: vMc,
           axisX: padL, axisX2: W - padR, leafPitch: xu };
   }
   L.W = W; L.H = H; L.ut = ut; L.name = kind;
   return L;
 }
 
-/* Force-directed: springs + repulsion, velocity Verlet with alpha decay.
-   Seeded from the tidy layout so it converges in a few hundred ticks.
-   Repulsion is sampled once the node count gets large. */
-function forceLayout(t, W, H, padL, padT) {
-  var N = t.N, f = S.force;
-  if (!f || f.N !== N) {
-    var base = computeLayout(t, 'tidy', false, W, H, {});
-    f = { N: N, X: new Float64Array(N), Y: new Float64Array(N),
-          VX: new Float64Array(N), VY: new Float64Array(N), alpha: 1, fixed: -1, phase: 0 };
-    // seed from the tidy layout, with a deterministic jitter so that
-    // coincident points never produce a singular repulsion term
-    for (var v = 0; v < N; v++) {
-      f.X[v] = base.X[v] + ((v * 2654435761) % 1000) / 1000 - 0.5;
-      f.Y[v] = base.Y[v] + ((v * 40503) % 1000) / 1000 - 0.5;
-    }
-    f.W = W; f.H = H;
-    S.force = f;
-  } else if (Math.abs(f.W - W) > 1 || Math.abs(f.H - H) > 1) {
-    // panel resized: rescale into the new box and let the simulation resettle
-    var kx = W / (f.W || W), ky = H / (f.H || H);
-    for (var u = 0; u < N; u++) { f.X[u] *= kx; f.Y[u] *= ky; }
-    f.W = W; f.H = H; f.alpha = Math.max(f.alpha, 0.45);
+/* Botanical tree. Clade v is one straight segment from its parent's fork to its
+   own fork (its node sits there, coloured by that split's balance). Length = one
+   generation, or v's CTCS holding time; leaves never split, so they get a fixed
+   twig: the mean internal segment. A child turns from its parent's heading by
+   SPREAD x (its sibling's share), so the larger child bends less, then is pulled
+   back toward vertical so deep trees do not curl over. Width is drawn as sqrt(m):
+   since sibling sizes add, that is da Vinci's area-preserving rule. */
+var BOT = { spread: 1.2, tropism: 0.2, wMax: 12 };
+function botanicLayout(t, ut, W, H, padL, padR, padT, padB) {
+  var N = t.N, X = new Float64Array(N), Y = new Float64Array(N), hd = new Float64Array(N),
+      len = new Float64Array(N), arrive = new Float64Array(N), v, c, i, h, sum = 0, cnt = 0, end = 0;
+  for (v = 0; v < N; v++) if (t.size[v] > 1) { len[v] = ut ? t.splitT[v] - t.birth[v] : 1; sum += len[v]; cnt++; }
+  for (v = 0; v < N; v++) {
+    if (t.size[v] === 1) len[v] = cnt ? sum / cnt : 1;
+    arrive[v] = (ut ? t.birth[v] : t.depth[v]) + len[v];   // the moment the segment reaches its fork
+    if (arrive[v] > end) end = arrive[v];
   }
-  return { kind: 'cart', straight: true, X: f.X, Y: f.Y, YS: f.Y, force: f,
-           yOf: function (x) { return x; }, vMax: 1 };
+  // heading 0 = up, positive = clockwise; the trunk starts at (0,0); parents precede children
+  Y[0] = -len[0];
+  for (v = 0; v < N; v++) if (t.size[v] > 1) for (i = 0; i < 2; i++) {
+    c = i ? t.right[v] : t.left[v];
+    h = hd[c] = (hd[v] + (i ? 1 : -1) * BOT.spread * (1 - t.size[c] / t.size[v])) * (1 - BOT.tropism);
+    X[c] = X[v] + len[c] * Math.sin(h); Y[c] = Y[v] - len[c] * Math.cos(h);
+  }
+  // uniform fit, so the angles survive; base centred at the bottom
+  var x0 = 0, x1 = 0, y0 = 0, y1 = 0;
+  for (v = 0; v < N; v++) { x0 = Math.min(x0, X[v]); x1 = Math.max(x1, X[v]); y0 = Math.min(y0, Y[v]); y1 = Math.max(y1, Y[v]); }
+  var aw = W - padL - padR, s = Math.min(aw / Math.max(1e-9, x1 - x0), (H - padT - padB) / Math.max(1e-9, y1 - y0)),
+      ox = padL + (aw - (x1 - x0) * s) / 2 - x0 * s, oy = H - padB - y1 * s;
+  for (v = 0; v < N; v++) { X[v] = ox + X[v] * s; Y[v] = oy + Y[v] * s; }
+  return { kind: 'botanic', X: X, Y: Y, bx: ox, by: oy, len: len, arrive: arrive, animEnd: end, scale: s };
 }
-/* Tuning constants for the exploratory force layout. `rest` is the target
-   spacing as a fraction of sqrt(area/N); `cut` is the repulsion cutoff in
-   units of `rest` (keeping it local is what stops the cloud from inflating
-   against the panel walls). */
-var FORCE = { rest: 0.55, rep: 0.35, cut: 3, center: 0.025, vmax: 0.5, spring: 0.30, decay: 0.977, damp: 0.62 };
-/* One step of a d3-style force simulation: alpha scales the *forces*,
-   velocity is damped every tick, and both the per-tick displacement and the
-   distance floor are bounded so the system cannot blow up in a small panel. */
-function forceTick(t) {
-  var f = S.force; if (!f) return false;
-  var N = f.N, X = f.X, Y = f.Y, VX = f.VX, VY = f.VY,
-      W = S.L.W || 800, H = S.L.H || 500, cx = W / 2, cy = H / 2, a = f.alpha,
-      rest = clamp(Math.sqrt(W * H / N) * FORCE.rest, 5, 34),
-      rep = rest * rest * FORCE.rep, minD2 = rest * rest * 0.06,
-      maxD2 = rest * rest * FORCE.cut * FORCE.cut,
-      VMAX = rest * FORCE.vmax, sample = N > 700 ? 40 : 0, i, j, k, dx, dy, d2, d, fq;
-
-  if (sample) {                                   // sampled repulsion for big trees
-    var stride = Math.max(1, Math.floor(N / sample)), scale = N / sample;
-    for (i = 0; i < N; i++) {
-      for (k = 0; k < sample; k++) {
-        j = (i + 1 + k * stride + f.phase) % N; if (j === i) continue;
-        dx = X[i] - X[j]; dy = Y[i] - Y[j]; d2 = dx * dx + dy * dy;
-        if (d2 > maxD2) continue;
-        if (d2 < minD2) d2 = minD2;
-        fq = rep * a * scale / d2; VX[i] += fq * dx; VY[i] += fq * dy;
-      }
-    }
-    f.phase = (f.phase + 7) % N;
-  } else {
-    for (i = 0; i < N; i++) for (j = i + 1; j < N; j++) {
-      dx = X[i] - X[j]; dy = Y[i] - Y[j]; d2 = dx * dx + dy * dy;
-      if (d2 > maxD2) continue;
-      if (d2 < minD2) d2 = minD2;
-      fq = rep * a / d2; dx *= fq; dy *= fq;
-      VX[i] += dx; VY[i] += dy; VX[j] -= dx; VY[j] -= dy;
-    }
-  }
-  for (i = 1; i < N; i++) {                       // parent-child springs
-    j = t.parent[i];
-    dx = X[i] - X[j]; dy = Y[i] - Y[j]; d = Math.sqrt(dx * dx + dy * dy) || 1e-6;
-    fq = FORCE.spring * a * (d - rest) / d;
-    VX[i] -= fq * dx; VY[i] -= fq * dy; VX[j] += fq * dx; VY[j] += fq * dy;
-  }
-  for (i = 0; i < N; i++) {
-    VX[i] += (cx - X[i]) * FORCE.center * a; VY[i] += (cy - Y[i]) * FORCE.center * a;
-    if (i === f.fixed) { VX[i] = VY[i] = 0; continue; }
-    VX[i] = clamp(VX[i], -VMAX, VMAX); VY[i] = clamp(VY[i], -VMAX, VMAX);
-    X[i] = clamp(X[i] + VX[i], 8, W - 8); Y[i] = clamp(Y[i] + VY[i], 8, H - 8);
-    VX[i] *= FORCE.damp; VY[i] *= FORCE.damp;
-  }
-  f.alpha *= FORCE.decay;
-  return f.alpha > 0.02;
+function botW(m, n) { return clamp(BOT.wMax * Math.sqrt(m / n), 0.5, BOT.wMax); }
+/* Clade v's segment at the current reveal: [x0, y0, x1, y1] in screen space, or null. */
+function botSeg(t, L, v, o) {
+  var u = (o.ut && t.size[v] === 1) ? clamp((o.animT - t.birth[v]) / L.len[v], 0, 1) : branchFrac(t, v, o);
+  if (!(u > 0)) return null;
+  var sx = o.SX(v ? L.X[t.parent[v]] : L.bx), sy = o.SY(v ? L.Y[t.parent[v]] : L.by);
+  return [sx, sy, sx + (o.SX(L.X[v]) - sx) * u, sy + (o.SY(L.Y[v]) - sy) * u, u];
 }
 
 /* ================= 6. renderer ================= */
@@ -1243,16 +1120,18 @@ function branchFrac(t, p, o) {
   var s = 0.28 * hash01(p);
   return easeInOutCubic(clamp((o.animT - t.depth[p] - s) / (1 - s), 0, 1));
 }
+/* When the reveal reaches node v: its birth, except where a layout (botanical)
+   draws the node at the far end of the clade's own segment. */
+function arriveOf(t, v, o) { return o.arrive ? o.arrive[v] : (o.ut ? t.birth[v] : t.depth[v]); }
 function nodeVisible(t, v, o) {
   if (!isFinite(o.animT)) return true;
-  return o.ut ? (t.birth[v] <= o.animT + 1e-12) : (t.depth[v] <= o.animT + 1e-12);
+  return arriveOf(t, v, o) <= o.animT + 1e-12;
 }
 /* 0 the instant a node is reached, 1 once it has settled: scales the node in
    (and fades its label in) instead of popping it at full size. */
 function nodeGrow(t, v, o) {
   if (!isFinite(o.animT)) return 1;
-  var arrive = o.ut ? t.birth[v] : t.depth[v];
-  return easeOutCubic(clamp((o.animT - arrive) / o.popWin, 0, 1));
+  return easeOutCubic(clamp((o.animT - arriveOf(t, v, o)) / o.popWin, 0, 1));
 }
 
 /* How far along a branch group the reveal has travelled, in px.
@@ -1274,31 +1153,25 @@ function travelOf(u, g, ut) {
 function branchGeom(t, L, p, o) {
   var SX = o.SX, SY = o.SY, i, c, xc, yc,
       xp = SX(L.X[p]), yp = SY(L.Y[p]), ys = SY(L.YS[p]),
-      g = { stem: null, s1: 0, kid: [], sKid: [0, 0], sTot: 0 };
-  if (!L.straight) { g.stem = [[xp, yp], [xp, ys]]; g.s1 = Math.abs(ys - yp); }
+      g = { stem: [[xp, yp], [xp, ys]], s1: Math.abs(ys - yp), kid: [], sKid: [0, 0], sTot: 0 };
   for (i = 0; i < 2; i++) {
     c = i ? t.right[p] : t.left[p];
     xc = SX(L.X[c]); yc = SY(L.Y[c]);
-    if (L.straight) {
-      g.kid.push([[xp, yp], [xc, yc]]);
-      g.sKid[i] = Math.sqrt((xc - xp) * (xc - xp) + (yc - yp) * (yc - yp));
-    } else {
-      /* A short lead-in *inside* the stem gives the fork a corner to round:
-         the stem is a separate, wider path, so without it the only bend in this
-         polyline would be the connector->drop one, which is degenerate whenever
-         the child sits exactly at the split level (tidy tree, generation scale).
-         The lead-in is hidden under the stem and is counted in sKid, so the
-         growth timing stays exact. It is skipped when rounding is off, which
-         also keeps the path one point shorter on dense trees. */
-      var back = o.corner > 0.4 ? Math.min(7, g.s1 * 0.5) : 0, pts = [];
-      if (back > 0.4) pts.push([xp, ys + (yp < ys ? -back : back)]); else back = 0;
-      pts.push([xp, ys]);
-      if (Math.abs(xc - xp) > 1e-6) pts.push([xc, ys]);
-      if (Math.abs(yc - ys) > 1e-6) pts.push([xc, yc]);
-      if (pts.length < 2) pts.push([xc, yc]);
-      g.kid.push(pts);
-      g.sKid[i] = back + Math.abs(xc - xp) + Math.abs(yc - ys);
-    }
+    /* A short lead-in *inside* the stem gives the fork a corner to round:
+       the stem is a separate, wider path, so without it the only bend in this
+       polyline would be the connector->drop one, which is degenerate whenever
+       the child sits exactly at the split level (tidy tree, generation scale).
+       The lead-in is hidden under the stem and is counted in sKid, so the
+       growth timing stays exact. It is skipped when rounding is off, which
+       also keeps the path one point shorter on dense trees. */
+    var back = o.corner > 0.4 ? Math.min(7, g.s1 * 0.5) : 0, pts = [];
+    if (back > 0.4) pts.push([xp, ys + (yp < ys ? -back : back)]); else back = 0;
+    pts.push([xp, ys]);
+    if (Math.abs(xc - xp) > 1e-6) pts.push([xc, ys]);
+    if (Math.abs(yc - ys) > 1e-6) pts.push([xc, yc]);
+    if (pts.length < 2) pts.push([xc, yc]);
+    g.kid.push(pts);
+    g.sKid[i] = back + Math.abs(xc - xp) + Math.abs(yc - ys);
   }
   g.sTot = g.s1 + Math.max(g.sKid[0], g.sKid[1]);
   return g;
@@ -1370,10 +1243,10 @@ function branchPathD(t, L, p, c, o, u) {
 
 /* ---- axis / grid, split out so the layout morph can cross-fade it ---- */
 function buildAxis(t, L, o) {
-  if (!o.grid || L.kind === 'force' || L.straight) return '';
-  var a = [], ticks = niceTicks(L.vMax, L.kind === 'radial' ? 5 : 9, o.ut), i, tv, ty2, rr,
+  if (!o.grid || L.kind === 'botanic') return '';   // botanical distances are not a height scale
+  var a = [], ticks = niceTicks(L.vMax, L.rOf ? 5 : 9, o.ut), i, tv, ty2, rr,
       k = o.k, inkGrid = o.dark ? '#2a323d' : '#e7ebf0', inkAxis = o.dark ? '#788493' : '#7c8695';
-  if (L.kind === 'radial') {
+  if (L.rOf) {                                      // radial: rings
     for (i = 0; i < ticks.length; i++) {
       tv = ticks[i]; if (tv <= 0) continue;
       rr = L.rOf(tv) * k;
@@ -1388,9 +1261,7 @@ function buildAxis(t, L, o) {
       if (ty2 < -20 || ty2 > o.H + 20) continue;
       a.push('<line x1="0" y1="' + r1(ty2) + '" x2="' + o.W + '" y2="' + r1(ty2) + '" stroke="' + inkGrid +
              '" stroke-width="1" shape-rendering="crispEdges"/>');
-      // the top-left corner belongs to the HUD badges; skip labels that would sit under them
-      if (ty2 >= 26)
-        a.push('<text x="4" y="' + r1(ty2 - 2.5) + '" fill="' + inkAxis + '" font-size="9.5">' + fmt(tv, o.ut ? 2 : 0) + '</text>');
+      a.push('<text x="4" y="' + r1(ty2 - 2.5) + '" fill="' + inkAxis + '" font-size="9.5">' + fmt(tv, o.ut ? 2 : 0) + '</text>');
     }
   }
   return a.join('');
@@ -1403,15 +1274,12 @@ function buildScene(t, L, o) {
   out.axis = buildAxis(t, L, o);
 
   /* ---- edges (or icicle rectangles), bucketed ---- */
-  if (L.kind === 'icicle') {
-    var rb = {}, yStop = isFinite(o.animT) ? SY(L.yOf(o.animT)) : -Infinity;
+  if (L.region) {
+    var rb = {}, dR;
     for (v = 0; v < N; v++) {
-      var y1 = SY(L.Y1[v]), y0 = Math.max(SY(L.Y0[v]), yStop);
-      if (y1 < yStop || y1 - y0 < 0.05) continue;
-      var x0 = SX(L.X0[v]), x1 = SX(L.X1[v]), w = x1 - x0;
-      if (w < 0.12 || x1 < -40 || x0 > o.W + 40 || y1 < -40 || y0 > o.H + 40) continue;
+      if (!(dR = regionD(L, v, o))) continue;
       var col = t.size[v] === 1 ? (o.color ? '#c9d2dc' : '#b8c2cd') : nodeColor(t, v, o.color);
-      (rb[col] || (rb[col] = [])).push('M' + r1(x0) + ' ' + r1(y0) + 'h' + r1(w) + 'v' + r1(y1 - y0) + 'h' + r1(-w) + 'Z');
+      (rb[col] || (rb[col] = [])).push(dR);
     }
     arr = [];
     for (key in rb) arr.push('<path d="' + rb[key].join('') + '" fill="' + key + '" stroke="' +
@@ -1422,6 +1290,17 @@ function buildScene(t, L, o) {
         animating = isFinite(o.animT), lo = -60, hiX = o.W + 60, hiY = o.H + 60;
     function push(wb, d) { (eb[wb] || (eb[wb] = [])).push(d); }
     for (v = 0; v < N; v++) {
+      if (L.kind === 'botanic') {                   // one segment per clade, leaves included
+        var sg = botSeg(t, L, v, o);
+        if (!sg || Math.max(sg[0], sg[2]) < lo || Math.min(sg[0], sg[2]) > hiX ||
+            Math.max(sg[1], sg[3]) < lo || Math.min(sg[1], sg[3]) > hiY) continue;
+        // the segment *is* clade v, so it wears v's balance colour; this view draws no node dots
+        var bw = Math.max(WB_MIN, Math.round(botW(t.size[v], n) * (o.mini ? 0.5 : 1) * 4));
+        push(bw + '|' + (o.color ? nodeColor(t, v, true) : edgeColor(Math.min(WB_MAX, bw), o.dark)),
+             'M' + r1(sg[0]) + ' ' + r1(sg[1]) + 'L' + r1(sg[2]) + ' ' + r1(sg[3]));
+        if (animating && sg[4] < 1) tips.push([sg[2], sg[3]]);
+        continue;
+      }
       if (t.size[v] < 2) continue;
       var u = branchFrac(t, v, o);
       if (u <= 0) continue;
@@ -1462,19 +1341,20 @@ function buildScene(t, L, o) {
         if (animating && rest < g.sKid[i]) tips.push(seg[seg.length - 1]);
       }
     }
-    // thin/pale first, thick/dark last, so the backbone sits on top
-    var wbs = [];
-    for (key in eb) wbs.push(+key);
-    wbs.sort(function (a, b) { return a - b; });
+    // thin/pale first, thick/dark last, so the backbone sits on top; a key is
+    // "width" or, in the botanical view, "width|colour"
+    var keys = Object.keys(eb).sort(function (a, b) { return parseFloat(a) - parseFloat(b); });
     arr = [];
-    for (i = 0; i < wbs.length; i++)
-      arr.push('<path d="' + eb[wbs[i]].join('') + '" fill="none" stroke="' + edgeColor(wbs[i], o.dark) +
-               '" stroke-width="' + (wbs[i] / 4) + '" stroke-linecap="round" stroke-linejoin="round"/>');
+    for (i = 0; i < keys.length; i++) {
+      var kw = parseFloat(keys[i]), kc = keys[i].split('|')[1] || edgeColor(kw, o.dark);
+      arr.push('<path d="' + eb[keys[i]].join('') + '" fill="none" stroke="' + kc +
+               '" stroke-width="' + (kw / 4) + '" stroke-linecap="round" stroke-linejoin="round"/>');
+    }
     out.edge = arr.join('');
   }
 
   /* ---- nodes ---- */
-  if (L.kind !== 'icicle' && !o.noNodes) {
+  if (!L.region && L.kind !== 'botanic' && !o.noNodes) {
     var nb = {}, shown = 0, halo = o.dark ? '#0e1116' : '#ffffff', bare = !!o.leafBare;
     for (v = 0; v < N; v++) {
       if (!nodeVisible(t, v, o)) continue;
@@ -1503,7 +1383,6 @@ function buildScene(t, L, o) {
       out.node += '<circle cx="' + r1(SX(L.X[0])) + '" cy="' + r1(SY(L.Y[0])) + '" r="' + r1(r0 + 2.4) +
                   '" fill="none" stroke="' + (o.dark ? '#8d99a8' : '#8a94a2') + '" stroke-width="1"/>';
     }
-    out.shown = shown;
   }
 
   /* ---- growth frontier: one path holding every branch tip in flight ---- */
@@ -1582,7 +1461,7 @@ function vizSize() {
 function renderOpts(W, H) {
   var k = S.view.k, tx = S.view.tx, ty = S.view.ty, L = S.L, ut = useTime();
   return {
-    k: k, W: W, H: H, ut: ut, animT: S.animT, color: S.color,
+    k: k, W: W, H: H, ut: ut, animT: S.animT, color: S.color, arrive: L && L.arrive,
     sizes: S.showSizes, leafIds: S.showLeaf, ratios: S.showRatio, grid: S.grid,
     dark: document.documentElement.classList.contains('dark'),
     // how long a node takes to scale in once the growing branch reaches it
@@ -1597,13 +1476,11 @@ function renderOpts(W, H) {
   };
 }
 function layoutAndDraw(fit) {
-  var t = S.tree, kind = S.layout;
+  var t = S.tree;
   vizSize();
-  if (kind === 'force' && t.n > FORCE_MAX) kind = 'tidy';
-  S.L = computeLayout(t, kind, useTime(), S.vw, S.vh, {});
+  S.L = computeLayout(t, S.layout, useTime(), S.vw, S.vh, {});
   if (fit) S.view = { k: 1, tx: 0, ty: 0 };
   buildPick(t, S.L);
-  if (kind === 'force') startForce();
   draw();
 }
 function draw() {
@@ -1618,7 +1495,7 @@ function draw() {
   $('lyHi').innerHTML = buildHighlight(t, L, o);
   var dim = S.tag >= 0 ? 'dimmed' : '';
   $('lyEdge').setAttribute('class', dim); $('lyNode').setAttribute('class', dim); $('lyLabel').setAttribute('class', dim);
-  updateHUD(o, sc.shown);
+  updateHUD();
 }
 /* Hover and plain selection only change the highlight layer. Rebuilding the
    entire scene for a mouse move is what made hovering feel heavy at large n. */
@@ -1633,8 +1510,11 @@ function buildHighlight(t, L, o) {
   var h = [], SX = o.SX, SY = o.SY, n = t.n, tc = themeColors(), acc = tc.acc, acc2 = tc.acc2;
   var ringR = function (v) { return radOf(t.size[v], n) * (0.25 + 0.75 * nodeGrow(t, v, o)); };
   if (S.tag >= 0) {
-    var chain = ancestry(t, S.tag), i, v, c, d;
-    if (L.kind !== 'icicle') for (i = 0; i < chain.length - 1; i++) {
+    var chain = ancestry(t, S.tag), i, v, c, d, sg;
+    if (L.kind === 'botanic') for (i = 0; i < chain.length; i++) {
+      if ((sg = botSeg(t, L, chain[i], o)))
+        h.push('<path d="M' + r1(sg[0]) + ' ' + r1(sg[1]) + 'L' + r1(sg[2]) + ' ' + r1(sg[3]) + '" stroke="' + acc + '" stroke-width="2.6" stroke-linecap="round"/>');
+    } else if (!L.region) for (i = 0; i < chain.length - 1; i++) {
       v = chain[i]; c = chain[i + 1];
       var frac = branchFrac(t, v, o);
       if (frac <= 0) continue;
@@ -1644,14 +1524,14 @@ function buildHighlight(t, L, o) {
     }
     for (i = 0; i < chain.length; i++) {
       v = chain[i]; if (!nodeVisible(t, v, o)) continue;
-      if (L.kind === 'icicle') h.push(rectMark(L, v, o, acc, 1.6));
+      if (L.region) h.push(regionMark(L, v, o, acc, 1.6));
       else h.push('<circle cx="' + r1(SX(L.X[v])) + '" cy="' + r1(SY(L.Y[v])) + '" r="' + r1(ringR(v) + 1.2) +
                   '" fill="' + (i === chain.length - 1 ? acc : 'none') + '" stroke="' + acc + '" stroke-width="1.8"/>');
     }
   }
   var mark = function (v, col, w) {
     if (v < 0 || v >= t.N || !nodeVisible(t, v, o)) return;
-    if (L.kind === 'icicle') h.push(rectMark(L, v, o, col, w));
+    if (L.region) h.push(regionMark(L, v, o, col, w));
     else h.push('<circle cx="' + r1(SX(L.X[v])) + '" cy="' + r1(SY(L.Y[v])) + '" r="' + r1(ringR(v) + 3) +
                 '" fill="none" stroke="' + col + '" stroke-width="' + w + '"/>');
   };
@@ -1659,7 +1539,17 @@ function buildHighlight(t, L, o) {
   mark(S.sel, acc2, 2.2);
   return h.join('');
 }
-function rectMark(L, v, o, col, w) {
+/* Clade v's icicle rectangle at the current reveal, or null when it is not
+   yet born, hairline-thin, or off-screen. */
+function regionD(L, v, o) {
+  var SX = o.SX, SY = o.SY, anim = isFinite(o.animT);
+  var yStop = anim ? SY(L.yOf(o.animT)) : -Infinity, y1 = SY(L.Y1[v]), y0 = Math.max(SY(L.Y0[v]), yStop);
+  if (y1 < yStop || y1 - y0 < 0.05) return null;
+  var x0 = SX(L.X0[v]), x1 = SX(L.X1[v]), w = x1 - x0;
+  if (w < 0.12 || x1 < -40 || x0 > o.W + 40 || y1 < -40 || y0 > o.H + 40) return null;
+  return 'M' + r1(x0) + ' ' + r1(y0) + 'h' + r1(w) + 'v' + r1(y1 - y0) + 'h' + r1(-w) + 'Z';
+}
+function regionMark(L, v, o, col, w) {
   var x0 = o.SX(L.X0[v]), x1 = o.SX(L.X1[v]), y0 = o.SY(L.Y0[v]), y1 = o.SY(L.Y1[v]);
   return '<rect x="' + r1(x0) + '" y="' + r1(y0) + '" width="' + r1(Math.max(1, x1 - x0)) + '" height="' + r1(Math.max(1, y1 - y0)) + '" fill="none" stroke="' + col + '" stroke-width="' + w + '"/>';
 }
@@ -1675,7 +1565,7 @@ function ancestry(t, leaf) {
    visibility test is applied at query time instead. */
 function buildPick(t, L) {
   if (!t || !L) { S.pick = null; return; }
-  if (L.kind === 'icicle') { S.pick = { icicle: true, L: L }; return; }
+  if (L.region) { S.pick = { region: true, L: L }; return; }
   var cell = 26, g = {}, v, key;
   for (v = 0; v < t.N; v++) {
     key = Math.floor(L.X[v] / cell) + ',' + Math.floor(L.Y[v] / cell);
@@ -1686,8 +1576,8 @@ function buildPick(t, L) {
 function pickAt(px, py) {
   var p = S.pick, t = S.tree; if (!p || !t) return -1;
   var k = S.view.k, lx = (px - S.view.tx) / k, ly = (py - S.view.ty) / k,
-      o = { ut: useTime(), animT: S.animT }, L = p.L;
-  if (p.icicle) {
+      L = p.L, o = { ut: useTime(), animT: S.animT, arrive: L.arrive };
+  if (p.region) {
     var v = 0, guard = 0, tol = 1 / k, stop = isFinite(S.animT) ? L.yOf(S.animT) : -Infinity;
     if (lx < L.X0[0] || lx > L.X1[0]) return -1;
     while (guard++ < 100000) {
@@ -1712,25 +1602,12 @@ function pickAt(px, py) {
   return best;
 }
 
-/* HUD badges are rewritten every frame otherwise; the guard keeps the
-   animation loop from re-parsing three fragments of HTML 60 times a second. */
-var hudLast = { clock: null, count: null, note: null, legend: null };
-function setHud(id, slot, html) {
-  if (hudLast[slot] === html) return;
-  hudLast[slot] = html; $(id).innerHTML = html;
-}
-function updateHUD(o, shown) {
-  var t = S.tree, done = !isFinite(S.animT);
-  var cur = done ? (o.ut ? t.maxTime : t.maxDepth) : S.animT;
-  setHud('hudClock', 'clock', o.ut
-    ? T('hud.time') + ' <b>' + fmt(cur, 3) + '</b> / ' + fmt(t.maxTime, 3)
-    : T('hud.gen') + ' <b>' + Math.floor(cur + 1e-9) + '</b> / ' + t.maxDepth);
-  setHud('hudCount', 'count', t.n + ' ' + (lang === 'zh' ? '叶' : 'leaves') + ' &middot; ' + T('hud.nodes') + ' <b>' + num(t.N) + '</b>' + (shown !== undefined && shown < t.N ? ' &middot; ' + T('hud.shown') + ' ' + num(shown) : ''));
-  var note = '';
-  if (S.layout === 'dendro') note = T('note.dendro');
-  else if (S.layout === 'force') note = t.n > FORCE_MAX ? T('note.forceBig') : T('note.force');
-  else if (S.layout === 'icicle') note = T('note.icicle');
-  if (hudLast.note !== note) { setHud('hudNote', 'note', note); $('hudNote').style.display = note ? '' : 'none'; }
+/* draw() runs every animation frame; the guard keeps it from re-parsing
+   the HUD's HTML 60 times a second. */
+var hudLast = { note: null, legend: null };
+function updateHUD() {
+  var note = ['icicle', 'botanic'].indexOf(S.layout) >= 0 ? T('note.' + S.layout) : '';
+  if (hudLast.note !== note) { hudLast.note = note; $('hudNote').innerHTML = note; $('hudNote').style.display = note ? '' : 'none'; }
   var lg = S.color ? '' : 'none';
   if (hudLast.legend !== lg) { hudLast.legend = lg; $('hudLegend').style.display = lg; }
 }
@@ -1754,13 +1631,8 @@ function initViz() {
   svg.addEventListener('pointerdown', function (e) {
     var r = svg.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
     stopTween();
-    var v = pickAt(mx, my);
-    if (S.layout === 'force' && v >= 0 && S.force) {
-      drag = { node: v, sx: mx, sy: my }; S.force.fixed = v; S.force.alpha = Math.max(S.force.alpha, 0.5); startForce();
-    } else {
-      drag = { pan: true, sx: mx, sy: my, tx: S.view.tx, ty: S.view.ty, moved: 0 };
-      svg.classList.add('grabbing');
-    }
+    drag = { pan: true, sx: mx, sy: my, tx: S.view.tx, ty: S.view.ty, moved: 0 };
+    svg.classList.add('grabbing');
     svg.setPointerCapture(e.pointerId);
   });
   svg.addEventListener('pointermove', function (e) {
@@ -1769,11 +1641,6 @@ function initViz() {
       drag.moved += Math.abs(mx - drag.sx) + Math.abs(my - drag.sy);
       S.view.tx = drag.tx + (mx - drag.sx); S.view.ty = drag.ty + (my - drag.sy);
       schedule(); return;
-    }
-    if (drag && drag.node >= 0 && S.force) {
-      var k = S.view.k;
-      S.force.X[drag.node] = (mx - S.view.tx) / k; S.force.Y[drag.node] = (my - S.view.ty) / k;
-      S.force.alpha = Math.max(S.force.alpha, 0.35); return;
     }
     var v = pickAt(mx, my);
     if (v !== S.hov) { S.hov = v; scheduleHi(); drawInfo(); }
@@ -1785,7 +1652,6 @@ function initViz() {
       var r = svgEl.getBoundingClientRect(), v = pickAt(e.clientX - r.left, e.clientY - r.top);
       if (v >= 0) selectNode(v, S.tree.size[v] === 1);
     }
-    if (drag && drag.node >= 0 && S.force) S.force.fixed = -1;
     drag = null; svgEl.classList.remove('grabbing');
   }
   svg.addEventListener('pointerup', endDrag);
@@ -1809,6 +1675,19 @@ function initViz() {
   $('btnZi').onclick = function () { vizSize(); tweenView(zoomTarget(S.vw / 2, S.vh / 2, 1.3)); };
   $('btnZo').onclick = function () { vizSize(); tweenView(zoomTarget(S.vw / 2, S.vh / 2, 1 / 1.3)); };
   $('btnZf').onclick = function () { tweenView({ k: 1, tx: 0, ty: 0 }, 240); };
+  // iPhone Safari has no element fullscreen; the ResizeObserver below re-lays out on enter/exit
+  if (!document.fullscreenEnabled) $('btnFs').hidden = true;
+  $('btnFs').onclick = function () {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else $('stage').requestFullscreen().catch(function () {});
+  };
+  // fullscreen-only drawer holding the ordinary controls panel, so nothing is duplicated
+  $('btnDrawer').onclick = function () {
+    $('btnDrawer').setAttribute('aria-expanded', $('stage').classList.toggle('drawer'));
+  };
+  document.addEventListener('fullscreenchange', function () {
+    if (!document.fullscreenElement) { $('stage').classList.remove('drawer'); $('btnDrawer').setAttribute('aria-expanded', 'false'); }
+  });
 
   var ro = new ResizeObserver(function () {
     if (!S.tree) return;
@@ -1858,7 +1737,7 @@ function refreshTagUI() { draw(); drawInfo(); drawQ(); drawTag(); }
 
 function showTip(cx, cy, v) {
   var el = $('tip'), t = S.tree;
-  if (!S.tips || v < 0 || !t) { hideTip(); return; }
+  if (v < 0 || !t) { hideTip(); return; }
   var m = t.size[v], rows = [];
   rows.push('<b>' + (v === 0 ? T('k.root') : m === 1 ? T('k.leaf') : T('k.internal')) + '</b>');
   rows.push(T('k.m') + ': <b>' + num(m) + '</b>');
@@ -1884,7 +1763,8 @@ function hideTip() { $('tip').classList.remove('on'); }
 /* A full sweep takes ANIM_SECONDS at 1x regardless of the tree's height. The
    old fixed 1.8 generations/second made a comb-like tree at beta = -1.9 crawl. */
 var ANIM_SECONDS = 7;
-function animMax() { return useTime() ? S.tree.maxTime : S.tree.maxDepth; }
+// the botanical view's last twigs finish growing after the last birth
+function animMax() { return (S.L && S.L.animEnd) || (useTime() ? S.tree.maxTime : S.tree.maxDepth); }
 function togglePlay() {
   S.playing = !S.playing;
   if (S.playing) {
@@ -1904,7 +1784,6 @@ function animFrame(now) {
   if (S.playing) requestAnimationFrame(animFrame);
 }
 function syncPlayButtons() {
-  $('btnPlay').innerHTML = S.playing ? T('b.pause') : T('b.play');
   $('btnPlay2').innerHTML = S.playing ? '&#10073;&#10073;' : '&#9654;';
 }
 function syncScrub() {
@@ -1913,18 +1792,6 @@ function syncScrub() {
   $('lblTime').textContent = useTime()
     ? 't = ' + fmt(cur, 3) + ' / ' + fmt(mx, 3)
     : (lang === 'zh' ? '第 ' : 'gen ') + Math.floor(cur + 1e-9) + ' / ' + mx;
-}
-function startForce() {
-  if (S.forceRAF) return;
-  var step = function () {
-    S.forceRAF = 0;
-    if (S.layout !== 'force' || !S.force) return;
-    var alive = forceTick(S.tree);
-    buildPick(S.tree, S.L);          // every node moves on every tick here
-    draw();
-    if (alive || drag) S.forceRAF = requestAnimationFrame(step);
-  };
-  S.forceRAF = requestAnimationFrame(step);
 }
 
 /* ================= 9. right-hand panels ================= */
@@ -1995,7 +1862,7 @@ function drawQ() {
   h.push('<text x="2" y="' + (padT + 8) + '" font-size="8.5" fill="' + ink + '">' + fmt(hi, 4) + '</text>');
   h.push('<text x="2" y="' + (padT + ih) + '" font-size="8.5" fill="' + ink + '">' + (logMode ? fmt(lo, 4) : '0') + '</text>');
   svg.innerHTML = h.join('');
-  $('qnote').innerHTML = 'm = ' + m + (Math.abs(S.beta + 1) < 1e-9 ? ' &middot; ' + T('q.formula') : '');
+  $('qnote').innerHTML = 'm = ' + m;
 }
 
 function drawTag() {
@@ -2026,20 +1893,15 @@ function drawTag() {
 }
 
 function drawStats() {
-  var s = S.stats, t = S.tree; if (!s) return;
+  var s = S.stats; if (!s) return;
   var cards = [
-    ['s.n', num(s.n), ''],
-    ['s.height', num(s.height), ''],
-    ['s.mindepth', num(s.minDepth), ''],
-    ['s.meandepth', fmt(s.meanDepth, 3), ''],
-    ['s.sackin', num(s.sackin), ''],
+    ['s.height', num(s.height), T('s.mindepth') + ' ' + num(s.minDepth)],
+    ['s.sackin', num(s.sackin), T('s.meandepth') + ' ' + fmt(s.meanDepth, 3)],
     ['s.colless', num(s.colless), ''],
-    ['s.rootsplit', s.rootI + ' + ' + s.rootJ, ''],
-    ['s.rootbal', fmt(2 * s.rootFrac, 4), 'min/n = ' + fmt(s.rootFrac, 4)]
+    ['s.rootsplit', s.rootI + ' + ' + s.rootJ, 'B = ' + fmt(2 * s.rootFrac, 3)]
   ];
   if (S.model === 'ctcs') {
-    cards.push(['s.ctcsmax', fmt(s.ctcsMax, 3), '']);
-    cards.push(['s.ctcsmean', fmt(s.ctcsMean, 3), '']);
+    cards.push(['s.ctcsmax', fmt(s.ctcsMax, 3), T('s.mean') + ' ' + fmt(s.ctcsMean, 3)]);
     cards.push(['s.tbl', fmt(s.ctcsTotalBranch, 2), '']);
   }
   var h = '', i;
@@ -2078,12 +1940,9 @@ function syncControls() {
   $('selScale').disabled = (S.model !== 'ctcs');
   $('modelNote').innerHTML = isCrit ? (S.model === 'ctcs' ? T('note.ctcsOn') : '') : T('note.ctcsOff');
   $('betaNote').innerHTML = betaBlurb();
-  $('chipModel').textContent = S.model === 'ctcs' ? 'CTCS' : (lang === 'zh' ? '离散' : 'discrete');
-  $('chipParams').innerHTML = '&beta; = ' + fmt(S.beta, 3) + ' &middot; n = ' + S.n + ' &middot; seed ' + esc(S.seed);
   $('ckSizes').checked = S.showSizes; $('ckLeaf').checked = S.showLeaf; $('ckRatio').checked = S.showRatio;
-  $('ckColor').checked = S.color; $('ckTips').checked = S.tips; $('ckGrid').checked = S.grid; $('ckQlog').checked = S.qlog;
+  $('ckColor').checked = S.color; $('ckGrid').checked = S.grid; $('ckQlog').checked = S.qlog;
   $('lblSpeed').textContent = fmt(S.speed, 2) + '×';
-  $('layoutNote').innerHTML = '';
   syncPlayButtons(); syncScrub();
 }
 function betaBlurb() {
@@ -2106,7 +1965,7 @@ function readHash() {
   if (q.b !== undefined && isFinite(parseFloat(q.b)) && parseFloat(q.b) > -2) S.beta = parseFloat(q.b);
   if (q.n !== undefined && isFinite(parseInt(q.n, 10))) S.n = clamp(parseInt(q.n, 10), 2, MAXN);
   if (q.s) S.seed = q.s;
-  if (['tidy', 'icicle', 'radial', 'dendro', 'force'].indexOf(q.l) >= 0) S.layout = q.l;
+  if (['botanic', 'tidy', 'icicle', 'radial'].indexOf(q.l) >= 0) S.layout = q.l;
   if (q.m === 'ctcs' && Math.abs(S.beta + 1) < 1e-9) S.model = 'ctcs';
   if (q.sc === 'time' && S.model === 'ctcs') S.scale = 'time';
 }
@@ -2118,30 +1977,28 @@ function initControls() {
   $('rgBeta').addEventListener('input', function () { $('inBeta').value = parseFloat(this.value); applyParams(false); });
   $('inSeed').addEventListener('change', function () { S.seed = this.value || 'seed'; rebuild(false); });
   $('btnResample').onclick = function () { S.seed = randSeed(); rebuild(false); };
-  $('btnReroll').onclick = function () { rebuild(false); };
   var pb = document.querySelectorAll('[data-beta]'), i;
   for (i = 0; i < pb.length; i++) pb[i].onclick = function () { $('inBeta').value = this.getAttribute('data-beta'); readInputs(); rebuild(true); };
   var mb = document.querySelectorAll('[data-model]');
   for (i = 0; i < mb.length; i++) mb[i].onclick = function () {
     if (this.disabled) return;
-    var oldL = S.L, oldName = S.layout;
+    var oldL = S.L;
     S.model = this.getAttribute('data-model');
     S.scale = (S.model === 'ctcs') ? 'time' : 'gen';
     S.animT = Infinity; S.playing = false;
-    morphTo(oldL, oldName); drawStats(); drawInfo(); drawTag();
+    morphTo(oldL); drawStats(); drawInfo(); drawTag();
   };
   $('selLayout').onchange = function () {
-    var old = S.L, oldName = S.layout;
+    var old = S.L;
     S.layout = this.value;
-    morphTo(old, oldName);
+    morphTo(old);
   };
   $('selScale').onchange = function () {
-    var oldL = S.L, oldName = S.layout;
+    var oldL = S.L;
     S.scale = this.value; S.animT = Infinity;
-    morphTo(oldL, oldName);
+    morphTo(oldL);
   };
-  $('btnPlay').onclick = togglePlay; $('btnPlay2').onclick = togglePlay;
-  $('btnReset').onclick = function () { S.playing = false; S.animT = 0; syncPlayButtons(); syncScrub(); draw(); };
+  $('btnPlay2').onclick = togglePlay;
   $('rgSpeed').addEventListener('input', function () { S.speed = Math.pow(2, parseFloat(this.value)); $('lblSpeed').textContent = fmt(S.speed, 2) + '×'; });
   $('rgTime').addEventListener('input', function () {
     S.playing = false; syncPlayButtons();
@@ -2149,7 +2006,7 @@ function initControls() {
     S.animT = f >= 0.999 ? Infinity : f * mx;
     syncScrub(); draw();
   });
-  var toggles = [['ckSizes', 'showSizes'], ['ckLeaf', 'showLeaf'], ['ckRatio', 'showRatio'], ['ckColor', 'color'], ['ckTips', 'tips'], ['ckGrid', 'grid']];
+  var toggles = [['ckSizes', 'showSizes'], ['ckLeaf', 'showLeaf'], ['ckRatio', 'showRatio'], ['ckColor', 'color'], ['ckGrid', 'grid']];
   for (i = 0; i < toggles.length; i++) (function (id, key) {
     $(id).onchange = function () { S[key] = this.checked; draw(); };
   })(toggles[i][0], toggles[i][1]);
@@ -2160,20 +2017,17 @@ function initControls() {
     document.documentElement.classList.toggle('dark');
     try { localStorage.setItem('bst-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {}
     invalidateTheme();
-    paintRamp(); draw(); drawQ(); drawEns();
+    paintRamp(); draw(); drawQ();
   };
   $('btnLang').onclick = function () {
     lang = (lang === 'en' ? 'zh' : 'en');
     try { localStorage.setItem('bst-lang', lang); } catch (e) {}
-    applyLang(); buildHelp(); refreshAll(false); drawEns(); renderEnsTable();
+    applyLang(); buildHelp(); refreshAll(false);
   };
   $('btnSvg').onclick = exportSVG;
-  $('btnEns').onclick = runEnsemble;
-  $('btnEnsStop').onclick = stopEnsemble;
-  $('selStat').onchange = drawEns;
   $('btnCmp').onclick = drawCompare;
   $('selCmpView').onchange = drawCompare;
-  window.addEventListener('resize', function () { drawEns(); });
+  $('btnScale').onclick = drawScaling; $('inScaleBeta').onchange = drawScaling;
 }
 function randSeed() {
   var s = 'abcdefghjkmnpqrstuvwxyz23456789', o = '', i;
@@ -2182,8 +2036,8 @@ function randSeed() {
 }
 /* Layout switch: interpolate node positions while keeping the real visual
    encoding (node radius and colour, edge width and ink), cross-fade the axis,
-   and cross-fade the icicle's rectangles whenever either end of the switch is
-   the icicle view. Also used for the generation <-> continuous-time switch. */
+   and cross-fade the icicle's rectangles whenever either end of the switch
+   is the icicle view. Also used for the generation <-> continuous-time switch. */
 var morphActive = null;
 function morphOpts(W, H, kk, ttx, tty, ut) {
   return { k: kk, W: W, H: H, ut: ut, animT: Infinity, color: S.color, grid: S.grid,
@@ -2191,11 +2045,10 @@ function morphOpts(W, H, kk, ttx, tty, ut) {
            dark: isDark(), mini: false,
            SX: function (x) { return x * kk + ttx; }, SY: function (y) { return y * kk + tty; } };
 }
-function morphTo(oldL, oldName) {
+function morphTo(oldL) {
   var t = S.tree, kind = S.layout;
   vizSize();
   var W = S.vw, H = S.vh;
-  if (kind === 'force' && t.n > FORCE_MAX) kind = 'tidy';
   var oldXY = null, oldUt = oldL ? !!oldL.ut : useTime();
   if (oldL && oldL.X && oldL.X.length === t.N && document.visibilityState !== 'hidden' &&
       !reduceMotion() && t.N <= 4000) {
@@ -2205,7 +2058,7 @@ function morphTo(oldL, oldName) {
   S.view = { k: 1, tx: 0, ty: 0 };
   S.L = computeLayout(t, kind, useTime(), W, H, {});
   buildPick(t, S.L);
-  if (!oldXY) { if (kind === 'force') startForce(); draw(); syncControls(); writeHash(); return; }
+  if (!oldXY) { draw(); syncControls(); writeHash(); return; }
 
   stopTween();
   var newL = S.L, newXY = { X: newL.X, Y: newL.Y }, newUt = useTime(),
@@ -2214,8 +2067,8 @@ function morphTo(oldL, oldName) {
      transform, which is exactly the view affine; the axis is rebuilt per frame
      because its labels must not scale with the view. */
   var idOpt = morphOpts(W, H, 1, 0, 0, oldUt);
-  var rectOld = oldName === 'icicle' ? buildScene(t, oldL, idOpt).edge : '';
-  var rectNew = kind === 'icicle' ? buildScene(t, newL, morphOpts(W, H, 1, 0, 0, newUt)).edge : '';
+  var rectOld = oldL.region ? buildScene(t, oldL, idOpt).edge : '';
+  var rectNew = newL.region ? buildScene(t, newL, morphOpts(W, H, 1, 0, 0, newUt)).edge : '';
   // per-node ink / per-edge width, so the morph reads as the real tree moving
   var nodeKey = new Array(t.N), edgeKey = new Int32Array(t.N);
   for (v = 0; v < t.N; v++) {
@@ -2228,7 +2081,6 @@ function morphTo(oldL, oldName) {
     done = true; morphActive = null; clearTimeout(guard);
     $('lyMorph').innerHTML = '';
     $('lyLabel').style.opacity = '';
-    if (kind === 'force') startForce();
     draw();
   };
   morphActive = finish;
@@ -2310,187 +2162,16 @@ function exportSVG() {
   setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
 }
 
-/* ================= 11. ensemble ================= */
-var ENS_KEYS = ['height', 'mean', 'sackin', 'colless', 'rootfrac', 'rooti', 'ctcsmax', 'ctcsmean'];
-var worker = null, workerOK = null, ensCancel = false;
-
-function workerSource() {
-  var core = document.getElementById('bst-core').textContent;
-  var glue = "\nself.onmessage=function(e){var d=e.data;" +
-    "if(d.t==='ping'){postMessage({t:'pong'});return;}" +
-    "if(d.t==='run'){var rs=BSTCore.makeRNG(d.seed+'|es'),rt=BSTCore.makeRNG(d.seed+'|et'),ca=new BSTCore.SplitCache(d.beta);" +
-    "var K=" + JSON.stringify(ENS_KEYS) + ",res={},i,j;for(j=0;j<K.length;j++)res[K[j]]=new Float64Array(d.M);" +
-    "for(i=0;i<d.M;i++){var s=BSTCore.simulateStats(d.n,d.beta,rs,rt,ca);" +
-    "res.height[i]=s.height;res.mean[i]=s.meanDepth;res.sackin[i]=s.sackin;res.colless[i]=s.colless;" +
-    "res.rootfrac[i]=s.rootFrac;res.rooti[i]=s.rootI;res.ctcsmax[i]=s.ctcsMax;res.ctcsmean[i]=s.ctcsMean;" +
-    "if((i&1023)===0)postMessage({t:'prog',i:i});}postMessage({t:'done',res:res});}};";
-  return core + glue;
+/* ================= 11. compare-beta and scaling limit ================= */
+function miniOpts(W, H) {
+  return { k: 1, W: W, H: H, ut: false, animT: Infinity, color: S.color, sizes: false, leafIds: false,
+           ratios: false, grid: false, mini: true, dark: isDark(), popWin: 1, leafBare: false, corner: 0,
+           SX: function (x) { return x; }, SY: function (y) { return y; } };
 }
-function getWorker(cb) {
-  if (workerOK === false) { cb(null); return; }
-  if (worker && workerOK) { cb(worker); return; }
-  try {
-    var url = URL.createObjectURL(new Blob([workerSource()], { type: 'text/javascript' }));
-    var w = new Worker(url);
-    var settled = false;
-    var to = setTimeout(function () { if (!settled) { settled = true; workerOK = false; try { w.terminate(); } catch (e) {} cb(null); } }, 1200);
-    w.onmessage = function (e) {
-      if (e.data && e.data.t === 'pong' && !settled) { settled = true; clearTimeout(to); workerOK = true; worker = w; cb(w); }
-    };
-    w.onerror = function () { if (!settled) { settled = true; clearTimeout(to); workerOK = false; cb(null); } };
-    w.postMessage({ t: 'ping' });
-  } catch (e) { workerOK = false; cb(null); }
-}
-function runEnsemble() {
-  if (!readInputs()) return;
-  var M = clamp(Math.round(parseFloat($('inM').value) || 500), 1, 200000);
-  $('inM').value = M;
-  var beta = S.beta, n = S.n, seed = S.seed + '|ens';
-  $('btnEns').disabled = true; $('btnEnsStop').disabled = false; ensCancel = false;
-  $('ensNote').textContent = T('ens.running'); $('ensBar').style.width = '0%';
-  var t0 = performance.now();
-  var finish = function (res, how) {
-    S.ens = { beta: beta, n: n, M: M, res: res, how: how, ms: Math.round(performance.now() - t0) };
-    $('btnEns').disabled = false; $('btnEnsStop').disabled = true;
-    $('ensBar').style.width = '100%'; $('ensNote').textContent = T('ens.done') + ' · ' + how + ' · ' + S.ens.ms + ' ms';
-    drawEns(); renderEnsTable();
-  };
-  getWorker(function (w) {
-    if (w) {
-      w.onmessage = function (e) {
-        if (ensCancel) return;
-        if (e.data.t === 'prog') $('ensBar').style.width = (100 * e.data.i / M) + '%';
-        else if (e.data.t === 'done') finish(e.data.res, T('ens.worker'));
-      };
-      w.postMessage({ t: 'run', M: M, n: n, beta: beta, seed: seed });
-    } else {
-      runEnsembleChunked(M, n, beta, seed, finish);
-    }
-  });
-}
-function runEnsembleChunked(M, n, beta, seed, finish) {
-  var rs = C.makeRNG(seed + '|es'), rt = C.makeRNG(seed + '|et'), ca = new C.SplitCache(beta);
-  var res = {}, j;
-  for (j = 0; j < ENS_KEYS.length; j++) res[ENS_KEYS[j]] = new Float64Array(M);
-  var i = 0;
-  function chunk() {
-    if (ensCancel) { $('btnEns').disabled = false; $('btnEnsStop').disabled = true; $('ensNote').textContent = ''; return; }
-    var t0 = performance.now();
-    while (i < M && performance.now() - t0 < 14) {
-      var s = C.simulateStats(n, beta, rs, rt, ca);
-      res.height[i] = s.height; res.mean[i] = s.meanDepth; res.sackin[i] = s.sackin;
-      res.colless[i] = s.colless; res.rootfrac[i] = s.rootFrac; res.rooti[i] = s.rootI;
-      res.ctcsmax[i] = s.ctcsMax; res.ctcsmean[i] = s.ctcsMean;
-      i++;
-    }
-    $('ensBar').style.width = (100 * i / M) + '%';
-    if (i < M) requestAnimationFrame(chunk); else finish(res, T('ens.main'));
-  }
-  requestAnimationFrame(chunk);
-}
-function stopEnsemble() {
-  ensCancel = true;
-  if (worker && workerOK) { try { worker.terminate(); } catch (e) {} worker = null; workerOK = null; }
-  $('btnEns').disabled = false; $('btnEnsStop').disabled = true; $('ensNote').textContent = '';
-}
-function quantile(sorted, p) {
-  var idx = (sorted.length - 1) * p, lo = Math.floor(idx), hi = Math.ceil(idx);
-  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-}
-function summarise(v) {
-  var i, s = 0, n = v.length;
-  for (i = 0; i < n; i++) s += v[i];
-  var mean = s / n, ss = 0;
-  for (i = 0; i < n; i++) ss += (v[i] - mean) * (v[i] - mean);
-  var sorted = Array.prototype.slice.call(v).sort(function (a, b) { return a - b; });
-  return { mean: mean, sd: Math.sqrt(ss / Math.max(1, n - 1)), min: sorted[0], max: sorted[n - 1],
-           med: quantile(sorted, 0.5), q05: quantile(sorted, 0.05), q25: quantile(sorted, 0.25),
-           q75: quantile(sorted, 0.75), q95: quantile(sorted, 0.95) };
-}
-function drawEns() {
-  var e = S.ens, svg = $('ensChart');
-  if (!e) { svg.innerHTML = ''; $('ensTitle').textContent = '—'; $('ensSummary').textContent = ''; return; }
-  var which = $('selStat').value, vals = e.res[which], dark = document.documentElement.classList.contains('dark');
-  var W = 560, H = 260, padL = 44, padR = 12, padT = 14, padB = 30, iw = W - padL - padR, ih = H - padT - padB;
-  var ink = cssv('--ink3') || '#888', line = cssv('--line') || '#ddd', acc = cssv('--accent') || '#b4530a', acc2 = cssv('--accent2') || '#0b6ea8';
-  var h = [], i, bins, lo, hi, nb, counts, theory = null;
-
-  if (which === 'rooti') {
-    lo = 1; hi = e.n - 1; nb = Math.min(hi - lo + 1, 70);
-    counts = new Float64Array(nb);
-    for (i = 0; i < vals.length; i++) counts[Math.min(nb - 1, Math.floor((vals[i] - lo) / (hi - lo + 1e-9) * nb))]++;
-    for (i = 0; i < nb; i++) counts[i] /= vals.length;
-    var q = C.splitProbs(e.n, e.beta);
-    theory = new Float64Array(nb);
-    for (i = 1; i <= e.n - 1; i++) theory[Math.min(nb - 1, Math.floor((i - lo) / (hi - lo + 1e-9) * nb))] += q[i - 1];
-  } else {
-    lo = Infinity; hi = -Infinity;
-    for (i = 0; i < vals.length; i++) { if (vals[i] < lo) lo = vals[i]; if (vals[i] > hi) hi = vals[i]; }
-    var allInt = true;
-    for (i = 0; i < vals.length && allInt; i++) if (Math.abs(vals[i] - Math.round(vals[i])) > 1e-9) allInt = false;
-    nb = (allInt && hi - lo <= 60) ? (hi - lo + 1) : 42;
-    if (hi <= lo) { hi = lo + 1; nb = 1; }
-    counts = new Float64Array(nb);
-    for (i = 0; i < vals.length; i++) counts[clamp(Math.floor((vals[i] - lo) / (hi - lo + 1e-9) * nb), 0, nb - 1)]++;
-    for (i = 0; i < nb; i++) counts[i] /= vals.length;
-  }
-  var ymax = 0;
-  for (i = 0; i < nb; i++) { if (counts[i] > ymax) ymax = counts[i]; if (theory && theory[i] > ymax) ymax = theory[i]; }
-  ymax = ymax || 1;
-  var bw = iw / nb;
-  h.push('<rect x="' + padL + '" y="' + padT + '" width="' + iw + '" height="' + ih + '" fill="none" stroke="' + line + '"/>');
-  for (i = 0; i <= 4; i++) {
-    var yy = padT + ih * i / 4;
-    h.push('<line x1="' + padL + '" y1="' + r1(yy) + '" x2="' + (padL + iw) + '" y2="' + r1(yy) + '" stroke="' + line + '" stroke-width="0.6" opacity="0.6"/>');
-    h.push('<text x="' + (padL - 5) + '" y="' + r1(yy + 3) + '" font-size="9" fill="' + ink + '" text-anchor="end">' + fmt(ymax * (1 - i / 4), 3) + '</text>');
-  }
-  for (i = 0; i < nb; i++) {
-    if (counts[i] <= 0) continue;
-    var bh = ih * counts[i] / ymax;
-    h.push('<rect x="' + r1(padL + i * bw + 0.4) + '" y="' + r1(padT + ih - bh) + '" width="' + r1(Math.max(0.8, bw - 0.8)) + '" height="' + r1(bh) + '" fill="' + acc2 + '" opacity="0.55"/>');
-  }
-  if (theory) {
-    var d = '';
-    for (i = 0; i < nb; i++) d += (i ? 'L' : 'M') + r1(padL + (i + 0.5) * bw) + ' ' + r1(padT + ih - ih * theory[i] / ymax);
-    h.push('<path d="' + d + '" fill="none" stroke="' + acc + '" stroke-width="1.8"/>');
-    h.push('<rect x="' + (padL + iw - 148) + '" y="' + (padT + 4) + '" width="144" height="30" rx="4" fill="' + (dark ? '#161b22' : '#fff') + '" stroke="' + line + '"/>');
-    h.push('<line x1="' + (padL + iw - 140) + '" y1="' + (padT + 13) + '" x2="' + (padL + iw - 122) + '" y2="' + (padT + 13) + '" stroke="' + acc + '" stroke-width="1.8"/>');
-    h.push('<text x="' + (padL + iw - 116) + '" y="' + (padT + 16) + '" font-size="9.5" fill="' + ink + '">' + esc(T('ens.theory')) + '</text>');
-    h.push('<rect x="' + (padL + iw - 140) + '" y="' + (padT + 21) + '" width="18" height="6" fill="' + acc2 + '" opacity="0.55"/>');
-    h.push('<text x="' + (padL + iw - 116) + '" y="' + (padT + 27) + '" font-size="9.5" fill="' + ink + '">' + esc(T('ens.emp')) + ' (M=' + e.M + ')</text>');
-  }
-  var st = summarise(vals);
-  if (!theory) {
-    var mx2 = padL + iw * (st.mean - lo) / (hi - lo + 1e-9);
-    h.push('<line x1="' + r1(mx2) + '" y1="' + padT + '" x2="' + r1(mx2) + '" y2="' + (padT + ih) + '" stroke="' + acc + '" stroke-width="1.4" stroke-dasharray="4 3"/>');
-    h.push('<text x="' + r1(clamp(mx2 + 4, padL, padL + iw - 60)) + '" y="' + (padT + 11) + '" font-size="9.5" fill="' + acc + '">' + T('ens.mean') + ' ' + fmt(st.mean, 3) + '</text>');
-  }
-  h.push('<text x="' + padL + '" y="' + (H - 8) + '" font-size="9.5" fill="' + ink + '">' + fmt(lo, 3) + '</text>');
-  h.push('<text x="' + (padL + iw) + '" y="' + (H - 8) + '" font-size="9.5" fill="' + ink + '" text-anchor="end">' + fmt(hi, 3) + '</text>');
-  h.push('<text x="' + (padL + iw / 2) + '" y="' + (H - 8) + '" font-size="9.5" fill="' + ink + '" text-anchor="middle">' + esc(stripTags(T('st.' + which))) + '</text>');
-  svg.innerHTML = h.join('');
-  $('ensTitle').textContent = stripTags(T('st.' + which));
-  $('ensSummary').innerHTML = 'β = ' + fmt(e.beta, 3) + ' · n = ' + e.n + ' · M = ' + e.M;
-  $('ensMeta').innerHTML = (e.beta !== S.beta || e.n !== S.n) ? '<span style="color:var(--bad)">' + T('ens.stale') + '</span>' : '';
-}
-function renderEnsTable() {
-  var e = S.ens, el = $('ensTable');
-  if (!e) { el.innerHTML = '<div class="empty">' + T('ens.empty') + '</div>'; return; }
-  var rows = '<table class="tbl"><thead><tr><th>' + stripTags(T('l.stat')) + '</th><th>' + T('ens.mean') + '</th><th>' + T('ens.sd') + '</th><th>' + T('ens.median') + '</th><th>5%</th><th>95%</th></tr></thead><tbody>';
-  var keys = ['height', 'mean', 'sackin', 'colless', 'rootfrac'];
-  if (Math.abs(e.beta + 1) < 1e-9) keys.push('ctcsmax', 'ctcsmean');
-  for (var i = 0; i < keys.length; i++) {
-    var s = summarise(e.res[keys[i]]);
-    rows += '<tr><td>' + esc(stripTags(T('st.' + keys[i]))) + '</td><td>' + fmt(s.mean, 3) + '</td><td>' + fmt(s.sd, 3) + '</td><td>' + fmt(s.med, 3) + '</td><td>' + fmt(s.q05, 3) + '</td><td>' + fmt(s.q95, 3) + '</td></tr>';
-  }
-  el.innerHTML = rows + '</tbody></table>';
-}
-
-/* ================= 12. compare-beta ================= */
 function drawCompare() {
   var betas = ($('inCmp').value || '').split(',').map(function (s) { return parseFloat(s); })
     .filter(function (b) { return isFinite(b) && b > -2; }).slice(0, 8);
-  if (!betas.length) betas = [-1.9, -1, 0, 5];
+  if (!betas.length) betas = [-1.5, -1, 0, 1];
   var view = $('selCmpView').value, grid = $('cmpGrid'), n = S.n, i;
   var html = '';
   for (i = 0; i < betas.length; i++)
@@ -2500,20 +2181,60 @@ function drawCompare() {
     var svg = $('cmp' + i), W = svg.clientWidth || 240, H = svg.clientHeight || 230;
     var t = C.simulateTree(n, betas[i], S.seed + '|cmp' + i);
     var L = computeLayout(t, view, false, W, H, { padL: 10, padR: 10, padT: 10, padB: 10 });
-    var o = {
-      k: 1, W: W, H: H, ut: false, animT: Infinity, color: S.color, sizes: false, leafIds: false,
-      ratios: false, grid: false, mini: true, dark: document.documentElement.classList.contains('dark'),
-      popWin: 1, leafBare: false, corner: 0,
-      SX: function (x) { return x; }, SY: function (y) { return y; }
-    };
-    var sc = buildScene(t, L, o);
+    var sc = buildScene(t, L, miniOpts(W, H));
     svg.innerHTML = '<g>' + sc.edge + '</g><g>' + (sc.node || '') + '</g>';
     var st = C.computeStats(t);
     $('cmpc' + i).textContent = (lang === 'zh' ? '高 ' : 'h ') + st.height + ' · Colless ' + num(st.colless);
   }
 }
+/* Height normaliser s(n). For -2 < beta < -1, T_n / n^(-beta-1) converges to a
+   self-similar fragmentation tree, and so does the leaf-height function
+   (Haas, Miermont, Pitman & Winkel 2008, Cor. 16; Brownian CRT at beta = -3/2).
+   For beta >= -1 heights are only of order log n (log^2 n at beta = -1: Aldous &
+   Pittel 2025, Thm 1.2), so those panels are normalised for comparison only. */
+var SCALE_NS = [100, 1000, 10000];
+function heightScale(beta, n) {
+  var l = Math.log(n);
+  return beta < -1 - 1e-9 ? Math.pow(n, -beta - 1) : (Math.abs(beta + 1) < 1e-9 ? l * l : l);
+}
+function drawScaling() {
+  // this panel has its own beta, independent of the main view
+  var beta = parseFloat($('inScaleBeta').value), note = $('scaleNote');
+  if (!isFinite(beta) || beta <= -2) {               // same rule as the main input
+    note.setAttribute('data-i18n', 'err.beta'); note.innerHTML = T('err.beta'); note.style.color = 'var(--bad)'; return;
+  }
+  note.style.color = '';
+  var crt = beta < -1 - 1e-9, trees = [], R = 0, i, k, html = '', ink = cssv('--accent2') || '#0b6ea8',
+      sLab = crt ? '<span class="mv">n</span><sup>' + fmt(-beta - 1, 3) + '</sup>'
+                 : (Math.abs(beta + 1) < 1e-9 ? 'log&sup2;<span class="mv">n</span>' : 'log <span class="mv">n</span>');
+  for (i = 0; i < SCALE_NS.length; i++) {
+    trees.push(C.simulateTree(SCALE_NS[i], beta, S.seed + '|scale' + i));
+    R = Math.max(R, trees[i].maxDepth / heightScale(beta, SCALE_NS[i]));
+  }
+  for (i = 0; i < trees.length; i++)
+    html += '<div class="mini"><div class="cap"><span><span class="mv">n</span> = ' + num(SCALE_NS[i]) + '</span><span id="scc' + i + '"></span></div>' +
+            '<svg id="sct' + i + '"></svg><svg id="sch' + i + '" style="height:84px;border-top:1px solid var(--line2)"></svg></div>';
+  $('scaleGrid').innerHTML = html;
+  for (i = 0; i < trees.length; i++) {
+    var t = trees[i], s = heightScale(beta, t.n), sv = $('sct' + i), W = sv.clientWidth || 240, H = sv.clientHeight || 230,
+        // one vertical scale shared by every panel: height / s(n), topped at the largest R
+        L = computeLayout(t, 'tidy', false, W, H, { padL: 10, padR: 10, padT: 10, padB: 10, vMax: R * s }),
+        o = miniOpts(W, H);
+    o.noNodes = true;
+    sv.innerHTML = buildScene(t, L, o).edge;
+    // leaf-height function: depth of the k-th leaf from the left, drawn under that leaf
+    var hv = $('sch' + i), base = (hv.clientHeight || 84) - 6, d = '', lf;
+    for (k = 0; k < t.n; k++) { lf = t.leafOrder[k]; d += 'L' + r1(L.X[lf]) + ' ' + r1(base - t.depth[lf] / (R * s) * (base - 6)); }
+    hv.innerHTML = '<path d="M' + r1(L.X[t.leafOrder[0]]) + ' ' + base + d + 'L' + r1(L.X[t.leafOrder[t.n - 1]]) + ' ' + base +
+                   'Z" fill="' + ink + '" fill-opacity="0.18" stroke="' + ink + '" stroke-width="0.8" stroke-linejoin="round"/>' +
+                   '<text x="6" y="12" font-size="9" fill="' + (cssv('--ink3') || '#888') + '" data-i18n="sc.leafh">' + T('sc.leafh') + '</text>';
+    $('scc' + i).innerHTML = '<span class="mv">H</span> / ' + sLab + ' = ' + fmt(t.maxDepth / s, 3);
+  }
+  note.setAttribute('data-i18n', crt ? 'note.scaleCRT' : 'note.scaleLog');   // so a language switch re-translates it
+  note.innerHTML = T(note.getAttribute('data-i18n'));
+}
 
-/* ================= 13. help + self-tests ================= */
+/* ================= 12. help + self-tests ================= */
 function buildHelp() {
   var z = lang === 'zh';
   var body = z ? [
@@ -2529,8 +2250,8 @@ function buildHelp() {
     '<h3>视图说明</h3><ul>',
     '<li><b>整洁树</b>:纵向是代数(离散)或真实时间(CTCS),此时一条边的长度就是该团的指数停留时间。</li>',
     '<li><b>碎裂 / 冰柱图</b>:直接展示递归规则 m → i + (m−i) —— 区间按 i : (m−i) 切分。奇点(大小为 1 的碎片)不再分裂,所以一直延伸到底部。</li>',
-    '<li><b>叶对齐树状图</b>:偏拓扑,叶子对齐会破坏深度/时间的几何含义。</li>',
-    '<li><b>力导向</b>:纯探索性,欧氏距离没有概率含义。</li></ul>',
+    '<li><b>植物树</b>:每段是一代或该团的 CTCS 停留时间;枝宽 ∝ √m(达·芬奇截面积守恒,正因为团大小可加);子团偏转的角度正比于兄弟团所占的份额;叶的细枝取固定长度。</li></ul>',
+    '<p><b>尺度极限</b>面板:对 −2 &lt; β &lt; −1,把高度除以 n<sup>−β−1</sup> 后,T<sub>n</sub> 收敛到一棵自相似碎裂树,叶高函数也一致收敛(Haas–Miermont–Pitman–Winkel 2008, 推论 16)。</p>',
     '<p>配色表示平衡度 B = 2 min(i, m−i)/m ∈ (0,1];颜色不是唯一的编码通道:枝干的<b>宽度与明暗</b>都随团大小变化(于是大团构成的主干自然凸显),冰柱图的宽度比直接就是分裂比,数值也在右侧面板与标签中给出。</p>'
   ].join('') : [
     '<p>Independently for every clade of size <i>m</i> ≥ 2, split it into two nonempty child clades of sizes <i>i</i> and <i>m−i</i>, where</p>',
@@ -2545,8 +2266,8 @@ function buildHelp() {
     '<h3>Reading the views</h3><ul>',
     '<li><b>Tidy tree</b>: vertical position is generation (discrete) or actual time (CTCS), in which case an edge’s length <em>is</em> the clade’s exponential holding time.</li>',
     '<li><b>Fragmentation / icicle</b>: shows the rule m → i + (m−i) directly — an interval cut in the ratio i : (m−i). Singletons never split again, so their fragments run to the bottom.</li>',
-    '<li><b>Leaf-aligned dendrogram</b>: topology-oriented; aligning the leaves destroys the geometric meaning of depth and of CTCS time.</li>',
-    '<li><b>Force-directed</b>: exploratory only; Euclidean distances carry no probabilistic meaning.</li></ul>',
+    '<li><b>Botanical tree</b>: each segment is one generation or the clade’s CTCS holding time; width ∝ √m (da Vinci’s area rule, which holds exactly because clade sizes add); a child turns by an angle proportional to its sibling’s share. Leaf twigs have a fixed length.</li></ul>',
+    '<p>The <b>scaling-limit</b> panels: for −2 &lt; β &lt; −1, with heights divided by n<sup>−β−1</sup>, T<sub>n</sub> converges to a self-similar fragmentation tree and the leaf-height function converges uniformly (Haas–Miermont–Pitman–Winkel 2008, Cor. 16).</p>',
     '<p>Colour encodes the balance score B = 2 min(i, m−i)/m ∈ (0,1], and is never the only channel: both the <b>width and the darkness</b> of a branch follow the clade size, so the backbone stands out on its own; the icicle’s width ratio <em>is</em> the split ratio; and the same numbers appear in the right-hand panel and in the optional labels.</p>'
   ].join('');
   $('helpBody').innerHTML = body +
@@ -2563,18 +2284,21 @@ function runSelfTests() {
   var out = $('selfOut'); out.style.display = '';
   var res = C.selfTest(function () {
     // check 6: switching layout must not perturb topology, times or the tagged leaf
-    var t = S.tree, before = hashTree(t), tagBefore = S.tag, savedForce = S.force, ok = true, det = [];
-    var kinds = ['tidy', 'icicle', 'radial', 'dendro', 'force'], i;
+    var t = S.tree, before = hashTree(t), tagBefore = S.tag, ok = true, det = [];
+    var kinds = ['botanic', 'tidy', 'icicle', 'radial'], i;
     for (i = 0; i < kinds.length; i++) {
-      S.force = null;
       var L = computeLayout(t, kinds[i], useTime(), 800, 500, {});
       if (!L || !L.X || L.X.length !== t.N) { ok = false; det.push(kinds[i] + ': bad layout'); }
       if (hashTree(t) !== before) { ok = false; det.push(kinds[i] + ': tree mutated'); }
       if (S.tag !== tagBefore) { ok = false; det.push(kinds[i] + ': tag changed'); }
     }
-    S.force = savedForce;
+    // check 7: every botanical segment is exactly (generation or holding time) x scale
+    var bt = computeLayout(t, 'botanic', useTime(), 800, 500, {}), wL = 0, v, p;
+    for (v = 1; v < t.N; v++) { p = t.parent[v]; wL = Math.max(wL, Math.abs(Math.hypot(bt.X[v] - bt.X[p], bt.Y[v] - bt.Y[p]) / (bt.len[v] * bt.scale) - 1)); }
     return [{ name: 'layout switch preserves topology, times and tagged leaf', pass: ok,
-              detail: ok ? 'hash ' + before + ' stable across ' + kinds.join(', ') : det.join('; ') }];
+              detail: ok ? 'hash ' + before + ' stable across ' + kinds.join(', ') : det.join('; ') },
+            { name: 'botanical segment ∝ generation / holding time', pass: wL < 1e-9,
+              detail: 'max rel. segment error = ' + wL.toExponential(2) }];
   });
   var lines = res.map(function (r, i) {
     return (r.pass ? '<span class="pass">PASS</span>' : '<span class="fail">FAIL</span>') + '  ' + (i + 1) + '. ' + esc(r.name) + '\n        ' + esc(r.detail);
@@ -2583,7 +2307,7 @@ function runSelfTests() {
   out.innerHTML = lines.join('\n') + '\n\n' + nPass + ' / ' + res.length + (lang === 'zh' ? ' 项通过' : ' checks passed');
 }
 
-/* ================= 14. boot ================= */
+/* ================= 13. boot ================= */
 function init() {
   try { if (localStorage.getItem('bst-theme') === 'dark') document.documentElement.classList.add('dark'); } catch (e) {}
   try { var l = localStorage.getItem('bst-lang'); if (l === 'zh' || l === 'en') lang = l; } catch (e) {}
@@ -2592,8 +2316,8 @@ function init() {
   initControls(); initViz();
   $('rgSpeed').value = 0; S.speed = 1;
   rebuild(false);
-  renderEnsTable();
   $('secCmp').addEventListener('toggle', function () { if (this.open && !$('cmpGrid').children.length) drawCompare(); });
+  $('secScale').addEventListener('toggle', function () { if (this.open && !$('scaleGrid').children.length) drawScaling(); });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
