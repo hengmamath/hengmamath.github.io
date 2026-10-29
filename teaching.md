@@ -6,11 +6,21 @@ permalink: /teaching/
 
 # Teaching
 
+
+## Discrete Stochastic Processes 
+
+ **Technion — Fall 2026 - 0980413**
+
+  
+**Lecturer:** [Oren Louidor](https://sites.google.com/view/louidor/)
+
+**My role:** I teach a tutorial for one to two hours each week to supplement the main lectures. See the [syllabus](https://docs.google.com/document/d/1h7-ZO6WfE8K-3X4KWO0mycZwtIDCDiTYqa_IDZuOw84/edit?tab=t.0) for more details.
+
+
 ## Mathematical Tools for Data Science
 
-**Technion — Spring 2026 — 00960200**
-
-<p><span lang="he" dir="rtl">(כלים מתמטיים למדעי הנתונים - אביב - 00960200)</span></p>
+**Technion — Spring 2026 - 00960200**
+ 
 
 **Lecturer:** [Eviatar Procaccia](https://sites.google.com/site/ebprocaccia/)
 
