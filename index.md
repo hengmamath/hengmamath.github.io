@@ -6,7 +6,7 @@ title: Home
 ## About me
 
 I am currently a postdoc at the [Technion probability group](https://probability.technion.ac.il), working with [Oren Louidor](https://sites.google.com/view/louidor/) and [Eviatar Procaccia](https://sites.google.com/site/ebprocaccia/).
-I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking University](https://math-en.pku.edu.cn) under the supervision of [Yan-Xia Ren](https://www.math.pku.edu.cn/teachers/renyx/indexE.htm). 
+I obtained my Ph.D. in 2025 from the  [School of Mathematical Sciences, Peking University](https://math-en.pku.edu.cn) under the supervision of [Yan-Xia Ren](https://math.pku.edu.cn/teachers/renyx/index.htm). 
 
 ## Research interests
 
